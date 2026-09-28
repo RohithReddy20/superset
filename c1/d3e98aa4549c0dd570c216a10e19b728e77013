@@ -1,0 +1,26 @@
+apps/desktop/src/shared/workspace-run-definition.ts
+  s_9320bf4524f514::t_77a9a02bf2e081 1,20,28,33-46,87-114
+apps/desktop/src/shared/workspace-run-definition.test.ts
+  s_9320bf4524f514::t_2704842b226af7 2-5,90,105,113-115,117-181
+  s_9320bf4524f514::t_7b1f633f104968 91-104,106-112,116
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/useV2WorkspaceRun/useV2WorkspaceRun.ts
+  s_9320bf4524f514::t_220e5e524607e5 18-21,73-79,81-83,85-90,92-95,176-178,182,185,200-201,224-230,233-243,248,255-258,260,263-266,268-270,273-285,287,316-317,319-324,327,329-330,332-347,349-351,353-362,364-378,382,384-387,390-393,395-405,407-409,411-421,423-437,441
+  s_9320bf4524f514::t_8f73fd83e15275 251-254
+  s_9320bf4524f514::t_c50945ebb75c2a 60,80,84,91,247,249-250,271-272,286
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c1d3e98aa4549c0dd570c216a10e19b728e77013",
+  "prompts": {},
+  "sessions": {
+    "s_9320bf4524f514": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "845d3a58-b9aa-43f8-b453-5a80c1683e3e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "“Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
