@@ -1,0 +1,19 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/useV2WorkspaceRun/useV2WorkspaceRun.ts
+  s_9320bf4524f514::t_53bef8f1ae1f77 218,223-239,315
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "49c0db042e1bbb23b0ebe66eba2b3904b57f2852",
+  "prompts": {},
+  "sessions": {
+    "s_9320bf4524f514": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "845d3a58-b9aa-43f8-b453-5a80c1683e3e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "“Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
