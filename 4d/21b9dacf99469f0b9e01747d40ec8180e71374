@@ -1,0 +1,27 @@
+apps/desktop/src/renderer/hooks/useSessionRecovery/useSessionRecovery.ts
+  s_312edb6829bc1d::t_83b2b875a75aab 39,42-46,52-55
+  s_312edb6829bc1d::t_254f7ed3ce7fb2 47-51,56-62,160-162
+apps/desktop/src/renderer/hooks/useSessionRecovery/useSessionRecovery.behavior.test.ts
+  s_312edb6829bc1d::t_ac59b35e6a2f7b 11-15,51-53
+  s_312edb6829bc1d::t_1f546b3f1a34ce 1-10,16-50,54-81
+apps/desktop/src/renderer/routes/_authenticated/layout.tsx
+  s_312edb6829bc1d::t_254f7ed3ce7fb2 21,86-87,90,92,116-118
+apps/desktop/src/renderer/routes/sign-in/page.tsx
+  s_312edb6829bc1d::t_254f7ed3ce7fb2 18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4d21b9dacf99469f0b9e01747d40ec8180e71374",
+  "prompts": {},
+  "sessions": {
+    "s_312edb6829bc1d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a15d5e-da66-7100-a610-f00712f5925c",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "“Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
