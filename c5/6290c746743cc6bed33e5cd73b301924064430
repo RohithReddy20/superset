@@ -1,0 +1,71 @@
+apps/desktop/src/renderer/hooks/useSessionRecovery/useSessionRecovery.ts
+  s_312edb6829bc1d::t_2fd30227331ae8 159
+apps/desktop/src/renderer/routes/components/SessionRecoveryBoundary/SessionRecoveryBoundary.test.tsx
+  s_312edb6829bc1d::t_96c3880f58313e 1-155
+apps/desktop/src/renderer/routes/components/SessionRecoveryBoundary/components/SessionRecoveryScreen/SessionRecoveryScreen.tsx
+  s_312edb6829bc1d::t_2fd30227331ae8 1-20,22-33,37-61,66-75,77-78
+  s_312edb6829bc1d::t_96c3880f58313e 21,34-36,62-65,76
+apps/desktop/src/renderer/routes/sign-in/page.tsx
+  s_312edb6829bc1d::t_b073b9529d4d25 17,21,48-50
+  s_312edb6829bc1d::t_567da2c0b39f78 53-63,65-68,70-153,155-246,248-250
+apps/desktop/src/renderer/routes/components/SessionRecoveryBoundary/SessionRecoveryBoundary.tsx
+  s_312edb6829bc1d::t_2fd30227331ae8 1-48
+  s_312edb6829bc1d::t_85d620762d3d45 49-51
+apps/desktop/src/renderer/routes/_authenticated/layout.tsx
+  s_312edb6829bc1d::t_b073b9529d4d25 10,45,81-82
+  s_312edb6829bc1d::t_20ef5d2cdfc0ef 201-225,230-231,233-235,237-244,246-248,250-256,258-266,268-323
+apps/desktop/src/renderer/routes/components/SessionRecoveryBoundary/components/SessionRecoveryScreen/index.ts
+  s_312edb6829bc1d::t_2fd30227331ae8 1
+apps/desktop/src/renderer/routes/components/SessionRecoveryBoundary/index.ts
+  s_312edb6829bc1d::t_2fd30227331ae8 1
+packages/i18n/locales/cs/messages.po
+  s_312edb6829bc1d::t_2901d3a39512bd 16378-16380,16554-16556
+packages/i18n/locales/de/messages.po
+  s_312edb6829bc1d::t_cee6f02cf9d8d9 16378-16380,16554-16556
+packages/i18n/locales/en/messages.po
+  s_312edb6829bc1d::t_5b97800773005f 16378-16380,16554-16556
+packages/i18n/locales/es/messages.po
+  s_312edb6829bc1d::t_f19a57b721a792 16378-16380,16554-16556
+packages/i18n/locales/fr/messages.po
+  s_312edb6829bc1d::t_f19a90bd1236dc 16378-16380,16554-16556
+packages/i18n/locales/id/messages.po
+  s_312edb6829bc1d::t_c684075f6b3ed0 16378-16380,16554-16556
+packages/i18n/locales/it/messages.po
+  s_312edb6829bc1d::t_76d25e1650d00f 16378-16380,16554-16556
+packages/i18n/locales/ja/messages.po
+  s_312edb6829bc1d::t_753c086009f1ee 16378-16380,16554-16556
+packages/i18n/locales/ko/messages.po
+  s_312edb6829bc1d::t_b908ca93f3aa39 16378-16380,16554-16556
+packages/i18n/locales/nl/messages.po
+  s_312edb6829bc1d::t_a483e670422427 16378-16380,16554-16556
+packages/i18n/locales/pl/messages.po
+  s_312edb6829bc1d::t_9e920a600b65c4 16378-16380,16554-16556
+packages/i18n/locales/pt-BR/messages.po
+  s_312edb6829bc1d::t_ddcddc29d5bad0 16378-16380,16554-16556
+packages/i18n/locales/ru/messages.po
+  s_312edb6829bc1d::t_fd3cd20bcb7570 16378-16380,16554-16556
+packages/i18n/locales/tr/messages.po
+  s_312edb6829bc1d::t_d3762fa6580393 16378-16380,16554-16556
+packages/i18n/locales/vi/messages.po
+  s_312edb6829bc1d::t_e03de3f5cf28dc 16378-16380,16554-16556
+packages/i18n/locales/zh-CN/messages.po
+  s_312edb6829bc1d::t_6407bd164f261e 16378-16380,16554-16556
+packages/i18n/locales/zh-TW/messages.po
+  s_312edb6829bc1d::t_20519a4ae33278 16378-16380,16554-16556
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c56290c746743cc6bed33e5cd73b301924064430",
+  "prompts": {},
+  "sessions": {
+    "s_312edb6829bc1d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a15d5e-da66-7100-a610-f00712f5925c",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "“Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
