@@ -1,0 +1,19 @@
+packages/host-service/src/runtime/teardown/teardown.ts
+  s_5392f5e68932c4::t_e083f383c87cbd 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0d92a6472bbc988431fd2ba130ec53dfd4844927",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
