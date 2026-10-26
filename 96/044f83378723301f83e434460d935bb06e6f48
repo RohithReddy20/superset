@@ -1,0 +1,23 @@
+packages/host-service/src/runtime/teardown/teardown.test.ts
+  s_5392f5e68932c4::t_f5ef05c231b4bf 38
+packages/host-service/src/runtime/teardown/teardown.ts
+  s_5392f5e68932c4::t_561c7ea6d63ec8 17-18,208-209
+packages/host-service/test/helpers/fake-pty.ts
+  s_5392f5e68932c4::t_a2cdfa8bf2449c 6-9,32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "96044f83378723301f83e434460d935bb06e6f48",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
