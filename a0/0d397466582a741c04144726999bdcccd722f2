@@ -1,0 +1,48 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/components/WorkspaceActivityMenu/WorkspaceActivityMenu.tsx
+  s_5392f5e68932c4::t_ded871f390479c 30
+  s_5392f5e68932c4::t_9b472bd3e2fedf 268-277
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/page.tsx
+  s_5392f5e68932c4::t_e20fa9a0ce0fa4 562-567
+  s_5392f5e68932c4::t_321f8c3dbe7551 54
+  s_5392f5e68932c4::t_8d97a6fbcebcd8 60
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/components/ChangesControl/components/ShipControl/ShipControl.tsx
+  s_5392f5e68932c4::t_d74bc110fe7c46 10,18
+  s_5392f5e68932c4::t_83e7176861156c 78-86
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/useWorkspaceOpenIn/useWorkspaceOpenIn.ts
+  s_5392f5e68932c4::t_ed7ba54e4b1930 10
+  s_5392f5e68932c4::t_5404a58d5abc1c 41
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/useCopyPathHotkey/index.ts
+  s_5392f5e68932c4::t_0fe83badd73683 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/useCopyPathHotkey/useCopyPathHotkey.ts
+  s_5392f5e68932c4::t_9b7e913dc43c2c 1-18
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/useCopyWorktreePath/index.ts
+  s_5392f5e68932c4::t_73f591a94fa1ae 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/useCopyWorktreePath/useCopyWorktreePath.ts
+  s_5392f5e68932c4::t_afd3f9bb97c289 1-21
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/useOpenPrHotkey/index.ts
+  s_5392f5e68932c4::t_f697d67129cc6f 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/useOpenPrHotkey/resolveOpenPrAction.test.ts
+  s_5392f5e68932c4::t_80acf7af429914 1-55
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/useOpenPrHotkey/resolveOpenPrAction.ts
+  s_5392f5e68932c4::t_bd7cd2c0dfac2b 1-23
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/useOpenPrHotkey/useOpenPrHotkey.ts
+  s_5392f5e68932c4::t_d9ccf1feaaf68e 1-33
+apps/desktop/src/renderer/stores/create-pr-form-intent.ts
+  s_5392f5e68932c4::t_c435b38eb433b0 1-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a00d397466582a741c04144726999bdcccd722f2",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "“Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
