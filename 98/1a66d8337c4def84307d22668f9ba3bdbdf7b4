@@ -1,0 +1,25 @@
+apps/desktop/src/renderer/hooks/useSessionRecovery/useSessionRecovery.test.ts
+  s_5392f5e68932c4::t_59a13a271cef8a 3,78-108
+apps/desktop/src/renderer/hooks/useSessionRecovery/useSessionRecovery.ts
+  s_5392f5e68932c4::t_1ca0774e35219d 38-58,60-66,69-74,171,173-175
+apps/desktop/src/renderer/routes/_authenticated/layout.tsx
+  s_5392f5e68932c4::t_d3011ffb9c52a9 20,87-89,91,94,117-119
+apps/desktop/src/renderer/routes/sign-in/page.tsx
+  s_5392f5e68932c4::t_caa84437c03095 18,53-54,68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "981a66d8337c4def84307d22668f9ba3bdbdf7b4",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
