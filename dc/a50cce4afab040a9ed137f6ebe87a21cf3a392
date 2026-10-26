@@ -1,0 +1,19 @@
+packages/host-service/src/trpc/router/settings/terminal-theme.ts
+  s_5392f5e68932c4::t_82108ac112ec0d 19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dca50cce4afab040a9ed137f6ebe87a21cf3a392",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
