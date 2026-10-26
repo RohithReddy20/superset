@@ -1,0 +1,37 @@
+apps/desktop/src/renderer/hotkeys/utils/forwardedHotkeys.test.ts
+  s_5392f5e68932c4::t_9f858ab0ef435d 71-72
+apps/desktop/src/renderer/hotkeys/utils/forwardedHotkeys.ts
+  s_5392f5e68932c4::t_ffa09214d8df25 59,61
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/components/ChangesControl/components/ShipControl/ShipControl.tsx
+  s_5392f5e68932c4::t_08322863256c37 19-22,82-91,93-96
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/components/WorkspaceActivityMenu/WorkspaceActivityMenu.tsx
+  s_5392f5e68932c4::t_b06d78d6ed24e3 36,268-269,272-275,278-279
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/useOpenPrHotkey/resolveOpenPrAction.test.ts
+  s_5392f5e68932c4::t_cc3776fee2f0be 37,39-40,44-52
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/useOpenPrHotkey/resolveOpenPrAction.ts
+  s_5392f5e68932c4::t_02a64ce2b2b14a 1,6,19-22
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/useOpenPrHotkey/useOpenPrHotkey.ts
+  s_5392f5e68932c4::t_d72ba0bea0ba2f 6,27-30
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/state/shipFormIntent/index.ts
+  s_5392f5e68932c4::t_b7bc14ac84841c 1-4
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/state/shipFormIntent/shipFormIntent.test.ts
+  s_5392f5e68932c4::t_119b771dd41395 2,4,6,9-11,13-16
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/state/shipFormIntent/shipFormIntent.ts
+  s_5392f5e68932c4::t_bb50ed3d6df289 3-13,16-25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "58d2aab5c086b10553003016aabb2d03ee75c3e6",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
