@@ -1,0 +1,37 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/components/ChangesControl/components/ShipControl/ShipControl.tsx
+  s_dd4c110d7e1907::t_d828d59fa1d661 10,19,78,84
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/components/WorkspaceActivityMenu/WorkspaceActivityMenu.tsx
+  s_dd4c110d7e1907::t_76670ab561b7bd 36,274
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/useOpenPrHotkey/useOpenPrHotkey.ts
+  s_dd4c110d7e1907::t_c482f83219a1eb 6
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/state/createPrFormIntent/createPrFormIntent.test.ts
+  s_5392f5e68932c4::t_b146301ebe4afc 1-18
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/state/createPrFormIntent/createPrFormIntent.ts
+  s_5392f5e68932c4::t_07ae1b9a368844 9
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/state/createPrFormIntent/index.ts
+  s_5392f5e68932c4::t_b87b49df01fac0 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1fdfd2246875408ac50e25118fddc4b5bf7e29f3",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "“Rohith <rohithreddyrohi18@gmail.com>"
+    },
+    "s_dd4c110d7e1907": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "331a27fc-44ff-4911-9483-dceb8b8f172b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "“Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
