@@ -1,0 +1,21 @@
+apps/desktop/src/shared/detect-language.test.ts
+  s_5392f5e68932c4::t_9bccb9ce0c94b8 1-24
+apps/desktop/src/shared/detect-language.ts
+  s_5392f5e68932c4::t_8289224640fa84 44,73-74,81-83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4b89942558cd7e566698b79527e55cecb61d9338",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "“Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
