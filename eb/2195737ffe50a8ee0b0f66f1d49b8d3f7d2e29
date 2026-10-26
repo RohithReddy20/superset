@@ -1,0 +1,19 @@
+apps/desktop/src/renderer/routes/sign-in/page.tsx
+  s_5392f5e68932c4::t_fd6660c28174ac 57,59,69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "eb2195737ffe50a8ee0b0f66f1d49b8d3f7d2e29",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
