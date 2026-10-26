@@ -1,0 +1,31 @@
+apps/desktop/src/renderer/routes/_authenticated/components/HostTerminalThemeSync/HostTerminalThemeSync.tsx
+  s_5392f5e68932c4::t_c47c8ac9ebf3b5 3-4,11-12,16-25,27-28,31-33,39-48,52-53
+apps/desktop/src/renderer/routes/_authenticated/components/HostTerminalThemeSync/utils/connectedHostUrls/connectedHostUrls.test.ts
+  s_5392f5e68932c4::t_d0501b1b0ec676 1-36
+apps/desktop/src/renderer/routes/_authenticated/components/HostTerminalThemeSync/utils/connectedHostUrls/connectedHostUrls.ts
+  s_5392f5e68932c4::t_41c228751fdec8 1-25
+apps/desktop/src/renderer/routes/_authenticated/components/HostTerminalThemeSync/utils/connectedHostUrls/index.ts
+  s_5392f5e68932c4::t_79b27e73a7000f 1
+apps/desktop/src/renderer/routes/_authenticated/components/HostTerminalThemeSync/utils/createHostThemePusher/createHostThemePusher.test.ts
+  s_5392f5e68932c4::t_0a5a301ce5b4ac 1-76
+apps/desktop/src/renderer/routes/_authenticated/components/HostTerminalThemeSync/utils/createHostThemePusher/createHostThemePusher.ts
+  s_5392f5e68932c4::t_7147eedc56ba97 1-37
+apps/desktop/src/renderer/routes/_authenticated/components/HostTerminalThemeSync/utils/createHostThemePusher/index.ts
+  s_5392f5e68932c4::t_794ade06ce0c3c 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "76ea9343cdda2f2bb70e474dbd3a404d22b0a269",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
