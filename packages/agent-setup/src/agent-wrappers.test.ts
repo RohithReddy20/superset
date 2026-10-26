@@ -2498,6 +2498,7 @@ import {
 	GROK_COMPAT_MARKER_START,
 	getGrokConfigTomlContent,
 	getGrokHooksJsonContent,
+	getGrokManagedHookCommand,
 	getGrokWrapperScript,
 } from "./agent-wrappers-grok";
 
@@ -2510,8 +2511,14 @@ describe("grok wrapper", () => {
 });
 
 describe("grok hooks json", () => {
+	const grokNotifyScriptPath = path.join(TEST_HOOKS_DIR, "notify.sh");
+
+	afterEach(() => {
+		rmSync(TEST_ROOT, { recursive: true, force: true });
+	});
+
 	it("registers passive lifecycle hooks and skips blocking PreToolUse", () => {
-		const parsed = JSON.parse(getGrokHooksJsonContent());
+		const parsed = JSON.parse(getGrokHooksJsonContent(grokNotifyScriptPath));
 		const events = Object.keys(parsed.hooks);
 		expect(events).toEqual([
 			"SessionStart",
@@ -2537,6 +2544,47 @@ describe("grok hooks json", () => {
 		expect(parsed.hooks.Notification[0].matcher).toBe(
 			`^(${GROK_BLOCKING_NOTIFICATION_TYPES.join("|")})$`,
 		);
+	});
+
+	it("writes the notify path literally so Grok never sees an unset variable", () => {
+		const parsed = JSON.parse(getGrokHooksJsonContent(grokNotifyScriptPath));
+		for (const definitions of Object.values(parsed.hooks)) {
+			const [definition] = definitions as Array<{
+				hooks: Array<{ command: string }>;
+			}>;
+			const { command } = definition.hooks[0];
+			expect(command).not.toContain("$");
+			expect(command).toContain(
+				`SUPERSET_HOOK_HARNESS=grok '${grokNotifyScriptPath}'`,
+			);
+		}
+	});
+
+	it("runs notify.sh when installed and stays silent when it is not", () => {
+		const hooksDir = path.join(TEST_ROOT, "grok o'hooks dir", "hooks");
+		const notifyScriptPath = path.join(hooksDir, "notify.sh");
+		const command = getGrokManagedHookCommand(notifyScriptPath);
+		const env = { PATH: process.env.PATH };
+
+		const missing = spawnSync("sh", ["-c", command], {
+			encoding: "utf-8",
+			env,
+		});
+		expect(missing.status).toBe(0);
+		expect(missing.stdout + missing.stderr).toBe("");
+
+		mkdirSync(hooksDir, { recursive: true });
+		writeFileSync(
+			notifyScriptPath,
+			'#!/bin/sh\nprintf "%s" "$SUPERSET_HOOK_HARNESS"\n',
+		);
+		chmodSync(notifyScriptPath, 0o755);
+		const installed = spawnSync("sh", ["-c", command], {
+			encoding: "utf-8",
+			env,
+		});
+		expect(installed.status).toBe(0);
+		expect(installed.stdout).toBe("grok");
 	});
 
 	it("keeps the notify template's subtype filter in sync with the matcher", () => {

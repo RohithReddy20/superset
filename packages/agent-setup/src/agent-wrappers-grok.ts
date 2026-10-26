@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
+import { quoteSingleShell } from "@superset/shared/agent-prompt-launch";
 import {
 	buildWrapperScript,
 	createWrapper,
-	getManagedNotifyHookCommand,
 	MANAGED_NOTIFY_RELATIVE_PATH,
 	removeOwnedFileIfMarked,
 	writeFileIfChanged,
@@ -14,6 +14,7 @@ import {
 	type ManagedTomlBlockSpec,
 	removeManagedTomlBlock,
 } from "./managed-toml-block";
+import { getNotifyScriptPath } from "./notify-hook";
 import { resolveUserHomeDir } from "./paths";
 
 export const GROK_COMPAT_MARKER_START =
@@ -48,7 +49,12 @@ export const GROK_BLOCKING_NOTIFICATION_TYPES = [
 	"elicitation_dialog",
 ] as const;
 
-const GROK_MANAGED_HOOK_COMMAND = getManagedNotifyHookCommand("grok");
+// Grok refuses to run a hook whose command names an unset environment
+// variable, so the notify path is written literally, not via SUPERSET_HOME_DIR.
+export function getGrokManagedHookCommand(notifyScriptPath: string): string {
+	const notifyScript = quoteSingleShell(notifyScriptPath);
+	return `[ -x ${notifyScript} ] && SUPERSET_HOOK_HARNESS=grok ${notifyScript} || true`;
+}
 
 // Vendor hook configs Superset also manages. Grok replays them in compat mode;
 // their events carry Claude's or Cursor's harness id, so the notify script
@@ -72,7 +78,8 @@ export function getGrokConfigTomlPath(): string {
  * Grok merges every `*.json` under `~/.grok/hooks/`, so Superset owns this
  * file outright — no merge with user config needed.
  */
-export function getGrokHooksJsonContent(): string {
+export function getGrokHooksJsonContent(notifyScriptPath: string): string {
+	const command = getGrokManagedHookCommand(notifyScriptPath);
 	const hooks = Object.fromEntries(
 		GROK_MANAGED_HOOK_EVENTS.map((event) => [
 			event,
@@ -83,7 +90,7 @@ export function getGrokHooksJsonContent(): string {
 								matcher: `^(${GROK_BLOCKING_NOTIFICATION_TYPES.join("|")})$`,
 							}
 						: {}),
-					hooks: [{ type: "command", command: GROK_MANAGED_HOOK_COMMAND }],
+					hooks: [{ type: "command", command }],
 				},
 			],
 		]),
@@ -96,7 +103,7 @@ export function createGrokHooksJson(): void {
 	fs.mkdirSync(path.dirname(hooksPath), { recursive: true });
 	const changed = writeFileIfChanged(
 		hooksPath,
-		getGrokHooksJsonContent(),
+		getGrokHooksJsonContent(getNotifyScriptPath()),
 		0o644,
 	);
 	console.log(
