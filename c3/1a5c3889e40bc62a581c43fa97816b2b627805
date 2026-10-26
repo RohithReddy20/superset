@@ -1,0 +1,23 @@
+packages/host-service/src/tunnel/connect.ts
+  s_5392f5e68932c4::t_211f60ddcf85ac 50-55,57,74,83,96-124
+packages/host-service/src/tunnel/tunnel-client.integration.test.ts
+  s_5392f5e68932c4::t_167d2b274db7c1 1-2,115-180
+packages/host-service/src/tunnel/tunnel-client.ts
+  s_5392f5e68932c4::t_c079e01ea2c542 5,66-69,90,109-110,151-153,173-176,202-217
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c31a5c3889e40bc62a581c43fa97816b2b627805",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "“Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
