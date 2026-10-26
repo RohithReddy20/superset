@@ -1,0 +1,42 @@
+apps/desktop/src/renderer/routes/_authenticated/components/HostTerminalThemeSync/HostTerminalThemeSync.tsx
+  s_5392f5e68932c4::t_25f7797ad482a0 1-42
+apps/desktop/src/renderer/routes/_authenticated/components/HostTerminalThemeSync/index.ts
+  s_5392f5e68932c4::t_4327f2c0ac0a30 1
+apps/desktop/src/renderer/routes/_authenticated/layout.tsx
+  s_5392f5e68932c4::t_5fbd6efccacc42 31,330
+packages/host-service/drizzle/0039_host_terminal_theme.sql
+  s_5392f5e68932c4::t_7aa6f337c47315 1-2
+packages/host-service/drizzle/meta/0039_snapshot.json
+  s_5392f5e68932c4::t_725201748d5127 1-1287
+packages/host-service/drizzle/meta/_journal.json
+  s_5392f5e68932c4::t_f7063d8b9b5003 277-283
+packages/host-service/src/db/schema.ts
+  s_5392f5e68932c4::t_c17c7dae685c7e 5,147-150
+packages/host-service/src/terminal/resolve-terminal-theme.test.ts
+  s_5392f5e68932c4::t_3081ac57315176 1-67
+packages/host-service/src/terminal/resolve-terminal-theme.ts
+  s_5392f5e68932c4::t_dd2aa62b090f44 1-41
+packages/host-service/src/terminal/terminal.ts
+  s_5392f5e68932c4::t_fdbe282d3ef6dd 55,78,3002-3003,3083-3087
+packages/host-service/src/trpc/router/settings/index.ts
+  s_5392f5e68932c4::t_39359d82627512 4,10,15
+packages/host-service/src/trpc/router/settings/terminal-theme.ts
+  s_5392f5e68932c4::t_1bf0410279a96d 1-66
+  s_5392f5e68932c4::t_bbe006b5f556f4 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "72e950ad13cd65202b1a724271b4a525b8178aa5",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "“Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
