@@ -1,0 +1,21 @@
+packages/agent-setup/src/agent-wrappers-grok.ts
+  s_5392f5e68932c4::t_10151928a795df 3,17,52-57,81-82,93,106
+packages/agent-setup/src/agent-wrappers.test.ts
+  s_5392f5e68932c4::t_1134de53063de1 2501,2514-2519,2521,2549-2589
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e7e1ac2a9d4ef9e2cd9c84f1b84aba072c8b3dbf",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "“Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
