@@ -1,0 +1,31 @@
+apps/desktop/src/renderer/routes/_authenticated/components/HostTerminalThemeSync/HostTerminalThemeSync.tsx
+  s_5392f5e68932c4::t_d1ae6192518b25 1,12-38,53
+packages/host-service/src/terminal/host-terminal-theme.ts
+  s_5392f5e68932c4::t_781404af3eb000 1-51
+packages/host-service/src/terminal/resolve-terminal-theme.test.ts
+  s_5392f5e68932c4::t_3baf93eda315dc 16-18
+packages/host-service/src/terminal/resolve-terminal-theme.ts
+  s_5392f5e68932c4::t_64f43e4c2ca18e 5
+packages/host-service/src/terminal/terminal.ts
+  s_5392f5e68932c4::t_8c824c110fb6d3 73
+packages/host-service/src/trpc/router/settings/terminal-theme.test.ts
+  s_5392f5e68932c4::t_40c56c72e7b4e8 1-59
+packages/host-service/src/trpc/router/settings/terminal-theme.ts
+  s_5392f5e68932c4::t_bbe006b5f556f4 1,3-6,8,19-22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e97e137426e878f51b83065e78ef3575a05031c6",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
