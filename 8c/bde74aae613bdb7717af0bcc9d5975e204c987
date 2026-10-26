@@ -1,0 +1,23 @@
+packages/host-service/src/runtime/teardown/teardown.test.ts
+  s_5392f5e68932c4::t_0bfd596f4ff645 19,21,24-25,37-39,48-50,56-89,163-165,189,213-215,241,264
+packages/host-service/src/runtime/teardown/teardown.ts
+  s_5392f5e68932c4::t_c3e6689039e836 13,16-24,101-105,108,128,145,159,197-210,215-217,225,228
+packages/host-service/test/integration/teardown.integration.test.ts
+  s_5392f5e68932c4::t_513c5b08a00d30 76,96
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8cbde74aae613bdb7717af0bcc9d5975e204c987",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "“Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
