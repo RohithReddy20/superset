@@ -1,0 +1,21 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspaces/components/WorkspaceStateGlyph/WorkspaceStateGlyph.test.tsx
+  s_5392f5e68932c4::t_e52a0e7abc4204 85-99
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspaces/components/WorkspaceStateGlyph/WorkspaceStateGlyph.tsx
+  s_5392f5e68932c4::t_4ab16368e1f2e3 24,45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bdd4bc8d926a28ed29caf3240f01dbff1f67e0c9",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "“Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
