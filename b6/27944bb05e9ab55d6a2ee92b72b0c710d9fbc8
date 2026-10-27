@@ -1,0 +1,70 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/usePaneRegistry/components/FilePane/registry/views/MarkdownPreviewView/hooks/useSavedScrollPosition/useSavedScrollPosition.ts
+  s_5392f5e68932c4::t_977be3bd1f4d54 9-10
+  s_5392f5e68932c4::t_de6e9cf6f17f88 6-8
+  s_5392f5e68932c4::t_fb815750c042e0 11-13
+  s_a731266136b814::t_63900d72690384 1-5,14-49
+apps/desktop/src/renderer/components/MarkdownRenderer/components/TipTapMarkdownRenderer/TipTapMarkdownRenderer.tsx
+  s_5392f5e68932c4::t_606386ad906ae5 140
+  s_5392f5e68932c4::t_b42c1ee4d00eea 38
+  s_5392f5e68932c4::t_9679c217fe8dbd 278
+  s_5392f5e68932c4::t_e42ceca2b9c74f 8
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/usePaneRegistry/components/DiffPane/hooks/useDiffCodeViewScroll/useDiffCodeViewScroll.test.ts
+  s_5392f5e68932c4::t_4354f8cb173a0d 103
+  s_5392f5e68932c4::t_e82d212bce4875 2,5-10,15-18,28-102,104-109,152-265
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/state/paneScrollStateCache/paneScrollStateCache.test.ts
+  s_5392f5e68932c4::t_ae4b56d299759d 27-39
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/usePaneRegistry/components/DiffPane/hooks/useDiffCodeViewScroll/useDiffCodeViewScroll.ts
+  s_5392f5e68932c4::t_c213429f709655 1-5,8-11,18,33-37,42-49
+  s_5392f5e68932c4::t_52f01d3d177e19 239-262
+  s_5392f5e68932c4::t_2c04d4f4c6540b 82-84
+  s_5392f5e68932c4::t_bab4fe4c9620f2 116,122-134,143,147-153,161-170
+  s_5392f5e68932c4::t_326060d75effa5 85
+  s_5392f5e68932c4::t_a3878880e25e69 52
+  s_5392f5e68932c4::t_0922c98590b8c3 268
+  s_5392f5e68932c4::t_ac63260763c617 154-160
+  s_5392f5e68932c4::t_5b9b42fb44c699 171
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/state/paneScrollStateCache/paneScrollStateCache.ts
+  s_5392f5e68932c4::t_e2a44d4624465e 125,129
+  s_5392f5e68932c4::t_1bace7f9c2ed7c 83,89-97,108-110
+  s_5392f5e68932c4::t_d7798fe82967b8 5-9,13
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/usePaneRegistry/components/DiffPane/DiffPane.tsx
+  s_5392f5e68932c4::t_80296ef51c680a 420
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/usePaneRegistry/components/DiffPane/hooks/useDiffCodeViewScroll/findScrollAnchor/findScrollAnchor.test.ts
+  s_5392f5e68932c4::t_88c0e2d2b5f4c0 1-34
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/usePaneRegistry/components/DiffPane/hooks/useDiffCodeViewScroll/findScrollAnchor/findScrollAnchor.ts
+  s_5392f5e68932c4::t_30110b79c998a4 1-24
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/usePaneRegistry/components/DiffPane/hooks/useDiffCodeViewScroll/findScrollAnchor/index.ts
+  s_5392f5e68932c4::t_726abda4038225 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/usePaneRegistry/components/FilePane/registry/views/MarkdownPreviewView/MarkdownPreviewView.tsx
+  s_5392f5e68932c4::t_c350465111f5cb 2,5,10,20,26-36,55-61,86
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/usePaneRegistry/components/FilePane/registry/views/MarkdownPreviewView/hooks/useSavedScrollPosition/index.ts
+  s_5392f5e68932c4::t_e1802c13677323 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/hooks/usePaneRegistry/components/FilePane/registry/views/MarkdownPreviewView/hooks/useSavedScrollPosition/useSavedScrollPosition.test.ts
+  s_5392f5e68932c4::t_e9e900f634de5d 1-107
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/v2-workspace/$workspaceId/state/paneScrollStateCache/index.ts
+  s_5392f5e68932c4::t_8389d7b7629cc1 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b627944bb05e9ab55d6a2ee92b72b0c710d9fbc8",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    },
+    "s_a731266136b814": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a40f7a6e9475385e7",
+        "model": "unknown"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
