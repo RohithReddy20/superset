@@ -1,0 +1,48 @@
+packages/shared/src/plugins/index.ts
+  s_5392f5e68932c4::t_2cf241cf27cf3f 251-254,259-266
+packages/agent-setup/templates/artifact-guard.template.sh
+  s_5392f5e68932c4::t_9ffb3ec8403d16 12-14
+packages/agent-setup/src/agent-wrappers-claude-codex-opencode.ts
+  s_5392f5e68932c4::t_787ffad04c0746 15,24,71,99,106-116,144,146-148,156-161
+packages/agent-setup/src/agent-setup.test.ts
+  s_5392f5e68932c4::t_3f281e12c7361e 1-12,16-64
+  s_5392f5e68932c4::t_9060f4f4f8bfdc 13-15
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/utils/pageAgentPrompt/pageAgentPrompt.test.ts
+  s_5392f5e68932c4::t_978a9a1873d2b7 21-22,26
+  s_5392f5e68932c4::t_4c9ec07ae575ce 23-25
+packages/agent-setup/src/index.ts
+  s_5392f5e68932c4::t_2ae2f9627f9a78 6,64
+packages/agent-setup/src/agent-wrappers.test.ts
+  s_5392f5e68932c4::t_603feeacf2c35f 118,1722-1781
+  s_5392f5e68932c4::t_dde89ffddc413a 35,46,65-69
+apps/desktop/src/main/lib/plugin-installs.ts
+  s_5392f5e68932c4::t_dbbf66948f8ab7 10,284-288
+packages/shared/src/plugins/index.test.ts
+  s_5392f5e68932c4::t_9d2f398e304ab1 2-3,8,34-55
+packages/agent-setup/src/agent-setup.ts
+  s_5392f5e68932c4::t_d062d887afc192 58,275-288
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/utils/pageAgentPrompt/pageAgentPrompt.ts
+  s_5392f5e68932c4::t_ccf33521859a58 7
+packages/agent-setup/src/managed-skills.ts
+  s_5392f5e68932c4::t_50ae2f7d58edc5 95-105
+packages/agent-setup/src/artifact-guard-hook.test.ts
+  s_5392f5e68932c4::t_4bec697748210c 2,10,29-30,52,56,154-177
+plugins/superset/skills/page/SKILL.md
+  s_5392f5e68932c4::t_0d11e14c007f4e 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7e43d1fb295345b12549cc6080167202358dd18f",
+  "prompts": {},
+  "sessions": {
+    "s_5392f5e68932c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "26757317-3e49-41bd-844e-e8dfa3c1b198",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
