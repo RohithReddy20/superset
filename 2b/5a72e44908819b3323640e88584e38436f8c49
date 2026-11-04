@@ -1,0 +1,166 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/iso/index.ts
+  s_ba0de495eca415::t_a39d564bf6faf6 1
+  s_ba0de495eca415::t_b5f029c5c53a72 2-10
+packages/office-harness/src/index.ts
+  s_ba0de495eca415::t_1be59503d423de 88,96-99
+  s_ba0de495eca415::t_1235fbc0842317 112,114
+  s_ba0de495eca415::t_96040fd40e3457 7
+packages/office-harness/src/lib.ts
+  s_ba0de495eca415::t_05bb7156046549 1-3,11-13
+  s_ba0de495eca415::t_58b5cc22c75e58 4-10
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/page.tsx
+  s_ba0de495eca415::t_6f36a044e793f7 1-19
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/TeammateCard/TeammateCard.tsx
+  s_ba0de495eca415::t_a04e8e4cbf013a 1-85
+  s_ba0de495eca415::t_20ff7418c31c39 86-126
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeScreen/OfficeScreen.tsx
+  s_ba0de495eca415::t_df0e1d27e52f6c 1-18,20-25,27-36,38,40-70,72-159
+  s_ba0de495eca415::t_6be4365e5b606e 71
+  s_ba0de495eca415::t_c4c3fe731a04ec 19
+  s_ba0de495eca415::t_aa008f46c5e426 26
+  s_ba0de495eca415::t_9aa7ed1287c62a 37
+  s_ba0de495eca415::t_c6cc10d59ea2c3 39
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/RoomFeed/RoomFeed.tsx
+  s_ba0de495eca415::t_ebb41e8ba989b7 1-140
+  s_ba0de495eca415::t_9658b99e00c4da 141-179
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/OfficeFloor.tsx
+  s_ba0de495eca415::t_b7710eae1e8f15 107-109,111-113
+  s_ba0de495eca415::t_ba55cb5b0e1efe 303-305,309-311
+  s_ba0de495eca415::t_d9aa5dbff4b1bc 1,4-9,11-15,17-27,29-34,36-40,42-106,110,114-156,158-222,224-302,306-307,312-338,340-347,349-388
+  s_ba0de495eca415::t_105840f24f0a2f 2-3,10,16,28,35,41,157,223,308,339,348
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/iso/iso.ts
+  s_ba0de495eca415::t_db99934c1bc24c 1-45
+  s_ba0de495eca415::t_32eaddd0a34606 46
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/layout/index.ts
+  s_ba0de495eca415::t_a1dc149cde4246 1
+  s_ba0de495eca415::t_0a282347705b22 2-7
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/constants.ts
+  s_ba0de495eca415::t_fe7be6d4ca8571 1-21
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/index.ts
+  s_ba0de495eca415::t_164456c487dd44 1
+packages/host-service/src/trpc/router/office/index.ts
+  s_ba0de495eca415::t_52241de1befa1a 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/hooks/useOffice/useOffice.ts
+  s_ba0de495eca415::t_039a84937fd8b9 1-63
+  s_ba0de495eca415::t_e08d562fbae5bb 64-65
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/TeammateCard/index.ts
+  s_ba0de495eca415::t_0892a1a0945f2b 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/components/NavigationRail/NavigationRail.tsx
+  s_ba0de495eca415::t_db55778afac93b 4
+  s_ba0de495eca415::t_4e6defe64e6f10 36-38
+  s_ba0de495eca415::t_ee37e78c7b8f85 75-82
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeScreen/index.ts
+  s_ba0de495eca415::t_cb5bd739fdb7de 1
+packages/host-service/src/trpc/router/router.ts
+  s_ba0de495eca415::t_e414a1c07977f7 17
+  s_ba0de495eca415::t_739d95343db790 53
+packages/shared/src/constants.ts
+  s_ba0de495eca415::t_782e9e7e802226 227-228
+packages/host-service/src/trpc/router/office/office.ts
+  s_ba0de495eca415::t_11fb000de85d51 1-82
+packages/host-service/src/office/types.ts
+  s_ba0de495eca415::t_9632198d2f16cb 1-93
+packages/host-service/src/types.ts
+  s_ba0de495eca415::t_71fd94023485f5 26
+  s_ba0de495eca415::t_575e79720ac906 7
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/hooks/useOffice/index.ts
+  s_ba0de495eca415::t_7325e8e6e0e7b9 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/RightNowRail/index.ts
+  s_ba0de495eca415::t_f99a771bbd55b4 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/RightNowRail/RightNowRail.tsx
+  s_ba0de495eca415::t_93859df697924c 1-68
+  s_ba0de495eca415::t_50f780233bd320 69-88
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/types.ts
+  s_ba0de495eca415::t_7295e2b21c160d 1-9
+packages/office-harness/package.json
+  s_ba0de495eca415::t_4b65e2c7a64ae8 7-10
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/RoomFeed/index.ts
+  s_ba0de495eca415::t_b791f1dfdbb270 1
+packages/host-service/src/app.ts
+  s_ba0de495eca415::t_811fad7eeea42c 614
+  s_ba0de495eca415::t_faf6e46c2c7246 552-553,555-560
+  s_ba0de495eca415::t_d1afdb4d84ec89 554
+  s_ba0de495eca415::t_00c90624f05e89 336-346,349
+  s_ba0de495eca415::t_0f4ab4bf847198 11
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/hooks/useDashboardNavigation/useDashboardNavigation.ts
+  s_ba0de495eca415::t_194ee4b1861387 120-122
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/layout/layout.ts
+  s_ba0de495eca415::t_c89194e92d6487 1-128
+  s_ba0de495eca415::t_a014f8c9231f16 129-145
+packages/host-service/src/office/officeRuntime.ts
+  s_ba0de495eca415::t_b6b719bf8adaa8 1-304
+  s_ba0de495eca415::t_cb5352986545ea 305-312
+packages/office-harness/src/seat/prompt.ts
+  s_ba0de495eca415::t_ef7f730ef06dbc 56
+packages/host-service/package.json
+  s_ba0de495eca415::t_67cda087d74179 96
+packages/office-harness/src/seat/engines.ts
+  s_ba0de495eca415::t_156aced2712202 1,3
+  s_ba0de495eca415::t_044d7bd1be6cd7 20,26-38,41
+  s_ba0de495eca415::t_76aa6cb572ed56 42
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/components/DashboardSidebar/components/DashboardSidebarHeader/DashboardSidebarHeader.tsx
+  s_ba0de495eca415::t_7c681218fe5493 74-76
+  s_ba0de495eca415::t_b2fb143de90f8d 601-625
+  s_ba0de495eca415::t_9211a8d68cd402 330-355
+  s_ba0de495eca415::t_b893ba97449ef6 14
+packages/office-harness/src/seat/Seat.ts
+  s_ba0de495eca415::t_8381564d2a29e3 184-187
+  s_ba0de495eca415::t_6f5140dd046779 96,98
+  s_ba0de495eca415::t_ca6aeafe4d3a17 10
+  s_ba0de495eca415::t_ddf869f5fac7e6 40-43
+  s_ba0de495eca415::t_774a66d06f0a1e 268
+packages/i18n/locales/cs/messages.po
+  s_ba0de495eca415::t_f0d37c377694f9 13004-13006
+packages/i18n/locales/de/messages.po
+  s_ba0de495eca415::t_48124e2fe7139e 13004-13006
+packages/i18n/locales/en/messages.po
+  s_ba0de495eca415::t_a5a67e3feb1ce5 13004-13006
+packages/i18n/locales/es/messages.po
+  s_ba0de495eca415::t_942e14e0d1b7fc 13004-13006
+packages/i18n/locales/fr/messages.po
+  s_ba0de495eca415::t_f268e32bb836b5 13004-13006
+packages/i18n/locales/id/messages.po
+  s_ba0de495eca415::t_f3d6718c5b847c 13004-13006
+packages/i18n/locales/it/messages.po
+  s_ba0de495eca415::t_45ba9b4df5f2d4 13004-13006
+packages/i18n/locales/ja/messages.po
+  s_ba0de495eca415::t_5edae899bc1838 13004-13006
+packages/i18n/locales/ko/messages.po
+  s_ba0de495eca415::t_5e30ec258d8f7b 13004-13006
+packages/i18n/locales/nl/messages.po
+  s_ba0de495eca415::t_2a56953be0035c 13004-13006
+packages/i18n/locales/pl/messages.po
+  s_ba0de495eca415::t_5ed2ff312c9462 13004-13006
+packages/i18n/locales/pt-BR/messages.po
+  s_ba0de495eca415::t_91e8e9a056ff22 13004-13006
+packages/i18n/locales/ru/messages.po
+  s_ba0de495eca415::t_04baec3765f133 13004-13006
+packages/i18n/locales/tr/messages.po
+  s_ba0de495eca415::t_5251fe02e7fe0c 13004-13006
+packages/i18n/locales/uk/messages.po
+  s_ba0de495eca415::t_052012b8414ca9 12998-13000
+packages/i18n/locales/vi/messages.po
+  s_ba0de495eca415::t_0f678f8fb07941 13004-13006
+packages/i18n/locales/zh-CN/messages.po
+  s_ba0de495eca415::t_e19cc1fc769e8c 13004-13006
+packages/i18n/locales/zh-TW/messages.po
+  s_ba0de495eca415::t_582ea60b8b6b5b 13004-13006
+bun.lock
+  s_ba0de495eca415::t_2e37fe91784919 1033
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2b5a72e44908819b3323640e88584e38436f8c49",
+  "prompts": {},
+  "sessions": {
+    "s_ba0de495eca415": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "45c600a5-1655-454e-8101-759a42937772",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
