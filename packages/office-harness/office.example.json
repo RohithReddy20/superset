@@ -1,0 +1,60 @@
+{
+	"port": 4747,
+	"limits": {
+		"maxDepth": 3,
+		"maxAiRoundsWithoutHuman": 6,
+		"maxAsksPerTurn": 3,
+		"dailyTurns": 60
+	},
+	"rooms": [
+		{
+			"id": "engineering",
+			"name": "engineering",
+			"members": ["rohith", "scout", "ledger", "bash"]
+		},
+		{
+			"id": "planning",
+			"name": "planning",
+			"members": ["rohith", "scout", "bash"]
+		},
+		{
+			"id": "dm-rohith-scout",
+			"name": "Rohith & Scout",
+			"kind": "dm",
+			"members": ["rohith", "scout"]
+		}
+	],
+	"humans": [
+		{
+			"id": "rohith",
+			"name": "Rohith",
+			"role": "founder",
+			"room": "engineering"
+		}
+	],
+	"seats": [
+		{
+			"id": "scout",
+			"name": "Scout",
+			"role": "research teammate: finds things out, drafts lists and summaries, pulls in Ledger to check numbers",
+			"room": "engineering",
+			"engine": "claude",
+			"model": "haiku"
+		},
+		{
+			"id": "ledger",
+			"name": "Ledger",
+			"role": "numbers teammate: checks figures, counts and consistency; answers with what matches and what does not",
+			"room": "engineering",
+			"engine": "agy",
+			"model": "gemini-3.8-flash"
+		},
+		{
+			"id": "bash",
+			"name": "Bash",
+			"role": "coding teammate: reads and changes code, runs tests, writes short briefs on what changed",
+			"room": "engineering",
+			"engine": "codex"
+		}
+	]
+}

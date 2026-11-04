@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Paradev Office</title>
+<style>
+  :root {
+    --bg: #f4f1ea; --panel: #fffdf8; --ink: #1f1d1a; --muted: #7a7368; --line: #e4ded2;
+    --accent: #2f6f5e; --warn: #b4542f; --human: #3b5bdb; --ai: #7048e8; --held: #a61e4d;
+    --focused: #e8590c; --inoffice: #2f9e44; --meeting: #7048e8; --away: #adb5bd;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg: #171512; --panel: #201d19; --ink: #efe9df; --muted: #a39b8f; --line: #35302a; --away: #5c5650;
+  } }
+  :root[data-theme="dark"] { --bg: #171512; --panel: #201d19; --ink: #efe9df; --muted: #a39b8f; --line: #35302a; --away: #5c5650; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 ui-sans-serif, -apple-system, "Segoe UI", sans-serif; }
+  header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 16px; margin: 0; font-weight: 650; letter-spacing: .01em; }
+  header .legend { color: var(--muted); font-size: 12px; margin-left: auto; display: flex; gap: 14px; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+  main { display: grid; grid-template-columns: 1fr 320px; gap: 0; min-height: calc(100vh - 49px); }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  .floor { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+  .rooms { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .room { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; cursor: pointer; }
+  .room.active { outline: 2px solid var(--accent); }
+  .room h3 { margin: 0 0 8px; font-size: 13px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+  .desks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .desk { border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: grid; grid-template-columns: 28px 1fr; gap: 8px; align-items: start; background: var(--bg); }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: #fff; font-size: 12px; }
+  .avatar.human { background: var(--human); } .avatar.ai { background: var(--ai); }
+  .desk .name { font-weight: 600; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .badge { font-size: 10px; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+  .desk .line { color: var(--muted); font-size: 12px; margin-top: 2px; min-height: 16px; }
+  .desk.paused { opacity: .55; }
+  .feed { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; min-height: 360px; }
+  .feed header { border-bottom: 1px solid var(--line); padding: 10px 14px; }
+  .messages { flex: 1; overflow: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; max-height: 52vh; }
+  .msg { display: grid; grid-template-columns: 28px 1fr; gap: 10px; }
+  .msg .who { font-weight: 600; } .msg .when { color: var(--muted); font-size: 11px; margin-left: 6px; }
+  .msg .text { white-space: pre-wrap; }
+  .msg.system .text { color: var(--held); font-style: italic; }
+  .msg .replies { margin-top: 6px; border-left: 2px solid var(--line); padding-left: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .msg button.reply { font-size: 11px; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; }
+  .composer { border-top: 1px solid var(--line); padding: 10px 14px; display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; }
+  .composer input, .composer select, .composer button { font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+  .composer button { background: var(--accent); color: #fff; border-color: var(--accent); cursor: pointer; }
+  .composer .ctx { grid-column: 1 / -1; color: var(--muted); font-size: 12px; display: flex; gap: 8px; align-items: center; }
+  .composer .ctx button { background: none; border: 0; color: var(--warn); padding: 0; cursor: pointer; }
+  aside { border-left: 1px solid var(--line); padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+  aside h2 { font-size: 13px; margin: 0 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .now { display: flex; flex-direction: column; gap: 10px; }
+  .now .row { display: grid; grid-template-columns: 28px 1fr auto; gap: 8px; align-items: center; }
+  .now .row .line { color: var(--muted); font-size: 12px; }
+  .now .row button { font-size: 11px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 6px; padding: 2px 6px; cursor: pointer; }
+  .log { font: 11px/1.4 ui-monospace, Menlo, monospace; color: var(--muted); max-height: 30vh; overflow: auto; white-space: pre-wrap; border-top: 1px solid var(--line); padding-top: 8px; }
+  .handoffs { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+  .handoffs .h { display: flex; gap: 6px; align-items: baseline; } .handoffs .st { color: var(--muted); }
+  .handoffs .held .st { color: var(--held); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Paradev Office</h1>
+  <span class="legend">
+    <span><i class="dot" style="background:var(--focused)"></i>focused</span>
+    <span><i class="dot" style="background:var(--inoffice)"></i>in office</span>
+    <span><i class="dot" style="background:var(--meeting)"></i>in a huddle</span>
+    <span><i class="dot" style="background:var(--away)"></i>away</span>
+  </span>
+</header>
+<main>
+  <section class="floor">
+    <div class="rooms" id="rooms"></div>
+    <div class="feed">
+      <header><strong id="feedTitle">#engineering</strong></header>
+      <div class="messages" id="messages"></div>
+      <form class="composer" id="composer">
+        <select id="as"></select>
+        <input id="text" placeholder="Write as a person… mention with @scout" autocomplete="off" />
+        <button type="submit">Send</button>
+        <div class="ctx" id="ctx" hidden><span></span><button type="button" id="clearThread">× cancel reply</button></div>
+      </form>
+    </div>
+  </section>
+  <aside>
+    <div><h2>Right now</h2><div class="now" id="now"></div></div>
+    <div><h2>Hand-offs</h2><div class="handoffs" id="handoffs"></div></div>
+    <div><h2>Seat log</h2><div class="log" id="log"></div></div>
+  </aside>
+</main>
+<script>
+  const state = { teammates: [], rooms: [], messages: [], handoffs: [] };
+  let roomId = null, threadId = null;
+  const logLines = [];
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const tm = (id) => state.teammates.find((t) => t.id === id);
+  const initials = (t) => t.name.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  const presenceColor = { focused: "var(--focused)", "in-office": "var(--inoffice)", "in-meeting": "var(--meeting)", away: "var(--away)" };
+  const when = (ts) => new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const engineLabel = { claude: "Claude Code", codex: "Codex", agy: "agy" };
+
+  function avatar(t) { return `<span class="avatar ${t.kind}" title="${esc(t.name)}">${initials(t)}</span>`; }
+
+  function renderRooms() {
+    $("rooms").innerHTML = state.rooms.map((r) => `
+      <div class="room ${r.id === roomId ? "active" : ""}" data-room="${r.id}">
+        <h3>${r.kind === "dm" ? "DM · " : "#"}${esc(r.name)}</h3>
+        <div class="desks">${r.members.map((id) => tm(id)).filter(Boolean).map((t) => `
+          <div class="desk ${t.paused ? "paused" : ""}">
+            ${avatar(t)}
+            <div>
+              <div class="name"><i class="dot" style="background:${presenceColor[t.presence] || "var(--away)"}"></i>${esc(t.name)}
+                ${t.kind === "ai" ? `<span class="badge">${engineLabel[t.engine] || t.engine}${t.model ? " · " + esc(t.model) : ""}</span>` : `<span class="badge">person</span>`}
+                ${t.paused ? `<span class="badge">paused</span>` : ""}</div>
+              <div class="line">${esc(t.line || "")}</div>
+            </div>
+          </div>`).join("")}</div>
+      </div>`).join("");
+    for (const el of document.querySelectorAll(".room")) el.onclick = () => { roomId = el.dataset.room; threadId = null; renderAll(); };
+  }
+
+  function renderNow() {
+    $("now").innerHTML = state.teammates.map((t) => `
+      <div class="row">${avatar(t)}
+        <div><div><i class="dot" style="background:${presenceColor[t.presence] || "var(--away)"}"></i><strong>${esc(t.name)}</strong>
+          ${t.kind === "ai" ? `<span class="badge">${t.budget.usedToday}/${t.budget.dailyTurns} turns</span>` : ""}</div>
+          <div class="line">${esc(t.line || (t.kind === "human" ? "here" : ""))}</div></div>
+        ${t.kind === "ai" ? `<button data-pause="${t.id}" data-paused="${t.paused}">${t.paused ? "resume" : "pause"}</button>` : ""}
+      </div>`).join("");
+    for (const b of document.querySelectorAll("[data-pause]")) b.onclick = () => fetch("/api/pause", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: b.dataset.pause, paused: b.dataset.paused !== "true" }) });
+  }
+
+  function renderHandoffs() {
+    const open = state.handoffs.slice(-12).reverse();
+    $("handoffs").innerHTML = open.length ? open.map((h) => `
+      <div class="h ${h.status}"><strong>${esc(tm(h.fromId)?.name || h.fromId)}</strong> → <strong>${esc(tm(h.toId)?.name || h.toId)}</strong>
+        <span class="st">${h.status}${h.reason ? ": " + esc(h.reason) : ""} · hop ${h.depth}</span></div>`).join("") : `<span class="st">none yet</span>`;
+  }
+
+  function msgHtml(m, withReplies) {
+    const t = tm(m.authorId) || { name: m.authorId, kind: "human" };
+    const replies = withReplies ? state.messages.filter((x) => x.threadId === m.id) : [];
+    return `<div class="msg ${m.kind}">${avatar(t)}<div>
+      <span class="who">${esc(t.name)}</span><span class="when">${when(m.ts)}${m.depth ? " · hop " + m.depth : ""}</span>
+      <div class="text">${esc(m.text)}</div>
+      ${withReplies ? `<button class="reply" data-thread="${m.id}">reply in thread${replies.length ? ` (${replies.length})` : ""}</button>` : ""}
+      ${replies.length ? `<div class="replies">${replies.map((r) => msgHtml(r, false)).join("")}</div>` : ""}
+    </div></div>`;
+  }
+
+  function renderFeed() {
+    const room = state.rooms.find((r) => r.id === roomId);
+    $("feedTitle").textContent = room ? (room.kind === "dm" ? room.name : "#" + room.name) : "";
+    const roots = state.messages.filter((m) => m.roomId === roomId && !m.threadId);
+    const box = $("messages");
+    const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+    box.innerHTML = roots.map((m) => msgHtml(m, true)).join("");
+    for (const b of box.querySelectorAll("[data-thread]")) b.onclick = () => { threadId = b.dataset.thread; renderComposer(); $("text").focus(); };
+    if (atBottom) box.scrollTop = box.scrollHeight;
+  }
+
+  function renderComposer() {
+    const humans = state.teammates.filter((t) => t.kind === "human");
+    const sel = $("as");
+    if (sel.options.length !== humans.length) sel.innerHTML = humans.map((h) => `<option value="${h.id}">as ${esc(h.name)}</option>`).join("");
+    const ctx = $("ctx");
+    if (threadId) { const root = state.messages.find((m) => m.id === threadId); ctx.hidden = false; ctx.querySelector("span").textContent = `Replying in thread: “${(root?.text || "").slice(0, 60)}”`; }
+    else ctx.hidden = true;
+  }
+
+  function renderAll() { renderRooms(); renderNow(); renderHandoffs(); renderFeed(); renderComposer(); }
+
+  $("clearThread").onclick = () => { threadId = null; renderComposer(); };
+  $("composer").onsubmit = async (e) => {
+    e.preventDefault();
+    const text = $("text").value.trim(); if (!text || !roomId) return;
+    const res = await fetch("/api/say", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ authorId: $("as").value, roomId, threadId, text }) });
+    if (!res.ok) { alert((await res.json()).error); return; }
+    $("text").value = "";
+  };
+
+  const es = new EventSource("/events");
+  es.onmessage = (e) => {
+    const ev = JSON.parse(e.data);
+    if (ev.type === "snapshot") { Object.assign(state, ev.state); roomId = roomId || state.rooms[0]?.id || null; renderAll(); return; }
+    if (ev.type === "message") { const i = state.messages.findIndex((m) => m.id === ev.message.id); if (i < 0) state.messages.push(ev.message); else state.messages[i] = ev.message; renderFeed(); return; }
+    if (ev.type === "teammate") { const i = state.teammates.findIndex((t) => t.id === ev.teammate.id); if (i < 0) state.teammates.push(ev.teammate); else state.teammates[i] = ev.teammate; renderRooms(); renderNow(); return; }
+    if (ev.type === "handoff") { const i = state.handoffs.findIndex((h) => h.id === ev.handoff.id); if (i < 0) state.handoffs.push(ev.handoff); else state.handoffs[i] = ev.handoff; renderHandoffs(); return; }
+    if (ev.type === "log") { logLines.push(`${when(ev.ts)} [${ev.seatId}] ${ev.text}`); if (logLines.length > 200) logLines.shift(); const l = $("log"); l.textContent = logLines.join("\n"); l.scrollTop = l.scrollHeight; }
+  };
+</script>
+</body>
+</html>

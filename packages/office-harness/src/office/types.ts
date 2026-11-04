@@ -1,0 +1,87 @@
+export type Presence = "away" | "in-office" | "focused" | "in-meeting";
+
+export type EngineId = "claude" | "codex" | "agy";
+
+export interface Teammate {
+	id: string;
+	name: string;
+	kind: "human" | "ai";
+	role: string;
+	roomId: string;
+	engine?: EngineId;
+	model?: string;
+	instructions?: string;
+	presence: Presence;
+	line: string;
+	lineSince: number;
+	paused: boolean;
+	budget: { dailyTurns: number; usedToday: number; day: string };
+	acpSessionId?: string;
+}
+
+export interface Room {
+	id: string;
+	name: string;
+	kind: "room" | "dm";
+	members: string[];
+}
+
+export interface Message {
+	id: string;
+	roomId: string;
+	threadId: string | null;
+	authorId: string;
+	text: string;
+	mentions: string[];
+	kind: "chat" | "system";
+	depth: number;
+	ts: number;
+}
+
+export type HandoffStatus = "working" | "answered" | "held" | "canceled";
+
+export interface Handoff {
+	id: string;
+	fromId: string;
+	toId: string;
+	rootMessageId: string;
+	roomId: string;
+	threadId: string;
+	depth: number;
+	text: string;
+	status: HandoffStatus;
+	reason?: string;
+	createdAt: number;
+	answeredAt?: number;
+}
+
+export interface InboxItem {
+	message: Message;
+	reason: "mention" | "thread" | "dm";
+	depth: number;
+}
+
+export interface OfficeState {
+	teammates: Teammate[];
+	rooms: Room[];
+	messages: Message[];
+	handoffs: Handoff[];
+}
+
+export type OfficeEvent =
+	| { type: "snapshot"; state: OfficeState }
+	| { type: "message"; message: Message }
+	| { type: "teammate"; teammate: Teammate }
+	| { type: "handoff"; handoff: Handoff }
+	| { type: "log"; seatId: string; text: string; ts: number };
+
+export const replyTarget = (roomId: string, threadId: string | null) =>
+	threadId ? `room:${roomId}/thread:${threadId}` : `room:${roomId}`;
+
+export function parseReplyTarget(
+	target: string,
+): { roomId: string; threadId: string | null } | null {
+	const match = /^room:([^/\s]+)(?:\/thread:([^/\s]+))?$/.exec(target.trim());
+	if (!match) return null;
+	return { roomId: match[1] ?? "", threadId: match[2] ?? null };
+}
