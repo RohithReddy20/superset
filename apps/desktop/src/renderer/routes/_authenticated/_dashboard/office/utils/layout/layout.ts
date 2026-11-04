@@ -35,10 +35,10 @@ export interface FloorLayout {
 }
 
 const DESK_COLS = 2;
-const GAP = 2;
-const ROOM_PAD = 1;
-const DESK_W = 2;
-const DESK_H = 3;
+const GAP = 1.5;
+const ROOM_PAD = 1.5;
+const DESK_W = 3;
+const DESK_H = 3.2;
 
 function roomSize(memberCount: number): { w: number; h: number } {
 	const cols = Math.min(DESK_COLS, Math.max(1, memberCount));
@@ -62,7 +62,7 @@ export function layoutFloor({
 	let cursorX = 0;
 	let rowY = 0;
 	let rowH = 0;
-	const maxRowW = 14;
+	const maxRowW = 18;
 
 	for (const room of rooms.filter((r) => r.kind === "room")) {
 		const members = room.members.filter(
@@ -93,7 +93,7 @@ export function layoutFloor({
 				teammateId: id,
 				roomId: room.id,
 				desk,
-				seat: { x: desk.x + 0.5, y: desk.y + 1.4 },
+				seat: { x: desk.x + 0.7, y: desk.y + 1.5 },
 				facing: "south",
 			});
 			seated.add(id);
@@ -102,7 +102,7 @@ export function layoutFloor({
 		rowH = Math.max(rowH, size.h);
 	}
 
-	const floorW = Math.max(maxRowW, cursorX);
+	const floorW = Math.max(cursorX - GAP, 1);
 	const meeting: MeetingSpot = {
 		origin: { x: floorW + GAP, y: 0 },
 		w: 5,

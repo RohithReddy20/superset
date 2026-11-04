@@ -19,7 +19,7 @@ interface OfficeFloorProps {
 	onSelectRoom: (id: string) => void;
 }
 
-const PAD = 48;
+const PAD = 24;
 
 export function OfficeFloor({
 	state,

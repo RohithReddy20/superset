@@ -189,7 +189,7 @@ export class OfficeRuntime {
 		const seat = new Seat({
 			teammate,
 			office: this.office,
-			homeDir: join(this.options.homeDir, "seats", spec.id),
+			homeDir: join(this.options.homeDir, "..", "office-seats", spec.id),
 			mcpUrl: `${this.options.baseUrl()}/office-mcp/${token}`,
 			engineLabel: ENGINE_LABELS[spec.engine],
 			fullAccessModeId: this.fullAccessModeId(spec.engine),
@@ -215,7 +215,7 @@ export class OfficeRuntime {
 	}
 
 	private async launch(spec: OfficeSeatConfig): Promise<EngineLaunch> {
-		const cwd = join(this.options.homeDir, "seats", spec.id);
+		const cwd = join(this.options.homeDir, "..", "office-seats", spec.id);
 		const env = () =>
 			buildChatAgentEnv({ db: this.options.db, cwd, workspaceId: "office" });
 		if (spec.engine === "agy") {
