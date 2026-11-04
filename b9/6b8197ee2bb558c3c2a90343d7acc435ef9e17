@@ -1,0 +1,23 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/OfficeFloor.tsx
+  s_ba0de495eca415::t_f6b09062f4272d 22
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/layout/layout.ts
+  s_ba0de495eca415::t_426362f922337c 38-41,65,96,105
+packages/host-service/src/office/officeRuntime.ts
+  s_ba0de495eca415::t_cecca6c7709dcb 192,218
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b96b8197ee2bb558c3c2a90343d7acc435ef9e17",
+  "prompts": {},
+  "sessions": {
+    "s_ba0de495eca415": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "45c600a5-1655-454e-8101-759a42937772",
+        "model": "unknown"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
