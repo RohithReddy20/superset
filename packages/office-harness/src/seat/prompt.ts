@@ -53,11 +53,7 @@ ${rooms}
 `;
 }
 
-export function inboxPrompt(
-	office: Office,
-	me: Teammate,
-	items: InboxItem[],
-): string {
+export function inboxPrompt(office: Office, items: InboxItem[]): string {
 	const lines = items.map((item, index) => {
 		const author = office.teammate(item.message.authorId);
 		const room = office.room(item.message.roomId);

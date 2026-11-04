@@ -224,6 +224,8 @@ export const FEATURE_FLAGS = {
 	 * desktop-local; the flag controls visibility, not capability.
 	 */
 	PLUGINS: "plugins",
+	/** The office: people and AI teammates at desks, hand-offs between them. */
+	OFFICE: "office",
 	/**
 	 * Lock Screen / Dynamic Island agent card on iOS. Off by default while the
 	 * card is still being worked on; the flag's release conditions decide who

@@ -13001,6 +13001,9 @@ msgstr "オフ"
 msgid "Off. Buys more GB-hours when they run low."
 msgstr "オフ。少なくなると GB 時間を追加購入します。"
 
+msgid "Office"
+msgstr "オフィス"
+
 #. placeholder {0}: BRAND.INTRO_NAME
 msgid "Official documentation for {0}, the app for running 100+ coding agents in parallel."
 msgstr "100以上のコーディングエージェントを並列実行できるアプリ、{0}の公式ドキュメント。"

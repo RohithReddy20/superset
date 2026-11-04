@@ -13001,6 +13001,9 @@ msgstr "Aus"
 msgid "Off. Buys more GB-hours when they run low."
 msgstr "Aus. Kauft weitere GB-Stunden, wenn sie knapp werden."
 
+msgid "Office"
+msgstr "Büro"
+
 #. placeholder {0}: BRAND.INTRO_NAME
 msgid "Official documentation for {0}, the app for running 100+ coding agents in parallel."
 msgstr "Offizielle Dokumentation zu {0}, der App für mehr als 100 parallele Coding-Agenten."

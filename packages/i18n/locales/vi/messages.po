@@ -13001,6 +13001,9 @@ msgstr "Tắt"
 msgid "Off. Buys more GB-hours when they run low."
 msgstr "Tắt. Mua thêm GB-giờ khi sắp hết."
 
+msgid "Office"
+msgstr "Văn phòng"
+
 #. placeholder {0}: BRAND.INTRO_NAME
 msgid "Official documentation for {0}, the app for running 100+ coding agents in parallel."
 msgstr "Tài liệu chính thức của {0}, ứng dụng chạy song song hơn 100 tác tử lập trình."

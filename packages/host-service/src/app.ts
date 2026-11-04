@@ -8,6 +8,7 @@ import {
 	SUPERSET_USER_ID_HEADER,
 } from "@superset/shared/host-routing";
 import { SANDBOX_PORTS } from "@superset/shared/sandbox-contract";
+import { OfficeRuntime } from "./office/officeRuntime";
 
 /** One frame of a 1920x1200 display is ~9 MB; this is a stalled reader, not a burst. */
 const MAX_DISPLAY_BUFFER_BYTES = 32 * 1024 * 1024;
@@ -332,8 +333,20 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 		onActivity: (workspaceId) => terminalAgentStore.noteActivity(workspaceId),
 	});
 
+	let officeRuntime: OfficeRuntime | null = null;
+	const office = () => {
+		officeRuntime ??= new OfficeRuntime({
+			db,
+			homeDir: join(resolveAppHomeDir(), "office"),
+			baseUrl: () =>
+				`http://127.0.0.1:${process.env.HOST_SERVICE_PORT || process.env.PORT}`,
+		});
+		return officeRuntime;
+	};
+
 	const runtime = {
 		agentJobs,
+		office,
 		filesystem,
 		pullRequests: pullRequestRuntime,
 		pageWatch,
@@ -536,6 +549,15 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 	});
 	registerChatV3Routes({ app, db, mount: chatV3, upgradeWebSocket });
 
+	// A seat's engine calls the office tools here with its own per-seat token.
+	// Never relayed: a seat is a local process on this machine.
+	app.all("/office-mcp/:token", async (c) => {
+		if (c.req.header(SUPERSET_RELAYED_HEADER) !== undefined) {
+			return c.text("Not found", 404);
+		}
+		return office().handleMcp(c.req.param("token"), c.req.raw);
+	});
+
 	// tRPC answers a streamed batch before it has read the request body, and
 	// a sandbox's ingress treats that early response as the end of the
 	// exchange and drops the upload still in flight. Hand tRPC a body it
@@ -589,6 +611,7 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 	const ownsDb = options.db === undefined;
 	const dispose = async (): Promise<void> => {
 		agentJobs.stopAll();
+		await officeRuntime?.stop().catch(() => {});
 		if (projectPurgeTimer) clearInterval(projectPurgeTimer);
 		if (attachmentSweepTimer) clearInterval(attachmentSweepTimer);
 		await disposeWorkspaceTitleJobs(db);

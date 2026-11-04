@@ -1,6 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import { FEATURE_FLAGS } from "@superset/shared/constants";
 import {
+	Building2,
 	Cable,
 	GitPullRequest,
 	Hash,
@@ -31,6 +32,9 @@ export function NavigationRail() {
 	// @superset.sh release condition.
 	const isPluginsEnabled =
 		(useFeatureFlagEnabled(FEATURE_FLAGS.PLUGINS) ?? false) ||
+		env.NODE_ENV === "development";
+	const isOfficeEnabled =
+		(useFeatureFlagEnabled(FEATURE_FLAGS.OFFICE) ?? false) ||
 		env.NODE_ENV === "development";
 	const { myFailedCount } = useFailedAutomations();
 
@@ -66,6 +70,14 @@ export function NavigationRail() {
 					icon={Cable}
 					isActive={navigation.isPluginsOpen}
 					onClick={navigation.openPlugins}
+				/>
+			)}
+			{isOfficeEnabled && (
+				<RailButton
+					label={t({ message: "Office" })}
+					icon={Building2}
+					isActive={navigation.isOfficeOpen}
+					onClick={navigation.openOffice}
 				/>
 			)}
 			<RailButton

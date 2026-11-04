@@ -4,6 +4,7 @@ import type { AppRouter } from "@superset/trpc";
 import type { TRPCClient } from "@trpc/client";
 import type { HostDb } from "./db";
 import type { EventBus } from "./events";
+import type { OfficeRuntime } from "./office/officeRuntime";
 import type { PageWatchManager } from "./page-watch/index.ts";
 import type { ApiAuthProvider } from "./providers/auth/types";
 import type { AgentJobRunner } from "./runtime/agent-jobs";
@@ -22,6 +23,7 @@ export interface HostServiceRuntime {
 	chat?: () => ChatRuntime;
 	closeChats?: (scopeId: string) => Promise<void>;
 	agentJobs?: AgentJobRunner;
+	office?: () => OfficeRuntime;
 }
 
 export interface HostServiceContext {

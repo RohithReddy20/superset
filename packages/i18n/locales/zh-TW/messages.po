@@ -13001,6 +13001,9 @@ msgstr "關閉"
 msgid "Off. Buys more GB-hours when they run low."
 msgstr "已關閉。不足時購買更多 GB 小時。"
 
+msgid "Office"
+msgstr "辦公室"
+
 #. placeholder {0}: BRAND.INTRO_NAME
 msgid "Official documentation for {0}, the app for running 100+ coding agents in parallel."
 msgstr "{0} 官方文件。這款應用程式可並行運行 100 多個編程代理。"

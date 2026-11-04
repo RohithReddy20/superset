@@ -13001,6 +13001,9 @@ msgstr "Off"
 msgid "Off. Buys more GB-hours when they run low."
 msgstr "Off. Buys more GB-hours when they run low."
 
+msgid "Office"
+msgstr "Office"
+
 #. placeholder {0}: BRAND.INTRO_NAME
 msgid "Official documentation for {0}, the app for running 100+ coding agents in parallel."
 msgstr "Official documentation for {0}, the app for running 100+ coding agents in parallel."

@@ -13001,6 +13001,9 @@ msgstr "Mati"
 msgid "Off. Buys more GB-hours when they run low."
 msgstr "Nonaktif. Membeli GB-jam lagi saat hampir habis."
 
+msgid "Office"
+msgstr "Kantor"
+
 #. placeholder {0}: BRAND.INTRO_NAME
 msgid "Official documentation for {0}, the app for running 100+ coding agents in parallel."
 msgstr "Dokumentasi resmi {0}, aplikasi untuk menjalankan lebih dari 100 agen pemrograman secara paralel."

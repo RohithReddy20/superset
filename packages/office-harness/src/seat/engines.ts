@@ -1,5 +1,6 @@
+import { accessSync, constants } from "node:fs";
 import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
+import { delimiter, dirname, join } from "node:path";
 import type { EngineId } from "../office/types";
 
 export interface EngineLaunch {
@@ -16,17 +17,28 @@ export interface EngineSpec {
 	launch(input: { model?: string; extraArgs?: string[] }): EngineLaunch;
 }
 
-function adapterEntry(packageName: string): string {
+export function adapterEntry(packageName: string): string {
 	const moduleRequire = createRequire(import.meta.url);
 	const pkgJson = moduleRequire.resolve(`${packageName}/package.json`);
 	return join(dirname(pkgJson), "dist/index.js");
 }
 
-function which(binary: string): string {
-	const found = Bun.which(binary);
-	if (!found) throw new Error(`${binary} is not on PATH`);
-	return found;
+export function whichOnPath(
+	binary: string,
+	env: NodeJS.ProcessEnv = process.env,
+): string {
+	for (const dir of (env.PATH ?? "").split(delimiter)) {
+		if (!dir) continue;
+		const candidate = join(dir, binary);
+		try {
+			accessSync(candidate, constants.X_OK);
+			return candidate;
+		} catch {}
+	}
+	throw new Error(`${binary} is not on PATH`);
 }
+
+const which = (binary: string) => whichOnPath(binary);
 
 const base = (): NodeJS.ProcessEnv => ({
 	...process.env,

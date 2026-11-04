@@ -4,6 +4,7 @@ import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { Office } from "./office/Office";
 import type { EngineId } from "./office/types";
+import { ENGINES } from "./seat/engines";
 import { Seat } from "./seat/Seat";
 import { startOfficeServer } from "./web/server";
 
@@ -84,6 +85,7 @@ for (const spec of config.seats) {
 	seatTokens.set(spec.id, token);
 	const teammate = office.teammate(spec.id);
 	if (!teammate) continue;
+	const engine = ENGINES[spec.engine];
 	seats.set(
 		spec.id,
 		new Seat({
@@ -91,7 +93,10 @@ for (const spec of config.seats) {
 			office,
 			homeDir: join(home, "seats", spec.id),
 			mcpUrl: `http://127.0.0.1:${port}/mcp/${token}`,
-			extraArgs: spec.extraArgs,
+			engineLabel: engine.label,
+			fullAccessModeId: engine.fullAccessModeId,
+			launch: async () =>
+				engine.launch({ model: spec.model, extraArgs: spec.extraArgs }),
 		}),
 	);
 }
@@ -104,8 +109,9 @@ office.subscribe((event) => {
 	if (event.type === "message") {
 		const author =
 			office.teammate(event.message.authorId)?.name ?? event.message.authorId;
+		const thread = event.message.threadId ? `/${event.message.threadId}` : "";
 		console.log(
-			`#${event.message.roomId}${event.message.threadId ? "/" + event.message.threadId : ""} ${author}: ${event.message.text}`,
+			`#${event.message.roomId}${thread} ${author}: ${event.message.text}`,
 		);
 	}
 });

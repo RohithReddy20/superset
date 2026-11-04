@@ -12995,6 +12995,9 @@ msgstr "Вимкнено"
 msgid "Off. Buys more GB-hours when they run low."
 msgstr "Вимкнено. Докуповує ГБ-години, коли вони закінчуються."
 
+msgid "Office"
+msgstr "Офіс"
+
 #. placeholder {0}: BRAND.INTRO_NAME
 msgid "Official documentation for {0}, the app for running 100+ coding agents in parallel."
 msgstr "Офіційна документація {0}, застосунку для паралельного запуску 100+ кодинг-агентів."

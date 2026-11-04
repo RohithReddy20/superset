@@ -13001,6 +13001,9 @@ msgstr "Выкл."
 msgid "Off. Buys more GB-hours when they run low."
 msgstr "Выключено. Докупает ГБ-часы, когда они заканчиваются."
 
+msgid "Office"
+msgstr "Офис"
+
 #. placeholder {0}: BRAND.INTRO_NAME
 msgid "Official documentation for {0}, the app for running 100+ coding agents in parallel."
 msgstr "Официальная документация {0} — приложения для параллельного запуска более 100 агентов программирования."

@@ -4,6 +4,10 @@
 	"private": true,
 	"type": "module",
 	"description": "Seats for Claude Code, Codex and agy in a shared office: inbox, office tools, presence, hand-off guards.",
+	"exports": {
+		".": "./src/lib.ts",
+		"./types": "./src/office/types.ts"
+	},
 	"scripts": {
 		"office": "bun run src/index.ts",
 		"typecheck": "tsc --noEmit --emitDeclarationOnly false",

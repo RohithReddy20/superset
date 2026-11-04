@@ -13001,6 +13001,9 @@ msgstr "Uit"
 msgid "Off. Buys more GB-hours when they run low."
 msgstr "Uit. Koopt meer GB-uren wanneer ze opraken."
 
+msgid "Office"
+msgstr "Kantoor"
+
 #. placeholder {0}: BRAND.INTRO_NAME
 msgid "Official documentation for {0}, the app for running 100+ coding agents in parallel."
 msgstr "Officiële documentatie van {0}, de app voor meer dan 100 parallelle programmeeragenten."

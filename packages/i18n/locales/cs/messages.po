@@ -13001,6 +13001,9 @@ msgstr "Vypnuto"
 msgid "Off. Buys more GB-hours when they run low."
 msgstr "Vypnuto. Koupí další GB-hodiny, když docházejí."
 
+msgid "Office"
+msgstr "Kancelář"
+
 #. placeholder {0}: BRAND.INTRO_NAME
 msgid "Official documentation for {0}, the app for running 100+ coding agents in parallel."
 msgstr "Oficiální dokumentace {0}, aplikace pro paralelní spouštění více než 100 programovacích agentů."

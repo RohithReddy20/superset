@@ -7,7 +7,7 @@ import {
 } from "@superset/chat-runtime/acp-client";
 import type { Office } from "../office/Office";
 import type { InboxItem, Teammate } from "../office/types";
-import { ENGINES } from "./engines";
+import type { EngineLaunch } from "./engines";
 import { inboxPrompt, normsDocument } from "./prompt";
 
 const STARTUP_TIMEOUT_MS = 90_000;
@@ -37,7 +37,10 @@ export interface SeatOptions {
 	office: Office;
 	homeDir: string;
 	mcpUrl: string;
-	extraArgs?: string[];
+	/** How to start this teammate's engine; the office decides, the seat only runs it. */
+	launch: () => Promise<EngineLaunch>;
+	engineLabel: string;
+	fullAccessModeId?: string;
 }
 
 /**
@@ -90,13 +93,9 @@ export class Seat {
 		writeFileSync(join(homeDir, "AGENTS.md"), norms);
 		writeFileSync(join(homeDir, "GEMINI.md"), norms);
 
-		const engine = ENGINES[teammate.engine ?? "claude"];
-		const launch = engine.launch({
-			model: teammate.model,
-			extraArgs: this.options.extraArgs,
-		});
+		const launch = await this.options.launch();
 		this.log(
-			`starting ${engine.label} (${launch.command} ${launch.args.join(" ")})`,
+			`starting ${this.options.engineLabel} (${launch.command} ${launch.args.join(" ")})`,
 		);
 		this.client = new AcpRpcClient({
 			createTransport: (handlers) =>
@@ -182,7 +181,10 @@ export class Seat {
 			office.rememberSession(this.id, this.sessionId);
 			this.log(`new session ${this.sessionId}`);
 		}
-		await this.configure(engine.fullAccessModeId, created?.configOptions ?? []);
+		await this.configure(
+			this.options.fullAccessModeId,
+			created?.configOptions ?? [],
+		);
 		office.setPresence(this.id, "in-office", "ready");
 		this.schedule();
 	}
@@ -263,9 +265,7 @@ export class Seat {
 				"session/prompt",
 				{
 					sessionId: this.sessionId,
-					prompt: [
-						{ type: "text", text: inboxPrompt(office, this.teammate, items) },
-					],
+					prompt: [{ type: "text", text: inboxPrompt(office, items) }],
 				},
 				TURN_TIMEOUT_MS,
 			)) as { stopReason?: string } | null;

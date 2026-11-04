@@ -11,6 +11,7 @@ import { useFeatureFlagEnabled } from "posthog-js/react";
 import { GoGitPullRequest } from "react-icons/go";
 import { HiOutlineClipboardDocumentList } from "react-icons/hi2";
 import {
+	LuBuilding2,
 	LuClock,
 	LuFileText,
 	LuGauge,
@@ -69,6 +70,9 @@ export function DashboardSidebarHeader({
 	// @superset.sh release condition.
 	const isPluginsEnabled =
 		(useFeatureFlagEnabled(FEATURE_FLAGS.PLUGINS) ?? false) ||
+		env.NODE_ENV === "development";
+	const isOfficeEnabled =
+		(useFeatureFlagEnabled(FEATURE_FLAGS.OFFICE) ?? false) ||
 		env.NODE_ENV === "development";
 	const { myFailedCount } = useFailedAutomations();
 	const { data: isUsageInSidebarEnabled } =
@@ -323,6 +327,32 @@ export function DashboardSidebarHeader({
 						</Tooltip>
 					)}
 
+					{isOfficeEnabled && (
+						<Tooltip delayDuration={300}>
+							<TooltipTrigger asChild>
+								<button
+									type="button"
+									onClick={navigation.openOffice}
+									aria-label={t({
+										message: "Office",
+									})}
+									aria-current={navigation.isOfficeOpen ? "page" : undefined}
+									className={cn(
+										"flex size-7 items-center justify-center rounded-md transition-colors",
+										navigation.isOfficeOpen
+											? "bg-fill-selected text-muted-foreground"
+											: "text-muted-foreground hover:bg-fill-hover",
+									)}
+								>
+									<LuBuilding2 className="size-3.5" strokeWidth={1.5} />
+								</button>
+							</TooltipTrigger>
+							<TooltipContent side="right">
+								<Trans>Office</Trans>
+							</TooltipContent>
+						</Tooltip>
+					)}
+
 					<DropdownMenu>
 						<Tooltip delayDuration={700}>
 							<TooltipTrigger asChild>
@@ -565,6 +595,31 @@ export function DashboardSidebarHeader({
 					/>
 					<span className="flex-1 text-left">
 						<Trans>Plugins</Trans>
+					</span>
+				</button>
+			)}
+
+			{isOfficeEnabled && (
+				<button
+					type="button"
+					onClick={navigation.openOffice}
+					aria-label={t({
+						message: "Office",
+					})}
+					aria-current={navigation.isOfficeOpen ? "page" : undefined}
+					className={cn(
+						"flex h-7 w-full items-center gap-2 rounded-md px-2 text-[13px] font-medium transition-colors",
+						navigation.isOfficeOpen
+							? "bg-fill-selected text-foreground"
+							: "text-muted-foreground hover:bg-fill-hover hover:text-foreground",
+					)}
+				>
+					<LuBuilding2
+						className="size-4 shrink-0 text-muted-foreground"
+						strokeWidth={1.5}
+					/>
+					<span className="flex-1 text-left">
+						<Trans>Office</Trans>
 					</span>
 				</button>
 			)}

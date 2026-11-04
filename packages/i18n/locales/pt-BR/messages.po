@@ -13001,6 +13001,9 @@ msgstr "Desligado"
 msgid "Off. Buys more GB-hours when they run low."
 msgstr "Desativada. Compra mais GB-horas quando estão acabando."
 
+msgid "Office"
+msgstr "Escritório"
+
 #. placeholder {0}: BRAND.INTRO_NAME
 msgid "Official documentation for {0}, the app for running 100+ coding agents in parallel."
 msgstr "Documentação oficial do {0}, o aplicativo para executar mais de 100 agentes de programação em paralelo."

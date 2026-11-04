@@ -13001,6 +13001,9 @@ msgstr "끔"
 msgid "Off. Buys more GB-hours when they run low."
 msgstr "꺼짐. 부족해지면 GB 시간을 더 구매합니다."
 
+msgid "Office"
+msgstr "사무실"
+
 #. placeholder {0}: BRAND.INTRO_NAME
 msgid "Official documentation for {0}, the app for running 100+ coding agents in parallel."
 msgstr "100개 이상의 코딩 에이전트를 병렬로 실행하는 앱, {0}의 공식 문서입니다."
