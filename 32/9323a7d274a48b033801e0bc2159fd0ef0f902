@@ -1,0 +1,67 @@
+packages/office-harness/package.json
+  s_ba0de495eca415::t_20103bf7ed7952 21-22
+  s_ba0de495eca415::t_75d681d5beabc6 1-20,23-25
+packages/office-harness/src/guards/guards.ts
+  s_ba0de495eca415::t_492b9feb74d99f 1-75
+packages/office-harness/src/tools/officeMcp.ts
+  s_ba0de495eca415::t_e3757b5bd3ec46 75
+  s_ba0de495eca415::t_32788495e8f3a5 1-54,56-74,76-129
+  s_ba0de495eca415::t_4b1012fabd1a52 55
+  s_ba0de495eca415::t_2cd8755807a2dc 130-148
+packages/office-harness/tsconfig.json
+  s_ba0de495eca415::t_0213420ecc8890 1-8
+packages/office-harness/src/office/types.ts
+  s_ba0de495eca415::t_fb2dfb62033254 1-87
+packages/office-harness/src/seat/Seat.ts
+  s_ba0de495eca415::t_7da61915f35114 138-139,148
+  s_ba0de495eca415::t_bfcc721a717e9a 1-137,140-147,149-159,161-347
+  s_ba0de495eca415::t_caf3042b9d73d2 160
+  s_ba0de495eca415::t_aadf14ee29fa3b 348-401
+packages/office-harness/README.md
+  s_ba0de495eca415::t_af0f18d4e27786 1-50
+packages/office-harness/src/seat/prompt.ts
+  s_ba0de495eca415::t_0735d375223087 37
+  s_ba0de495eca415::t_ab9fad89126762 1-36,38-82
+  s_ba0de495eca415::t_97fcdf19f5696f 83-89
+packages/office-harness/src/seat/engines.ts
+  s_ba0de495eca415::t_13e64f69343a33 76-78
+  s_ba0de495eca415::t_67370eb8622151 1-75
+plans/20261105-0146-ai-teammates-that-work-together.md
+  s_ba0de495eca415::t_c27801ff99ec4e 1-225
+packages/office-harness/src/web/server.ts
+  s_ba0de495eca415::t_3af2d0c1c232e5 111-127
+  s_ba0de495eca415::t_59c114af792334 1-110
+packages/office-harness/office.example.json
+  s_ba0de495eca415::t_83ec6840b25f74 1-18,20-26,28-37
+  s_ba0de495eca415::t_cd8245107c33f5 19
+  s_ba0de495eca415::t_9c5b812f92f902 27
+  s_ba0de495eca415::t_789c2bea85bcbb 38-60
+packages/office-harness/src/web/page.html
+  s_ba0de495eca415::t_93e7a6bbd25e06 1-197
+packages/office-harness/src/office/Office.ts
+  s_ba0de495eca415::t_09bbd4060916ed 1-290,297,300-383
+  s_ba0de495eca415::t_f97200aa9af0ae 384-386
+  s_ba0de495eca415::t_c4ecf823ca57c8 291-296,298-299
+packages/office-harness/src/index.ts
+  s_ba0de495eca415::t_632d75d1aa9b4b 78-101
+  s_ba0de495eca415::t_8f86dddfa0e147 1-77
+  s_ba0de495eca415::t_04246c1fce4abb 102-134
+bun.lock
+  s_ba0de495eca415::t_1e0a462da368b7 1145-1161,3277-3278
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "329323a7d274a48b033801e0bc2159fd0ef0f902",
+  "prompts": {},
+  "sessions": {
+    "s_ba0de495eca415": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "45c600a5-1655-454e-8101-759a42937772",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
