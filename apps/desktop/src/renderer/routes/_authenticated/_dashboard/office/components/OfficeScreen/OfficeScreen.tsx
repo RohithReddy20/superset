@@ -74,7 +74,7 @@ export function OfficeScreen() {
 				}
 			/>
 			<div className="flex min-h-0 flex-1">
-				<div className="relative min-w-0 flex-1 bg-[#1b1a1f]">
+				<div className="relative min-w-0 flex-1 bg-muted">
 					{!hostReady ? (
 						<Empty text="Waiting for the local host…" />
 					) : state.isError ? (
@@ -95,9 +95,12 @@ export function OfficeScreen() {
 						</div>
 					)}
 					{data ? (
-						<div className="pointer-events-none absolute bottom-3 left-3 font-mono text-[10px] text-white/40">
-							click the floor or use the arrow keys to walk · click a teammate
-							to open them
+						<div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full border border-border bg-background/90 px-3 py-1.5 text-[12px] text-muted-foreground shadow-sm backdrop-blur">
+							<span className="font-medium text-foreground">
+								Click the office
+							</span>{" "}
+							to walk around, or use the arrow keys · click a teammate to open
+							them
 						</div>
 					) : null}
 					{showLog && data ? (
