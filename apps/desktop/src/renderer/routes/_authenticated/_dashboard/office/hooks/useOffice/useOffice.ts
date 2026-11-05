@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getHostServiceClientByUrl } from "renderer/lib/host-service-client";
 import { useLocalHostService } from "renderer/routes/_authenticated/providers/LocalHostServiceProvider";
-import type { OfficeSnapshot } from "../../types";
+import type { OfficeSnapshot, TaskStatus } from "../../types";
 
 const POLL_MS = 1000;
 
@@ -77,6 +77,42 @@ export function useOffice() {
 		onSuccess: refresh,
 	});
 
+	const createTask = useMutation({
+		mutationFn: (input: {
+			by: string;
+			title: string;
+			brief: string;
+			roomId: string;
+			ownerId?: string | null;
+			verifierId?: string | null;
+		}) => {
+			if (!client) throw new Error("No local host");
+			return client.office.createTask.mutate(input);
+		},
+		onSuccess: refresh,
+	});
+
+	const assignTask = useMutation({
+		mutationFn: (input: { by: string; id: string; ownerId: string }) => {
+			if (!client) throw new Error("No local host");
+			return client.office.assignTask.mutate(input);
+		},
+		onSuccess: refresh,
+	});
+
+	const updateTask = useMutation({
+		mutationFn: (input: {
+			by: string;
+			id: string;
+			status: TaskStatus;
+			note: string;
+		}) => {
+			if (!client) throw new Error("No local host");
+			return client.office.updateTask.mutate(input);
+		},
+		onSuccess: refresh,
+	});
+
 	return {
 		state,
 		say,
@@ -84,6 +120,9 @@ export function useOffice() {
 		hire,
 		addRoom,
 		moveTeammate,
+		createTask,
+		assignTask,
+		updateTask,
 		hostReady: !!client,
 	};
 }

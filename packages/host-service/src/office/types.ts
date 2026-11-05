@@ -49,6 +49,38 @@ export interface OfficeHandoff {
 	answeredAt?: number;
 }
 
+export type OfficeTaskStatus =
+	| "todo"
+	| "doing"
+	| "review"
+	| "verified"
+	| "done"
+	| "blocked";
+
+export interface OfficeTask {
+	id: string;
+	title: string;
+	brief: string;
+	status: OfficeTaskStatus;
+	ownerId: string | null;
+	verifierId: string | null;
+	createdById: string;
+	roomId: string;
+	threadId: string;
+	branch?: string;
+	workspacePath?: string;
+	check?: { command: string; ok: boolean; output: string; at: number };
+	notes: Array<{
+		by: string;
+		text: string;
+		status: OfficeTaskStatus;
+		at: number;
+	}>;
+	rounds: { used: number; max: number };
+	createdAt: number;
+	updatedAt: number;
+}
+
 export interface OfficeLogLine {
 	seatId: string;
 	text: string;
@@ -61,7 +93,10 @@ export interface OfficeSnapshot {
 	rooms: OfficeRoom[];
 	messages: OfficeMessage[];
 	handoffs: OfficeHandoff[];
+	tasks: OfficeTask[];
 	log: OfficeLogLine[];
+	project: { repoPath: string; testCommand?: string } | null;
+	leadId: string | null;
 }
 
 export interface OfficeSeatConfig {
@@ -81,6 +116,20 @@ export interface OfficeConfig {
 		maxAiRoundsWithoutHuman?: number;
 		maxAsksPerTurn?: number;
 		dailyTurns?: number;
+		/** Work plus review sessions one task may use. */
+		taskRounds?: number;
+	};
+	/** The AI teammate that may assign and close tasks like a person. */
+	lead?: string;
+	/** Who reviews finished tasks when the task names nobody. */
+	verifier?: string;
+	/** The repository tasks are done in: one git worktree per task. */
+	project?: {
+		repoPath: string;
+		/** Branch new task branches start from; the checkout's current branch when unset. */
+		baseBranch?: string;
+		/** Run in the task's worktree when the owner reports review; must exit 0. */
+		testCommand?: string;
 	};
 	rooms: Array<{
 		id: string;

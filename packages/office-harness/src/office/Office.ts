@@ -9,6 +9,8 @@ import type {
 	OfficeState,
 	Presence,
 	Room,
+	Task,
+	TaskStatus,
 	Teammate,
 } from "./types";
 
@@ -19,7 +21,17 @@ const shortId = () => Math.random().toString(36).slice(2, 10);
 export interface OfficeOptions {
 	statePath: string;
 	limits?: Partial<Limits>;
+	/** The AI teammate allowed to assign and close tasks like a person. */
+	leadId?: string;
+	/** Work plus review sessions one task may use before it is blocked. */
+	maxTaskRounds?: number;
 }
+
+const DEFAULT_TASK_ROUNDS = 6;
+
+/** Who may move a task to which status. */
+const OWNER_STATUSES: TaskStatus[] = ["doing", "review", "blocked"];
+const VERIFIER_STATUSES: TaskStatus[] = ["verified", "doing", "blocked"];
 
 /**
  * The shared office: who is here, the rooms, every message, and every
@@ -33,6 +45,7 @@ export class Office {
 		rooms: [],
 		messages: [],
 		handoffs: [],
+		tasks: [],
 	};
 	private readonly listeners = new Set<(event: OfficeEvent) => void>();
 	private readonly inboxes = new Map<string, (item: InboxItem) => void>();
@@ -196,6 +209,191 @@ export class Office {
 		this.inboxes.set(teammateId, receive);
 	}
 
+	tasks(): Task[] {
+		return this.state.tasks;
+	}
+
+	task(id: string): Task | undefined {
+		return this.state.tasks.find((t) => t.id === id);
+	}
+
+	/** A person, the lead, or nobody else may assign and close tasks. */
+	isLead(id: string): boolean {
+		return this.teammate(id)?.kind === "human" || id === this.options.leadId;
+	}
+
+	/**
+	 * Opens a task. Without a thread it starts one in the room with the task as
+	 * the root message, so every question and report about it lands in one place.
+	 */
+	createTask(input: {
+		title: string;
+		brief: string;
+		by: string;
+		roomId: string;
+		threadId?: string | null;
+		ownerId?: string | null;
+		verifierId?: string | null;
+	}): Task {
+		const author = this.teammate(input.by);
+		if (!author) throw new Error(`Unknown teammate ${input.by}`);
+		const id = `T-${this.state.tasks.length + 1}`;
+		const title = input.title.trim();
+		let threadId = input.threadId ?? null;
+		if (threadId && !this.message(threadId))
+			throw new Error(`No thread ${threadId}`);
+		if (!threadId) {
+			const { message } = this.post({
+				authorId: input.by,
+				roomId: input.roomId,
+				text: `${id}: ${title}`,
+				kind: "system",
+			});
+			threadId = message.id;
+		}
+		const now = Date.now();
+		const task: Task = {
+			id,
+			title,
+			brief: input.brief.trim(),
+			status: "todo",
+			ownerId: null,
+			verifierId: input.verifierId ?? null,
+			createdById: input.by,
+			roomId: input.roomId,
+			threadId,
+			notes: [],
+			rounds: {
+				used: 0,
+				max: this.options.maxTaskRounds ?? DEFAULT_TASK_ROUNDS,
+			},
+			createdAt: now,
+			updatedAt: now,
+		};
+		this.state.tasks.push(task);
+		this.emit({ type: "task", task: structuredClone(task), change: "created" });
+		if (input.ownerId) this.assignTask(id, input.ownerId, input.by);
+		return task;
+	}
+
+	assignTask(id: string, ownerId: string, by: string): Task {
+		const task = this.task(id);
+		if (!task) throw new Error(`No task ${id}`);
+		const owner = this.teammate(ownerId);
+		if (!owner) throw new Error(`Unknown teammate ${ownerId}`);
+		const mayAssign =
+			this.isLead(by) || (task.ownerId === null && task.createdById === by);
+		if (!mayAssign)
+			throw new Error(`${this.teammate(by)?.name ?? by} may not assign ${id}`);
+		if (task.verifierId === ownerId) task.verifierId = null;
+		task.ownerId = ownerId;
+		if (task.status === "done") throw new Error(`${id} is already done`);
+		task.status = "todo";
+		task.updatedAt = Date.now();
+		this.note(task, by, `assigned to ${owner.name}`);
+		this.emit({
+			type: "task",
+			task: structuredClone(task),
+			change: "assigned",
+		});
+		return task;
+	}
+
+	setTaskVerifier(id: string, verifierId: string | null): void {
+		const task = this.task(id);
+		if (!task) throw new Error(`No task ${id}`);
+		task.verifierId = verifierId;
+		this.save();
+	}
+
+	setTaskWorkspace(
+		id: string,
+		workspace: { path: string; branch: string },
+	): void {
+		const task = this.task(id);
+		if (!task) return;
+		task.workspacePath = workspace.path;
+		task.branch = workspace.branch;
+		this.save();
+	}
+
+	recordTaskCheck(id: string, check: Task["check"]): void {
+		const task = this.task(id);
+		if (!task) return;
+		task.check = check;
+		this.save();
+	}
+
+	/** Counts one work or review session; false when the task has used its rounds. */
+	spendTaskRound(id: string): boolean {
+		const task = this.task(id);
+		if (!task) return false;
+		if (task.rounds.used >= task.rounds.max) return false;
+		task.rounds.used += 1;
+		this.save();
+		return true;
+	}
+
+	/**
+	 * Moves a task. Owners report doing, review or blocked; the verifier says
+	 * verified or sends it back to doing; a person or the lead may do anything,
+	 * and only they may close it.
+	 */
+	updateTask(
+		id: string,
+		input: { status: TaskStatus; note: string },
+		by: string,
+		options: { force?: boolean } = {},
+	): Task {
+		const task = this.task(id);
+		if (!task) throw new Error(`No task ${id}`);
+		const actor = this.teammate(by);
+		if (!actor) throw new Error(`Unknown teammate ${by}`);
+		const allowed =
+			options.force || this.isLead(by)
+				? true
+				: by === task.ownerId && OWNER_STATUSES.includes(input.status)
+					? true
+					: by === task.verifierId && VERIFIER_STATUSES.includes(input.status);
+		if (!allowed)
+			throw new Error(
+				`${actor.name} may not move ${id} to ${input.status}` +
+					(by === task.ownerId
+						? `; an owner reports doing, review or blocked`
+						: by === task.verifierId
+							? `; a verifier says verified, or doing with what must change`
+							: ""),
+			);
+		if (
+			by === task.verifierId &&
+			input.status === "verified" &&
+			task.status !== "review"
+		)
+			throw new Error(`${id} is ${task.status}, not in review`);
+		task.status = input.status;
+		task.updatedAt = Date.now();
+		this.note(task, by, input.note);
+		this.emit({ type: "task", task: structuredClone(task), change: "status" });
+		return task;
+	}
+
+	private note(task: Task, by: string, text: string): void {
+		task.notes.push({
+			by,
+			text: text.trim(),
+			status: task.status,
+			at: Date.now(),
+		});
+		const who = this.teammate(by)?.name ?? by;
+		this.post({
+			authorId: by,
+			roomId: task.roomId,
+			threadId: task.threadId,
+			text: `${who} · ${task.id} ${task.status}: ${text.trim()}`,
+			kind: "system",
+		});
+	}
+
 	/**
 	 * Posts a message and delivers it. `depth` is how many AI hops the author
 	 * is from the person who started the chain: 0 for a person.
@@ -219,7 +417,7 @@ export class Office {
 		const room = this.room(roomId);
 		if (!author) throw new Error(`Unknown teammate ${authorId}`);
 		if (!room) throw new Error(`Unknown room ${roomId}`);
-		if (!room.members.includes(authorId))
+		if (kind === "chat" && !room.members.includes(authorId))
 			throw new Error(`${author.name} is not in ${room.name}`);
 		const root = threadId ? this.message(threadId) : null;
 		if (threadId && (!root || root.roomId !== roomId))
@@ -366,6 +564,7 @@ export class Office {
 			this.state.rooms = saved.rooms ?? [];
 			this.state.messages = saved.messages ?? [];
 			this.state.handoffs = saved.handoffs ?? [];
+			this.state.tasks = saved.tasks ?? [];
 			for (const teammate of this.state.teammates) {
 				teammate.presence = "away";
 			}

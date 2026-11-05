@@ -7,3 +7,5 @@ export type Room = OfficeSnapshot["rooms"][number];
 export type Message = OfficeSnapshot["messages"][number];
 export type Handoff = OfficeSnapshot["handoffs"][number];
 export type EngineId = NonNullable<Teammate["engine"]>;
+export type Task = OfficeSnapshot["tasks"][number];
+export type TaskStatus = Task["status"];

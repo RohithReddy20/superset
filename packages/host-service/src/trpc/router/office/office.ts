@@ -110,6 +110,70 @@ export const officeRouter = router({
 			return { ok: true };
 		}),
 
+	createTask: protectedProcedure
+		.input(
+			z.object({
+				by: z.string(),
+				title: z.string().min(1).max(120),
+				brief: z.string().min(1).max(4000),
+				roomId: z.string(),
+				ownerId: z.string().nullable().optional(),
+				verifierId: z.string().nullable().optional(),
+			}),
+		)
+		.mutation(({ ctx, input }): { id: string } => {
+			try {
+				return officeOf(ctx.runtime).createTask(input);
+			} catch (error) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: (error as Error).message,
+				});
+			}
+		}),
+
+	assignTask: protectedProcedure
+		.input(z.object({ by: z.string(), id: z.string(), ownerId: z.string() }))
+		.mutation(({ ctx, input }): { ok: true } => {
+			try {
+				officeOf(ctx.runtime).assignTask(input);
+			} catch (error) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: (error as Error).message,
+				});
+			}
+			return { ok: true };
+		}),
+
+	updateTask: protectedProcedure
+		.input(
+			z.object({
+				by: z.string(),
+				id: z.string(),
+				status: z.enum([
+					"todo",
+					"doing",
+					"review",
+					"verified",
+					"done",
+					"blocked",
+				]),
+				note: z.string().min(1).max(4000),
+			}),
+		)
+		.mutation(({ ctx, input }): { ok: true } => {
+			try {
+				officeOf(ctx.runtime).updateTask(input);
+			} catch (error) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: (error as Error).message,
+				});
+			}
+			return { ok: true };
+		}),
+
 	stop: protectedProcedure.mutation(async ({ ctx }): Promise<{ ok: true }> => {
 		await officeOf(ctx.runtime).stop();
 		return { ok: true };

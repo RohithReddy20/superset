@@ -1,12 +1,16 @@
+import { execFile } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { promisify } from "node:util";
 import {
 	adapterEntry,
 	type EngineLaunch,
 	handleMcpRequest,
 	Office,
+	replyTarget,
 	Seat,
+	type Task,
 } from "@superset/office-harness";
 import { ACP_HARNESSES, UNGATED_VERSION } from "../chat-v3/acpCatalogue";
 import { resolveAgentCli } from "../chat-v3/agentCli";
@@ -18,9 +22,13 @@ import type {
 	OfficeLogLine,
 	OfficeSeatConfig,
 	OfficeSnapshot,
+	OfficeTaskStatus,
 } from "./types";
 
 const LOG_LINES = 200;
+const CHECK_TIMEOUT_MS = 10 * 60_000;
+const CHECK_OUTPUT_TAIL = 4000;
+const run = promisify(execFile);
 
 export const DEFAULT_OFFICE_CONFIG: OfficeConfig = {
 	rooms: [
@@ -91,12 +99,15 @@ export class OfficeRuntime {
 		this.office = new Office({
 			statePath: join(options.homeDir, "state.json"),
 			limits: this.config.limits,
+			leadId: this.config.lead,
+			maxTaskRounds: this.config.limits?.taskRounds,
 		});
 		this.applyConfig();
 		this.office.subscribe((event) => {
-			if (event.type !== "log") return;
-			this.log.push({ seatId: event.seatId, text: event.text, ts: event.ts });
-			if (this.log.length > LOG_LINES) this.log.shift();
+			if (event.type === "log") {
+				this.log.push({ seatId: event.seatId, text: event.text, ts: event.ts });
+				if (this.log.length > LOG_LINES) this.log.shift();
+			} else if (event.type === "task") this.onTask(event.task, event.change);
 		});
 	}
 
@@ -108,7 +119,15 @@ export class OfficeRuntime {
 			rooms: state.rooms,
 			messages: state.messages,
 			handoffs: state.handoffs,
+			tasks: state.tasks,
 			log: [...this.log],
+			project: this.config.project
+				? {
+						repoPath: this.config.project.repoPath,
+						testCommand: this.config.project.testCommand,
+					}
+				: null,
+			leadId: this.config.lead ?? null,
 		};
 	}
 
@@ -132,8 +151,11 @@ export class OfficeRuntime {
 	async stop(): Promise<void> {
 		this.started = false;
 		await Promise.all(
-			[...this.seats.values()].map((seat) => seat.stop().catch(() => {})),
+			[...this.seats.values(), ...this.taskSessions.values()].map((seat) =>
+				seat.stop().catch(() => {}),
+			),
 		);
+		this.taskSessions.clear();
 		this.seats.clear();
 		this.seatByToken.clear();
 	}
@@ -161,6 +183,357 @@ export class OfficeRuntime {
 				void this.seats.get(handoff.toId)?.cancel();
 		}
 		return { id: message.id };
+	}
+
+	createTask(input: {
+		by: string;
+		title: string;
+		brief: string;
+		roomId: string;
+		ownerId?: string | null;
+		verifierId?: string | null;
+	}): { id: string } {
+		this.requirePerson(input.by);
+		const task = this.office.createTask(input);
+		return { id: task.id };
+	}
+
+	assignTask(input: { by: string; id: string; ownerId: string }): void {
+		this.requirePerson(input.by);
+		this.office.assignTask(input.id, input.ownerId, input.by);
+	}
+
+	updateTask(input: {
+		by: string;
+		id: string;
+		status: OfficeTaskStatus;
+		note: string;
+	}): void {
+		this.requirePerson(input.by);
+		this.office.updateTask(
+			input.id,
+			{ status: input.status, note: input.note },
+			input.by,
+		);
+	}
+
+	private requirePerson(id: string): void {
+		if (this.office.teammate(id)?.kind !== "human")
+			throw new Error("Only a person does this from the app");
+	}
+
+	/* ---------- tasks: a worktree, a work session, checks, a review session ---------- */
+
+	private readonly taskSessions = new Map<string, Seat>();
+	private readonly taskBase = new Map<string, string>();
+
+	private onTask(task: Task, change: "created" | "assigned" | "status"): void {
+		if (change === "assigned" && task.ownerId) {
+			if (this.office.teammate(task.ownerId)?.kind === "ai")
+				void this.startWork(task.id);
+			return;
+		}
+		if (change !== "status") return;
+		const lastBy = task.notes.at(-1)?.by;
+		if (task.status === "review" && lastBy === task.ownerId)
+			void this.verify(task.id);
+		else if (
+			task.status === "doing" &&
+			lastBy !== task.ownerId &&
+			task.ownerId &&
+			this.office.teammate(task.ownerId)?.kind === "ai"
+		)
+			void this.startWork(task.id);
+	}
+
+	private seatSpec(id: string): OfficeSeatConfig | undefined {
+		return this.config.seats.find((s) => s.id === id);
+	}
+
+	private async workspaceFor(task: Task): Promise<string | null> {
+		const project = this.config.project;
+		if (!project) return null;
+		if (task.workspacePath && existsSync(task.workspacePath))
+			return task.workspacePath;
+		const path = join(this.options.homeDir, "..", "office-work", task.id);
+		const branch = `office/${task.id.toLowerCase()}`;
+		const base =
+			project.baseBranch ??
+			(
+				await run("git", [
+					"-C",
+					project.repoPath,
+					"rev-parse",
+					"--abbrev-ref",
+					"HEAD",
+				])
+			).stdout.trim();
+		this.taskBase.set(task.id, base);
+		mkdirSync(join(path, ".."), { recursive: true });
+		const exists = (
+			await run("git", ["-C", project.repoPath, "branch", "--list", branch])
+		).stdout.trim();
+		await run("git", [
+			"-C",
+			project.repoPath,
+			"worktree",
+			"add",
+			...(exists ? [path, branch] : ["-b", branch, path, base]),
+		]);
+		this.office.setTaskWorkspace(task.id, { path, branch });
+		this.office.log(
+			task.ownerId ?? "office",
+			`${task.id}: worktree ${path} on ${branch} from ${base}`,
+		);
+		return path;
+	}
+
+	private async taskSeat(
+		teammateId: string,
+		cwd: string | null,
+		label: string,
+	): Promise<Seat> {
+		const spec = this.seatSpec(teammateId);
+		const teammate = this.office.teammate(teammateId);
+		if (!spec || !teammate) throw new Error(`${teammateId} has no seat`);
+		const token = randomBytes(16).toString("hex");
+		const homeDir = join(this.options.homeDir, "..", "office-seats", spec.id);
+		const seat = new Seat({
+			teammate,
+			office: this.office,
+			homeDir,
+			cwd: cwd ?? homeDir,
+			label,
+			mcpUrl: `${this.options.baseUrl()}/office-mcp/${token}`,
+			engineLabel: ENGINE_LABELS[spec.engine],
+			fullAccessModeId: this.fullAccessModeId(spec.engine),
+			launch: () => this.launch(spec, cwd ?? homeDir),
+		});
+		this.seatByToken.set(token, seat);
+		await seat.start();
+		return seat;
+	}
+
+	private releaseTaskSeat(seat: Seat): void {
+		for (const [token, s] of this.seatByToken)
+			if (s === seat) this.seatByToken.delete(token);
+		void seat.stop().catch(() => {});
+	}
+
+	private force(task: Task, status: OfficeTaskStatus, note: string): void {
+		this.office.updateTask(task.id, { status, note }, task.createdById, {
+			force: true,
+		});
+	}
+
+	private async startWork(taskId: string): Promise<void> {
+		const task = this.office.task(taskId);
+		if (!task?.ownerId || this.taskSessions.has(taskId)) return;
+		const owner = this.office.teammate(task.ownerId);
+		if (!owner || owner.paused) return;
+		if (!this.office.spendTaskRound(taskId)) {
+			this.force(
+				task,
+				"blocked",
+				`used all ${task.rounds.max} rounds; a person decides what happens next`,
+			);
+			return;
+		}
+		let seat: Seat | null = null;
+		try {
+			const cwd = await this.workspaceFor(task);
+			seat = await this.taskSeat(owner.id, cwd, `work on ${task.id}`);
+			this.taskSessions.set(taskId, seat);
+			this.office.setPresence(owner.id, "focused", `working on ${task.id}`);
+			const text = await seat.run(
+				this.workPrompt(this.office.task(taskId) ?? task, cwd),
+				{
+					depth: 0,
+					asks: 0,
+					replyTo: replyTarget(task.roomId, task.threadId),
+				},
+			);
+			const after = this.office.task(taskId);
+			if (after && (after.status === "todo" || after.status === "doing"))
+				this.office.updateTask(
+					taskId,
+					{ status: "review", note: text || "finished without a report" },
+					owner.id,
+				);
+		} catch (error) {
+			const current = this.office.task(taskId);
+			if (current)
+				this.force(
+					current,
+					"blocked",
+					`work session failed: ${(error as Error).message}`,
+				);
+		} finally {
+			this.taskSessions.delete(taskId);
+			if (seat) this.releaseTaskSeat(seat);
+			this.office.setPresence(owner.id, "in-office", "ready");
+		}
+	}
+
+	private async verify(taskId: string): Promise<void> {
+		const task = this.office.task(taskId);
+		if (!task) return;
+		const project = this.config.project;
+		if (project?.testCommand && task.workspacePath) {
+			const check = await this.runCheck(
+				project.testCommand,
+				task.workspacePath,
+			);
+			this.office.recordTaskCheck(taskId, check);
+			this.office.post({
+				authorId: task.createdById,
+				roomId: task.roomId,
+				threadId: task.threadId,
+				text: `${task.id} checks ${check.ok ? "passed" : "failed"}: ${check.command}${
+					check.ok
+						? ""
+						: `
+${check.output.slice(-600)}`
+				}`,
+				kind: "system",
+			});
+			if (!check.ok) {
+				this.force(task, "doing", "checks failed; fix them and report again");
+				return;
+			}
+		}
+		const verifierId =
+			task.verifierId ??
+			this.config.verifier ??
+			this.config.seats.find(
+				(s) => s.id !== task.ownerId && !this.office.teammate(s.id)?.paused,
+			)?.id ??
+			null;
+		if (!verifierId || verifierId === task.ownerId) return;
+		this.office.setTaskVerifier(taskId, verifierId);
+		if (!this.office.spendTaskRound(taskId)) {
+			this.force(
+				task,
+				"blocked",
+				`used all ${task.rounds.max} rounds before a review; a person decides`,
+			);
+			return;
+		}
+		let seat: Seat | null = null;
+		try {
+			seat = await this.taskSeat(
+				verifierId,
+				task.workspacePath ?? null,
+				`review ${task.id}`,
+			);
+			this.office.setPresence(verifierId, "focused", `reviewing ${task.id}`);
+			const text = await seat.run(
+				this.reviewPrompt(this.office.task(taskId) ?? task),
+				{
+					depth: 0,
+					asks: 0,
+					replyTo: replyTarget(task.roomId, task.threadId),
+				},
+			);
+			const after = this.office.task(taskId);
+			if (after?.status === "review" && text)
+				this.office.post({
+					authorId: verifierId,
+					roomId: task.roomId,
+					threadId: task.threadId,
+					text: `(review, no verdict given) ${text.slice(0, 1500)}`,
+					kind: "system",
+				});
+		} catch (error) {
+			this.office.log(
+				verifierId,
+				`review of ${task.id} failed: ${(error as Error).message}`,
+			);
+		} finally {
+			if (seat) this.releaseTaskSeat(seat);
+			this.office.setPresence(verifierId, "in-office", "ready");
+		}
+	}
+
+	private async runCheck(command: string, cwd: string) {
+		const at = Date.now();
+		try {
+			const { stdout, stderr } = await run("sh", ["-lc", command], {
+				cwd,
+				timeout: CHECK_TIMEOUT_MS,
+				maxBuffer: 16 * 1024 * 1024,
+			});
+			return {
+				command,
+				ok: true,
+				output: `${stdout}\n${stderr}`.slice(-CHECK_OUTPUT_TAIL),
+				at,
+			};
+		} catch (error) {
+			const e = error as { stdout?: string; stderr?: string; message: string };
+			return {
+				command,
+				ok: false,
+				output: `${e.stdout ?? ""}\n${e.stderr ?? ""}\n${e.message}`.slice(
+					-CHECK_OUTPUT_TAIL,
+				),
+				at,
+			};
+		}
+	}
+
+	private workPrompt(task: Task, cwd: string | null): string {
+		const project = this.config.project;
+		const notes = task.notes
+			.map(
+				(n) =>
+					`- ${this.office.teammate(n.by)?.name ?? n.by} (${n.status}): ${n.text}`,
+			)
+			.join("\n");
+		return [
+			`[Task ${task.id}] ${task.title}`,
+			``,
+			`Brief: ${task.brief}`,
+			``,
+			cwd && project
+				? `You own this task. You are in a git checkout at ${cwd}, on branch ${task.branch}, a worktree of ${project.repoPath}. Work here only.`
+				: `You own this task. There is no project checkout; do what the brief asks with what you have.`,
+			`Rules:`,
+			`1. Call update_task("${task.id}", "doing", one line) before you start.`,
+			cwd
+				? `2. Make the change and commit it on this branch with a clear message. Do not push and do not switch branches.`
+				: `2. Do the work.`,
+			project?.testCommand && cwd
+				? `3. Run the tests before you report: ${project.testCommand}`
+				: `3. Check your own work before you report.`,
+			`4. When finished call update_task("${task.id}", "review", what changed and how you tested it). If you cannot finish, update_task("${task.id}", "blocked", what you need).`,
+			`5. A question for the person goes to say(reply_to: "${replyTarget(task.roomId, task.threadId)}", ...). Do not pull other teammates in.`,
+			notes ? `\nNotes so far:\n${notes}` : ``,
+		].join("\n");
+	}
+
+	private reviewPrompt(task: Task): string {
+		const base =
+			this.taskBase.get(task.id) ?? this.config.project?.baseBranch ?? "HEAD~1";
+		const owner = this.office.teammate(task.ownerId ?? "")?.name ?? "the owner";
+		const report =
+			task.notes.filter((n) => n.by === task.ownerId).at(-1)?.text ??
+			"(no report)";
+		return [
+			`[Review ${task.id}] ${task.title}`,
+			``,
+			`Brief: ${task.brief}`,
+			``,
+			`You are the verifier. ${owner} reports: ${report}`,
+			task.check
+				? `Automated checks ${task.check.ok ? "passed" : "failed"} (${task.check.command}).`
+				: ``,
+			task.workspacePath
+				? `You are in the task's checkout at ${task.workspacePath} on branch ${task.branch}. Read the change with: git log --oneline ${base}..HEAD and git diff ${base}...HEAD. Run the tests yourself if there are any.`
+				: `There is no checkout; judge the report against the brief.`,
+			`Judge only against the brief. Do not edit files.`,
+			`Then call update_task("${task.id}", "verified", a short verdict) or update_task("${task.id}", "doing", exactly what must change).`,
+		].join("\n");
 	}
 
 	setPaused(id: string, paused: boolean): void {
@@ -218,7 +591,11 @@ export class OfficeRuntime {
 			mcpUrl: `${this.options.baseUrl()}/office-mcp/${token}`,
 			engineLabel: ENGINE_LABELS[spec.engine],
 			fullAccessModeId: this.fullAccessModeId(spec.engine),
-			launch: () => this.launch(spec),
+			launch: () =>
+				this.launch(
+					spec,
+					join(this.options.homeDir, "..", "office-seats", spec.id),
+				),
 		});
 		this.seats.set(spec.id, seat);
 		this.seatByToken.set(token, seat);
@@ -239,8 +616,10 @@ export class OfficeRuntime {
 		return undefined;
 	}
 
-	private async launch(spec: OfficeSeatConfig): Promise<EngineLaunch> {
-		const cwd = join(this.options.homeDir, "..", "office-seats", spec.id);
+	private async launch(
+		spec: OfficeSeatConfig,
+		cwd: string,
+	): Promise<EngineLaunch> {
 		const env = () =>
 			buildChatAgentEnv({ db: this.options.db, cwd, workspaceId: "office" });
 		if (spec.engine === "agy") {

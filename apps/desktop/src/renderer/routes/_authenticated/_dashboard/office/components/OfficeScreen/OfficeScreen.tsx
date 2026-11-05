@@ -1,23 +1,38 @@
 import { cn } from "@superset/ui/utils";
 import { useMemo, useState } from "react";
-import { LuPlus, LuUserPlus } from "react-icons/lu";
+import { LuListChecks, LuPlus, LuUserPlus } from "react-icons/lu";
 import { PageHeader } from "renderer/routes/_authenticated/_dashboard/components/PageHeader";
 import { useOffice } from "../../hooks/useOffice";
 import { AddRoomDialog } from "../AddRoomDialog";
+import { CreateTaskDialog } from "../CreateTaskDialog";
 import { HireDialog } from "../HireDialog";
 import { OfficeFloor } from "../OfficeFloor";
 import { RightNowRail } from "../RightNowRail";
 import { RoomFeed } from "../RoomFeed";
+import { TaskBoard } from "../TaskBoard";
 import { TeammateCard } from "../TeammateCard";
 
 export function OfficeScreen() {
-	const { state, say, setPaused, hire, addRoom, moveTeammate, hostReady } =
-		useOffice();
+	const {
+		state,
+		say,
+		setPaused,
+		hire,
+		addRoom,
+		moveTeammate,
+		createTask,
+		assignTask,
+		updateTask,
+		hostReady,
+	} = useOffice();
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [roomId, setRoomId] = useState<string | null>(null);
 	const [showLog, setShowLog] = useState(false);
 	const [addingRoom, setAddingRoom] = useState(false);
 	const [hiring, setHiring] = useState(false);
+	const [creatingTask, setCreatingTask] = useState(false);
+	const [showTasks, setShowTasks] = useState(false);
+	const [openThreadId, setOpenThreadId] = useState<string | null>(null);
 
 	const data = state.data;
 	const rooms = useMemo(
@@ -43,13 +58,26 @@ export function OfficeScreen() {
 								{data.teammates.filter((t) => t.presence !== "away").length}{" "}
 								here ·{" "}
 								{data.handoffs.filter((h) => h.status === "working").length}{" "}
-								hand-offs open
+								hand-offs open ·{" "}
+								{
+									data.tasks.filter(
+										(t) => t.status !== "done" && t.status !== "blocked",
+									).length
+								}{" "}
+								tasks moving
 							</span>
 						) : null}
 					</div>
 				}
 				end={
 					<div className="flex items-center gap-1">
+						<HeaderButton
+							onClick={() => setCreatingTask(true)}
+							disabled={!data}
+							icon={<LuPlus className="size-3.5" />}
+						>
+							task
+						</HeaderButton>
 						<HeaderButton
 							onClick={() => setHiring(true)}
 							disabled={!data}
@@ -146,14 +174,35 @@ export function OfficeScreen() {
 					{data && activeRoom ? (
 						<>
 							<div className="flex items-center gap-1 overflow-x-auto border-b border-border px-2 py-1.5">
+								<button
+									type="button"
+									onClick={() => setShowTasks(true)}
+									className={cn(
+										"flex shrink-0 items-center gap-1 rounded-md px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] transition-colors",
+										showTasks
+											? "bg-fill-selected text-foreground"
+											: "text-muted-foreground hover:bg-fill-hover",
+									)}
+								>
+									<LuListChecks className="size-3" />
+									tasks
+									{data.tasks.some(
+										(t) => t.status === "verified" || t.status === "blocked",
+									) ? (
+										<span className="size-1.5 rounded-full bg-[#39d353]" />
+									) : null}
+								</button>
 								{rooms.map((r) => (
 									<button
 										type="button"
 										key={r.id}
-										onClick={() => setRoomId(r.id)}
+										onClick={() => {
+											setShowTasks(false);
+											setRoomId(r.id);
+										}}
 										className={cn(
 											"shrink-0 rounded-md px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] transition-colors",
-											r.id === activeRoom.id
+											!showTasks && r.id === activeRoom.id
 												? "bg-fill-selected text-foreground"
 												: "text-muted-foreground hover:bg-fill-hover",
 										)}
@@ -162,16 +211,53 @@ export function OfficeScreen() {
 									</button>
 								))}
 							</div>
-							<RoomFeed
-								room={activeRoom}
-								messages={data.messages}
-								teammates={data.teammates}
-								me={me}
-								sending={say.isPending}
-								onSend={(input) =>
-									say.mutateAsync({ authorId: me?.id ?? "", ...input })
-								}
-							/>
+							{showTasks ? (
+								<div className="min-h-0 flex-1 overflow-y-auto">
+									<TaskBoard
+										tasks={data.tasks}
+										teammates={data.teammates}
+										me={me}
+										pending={assignTask.isPending || updateTask.isPending}
+										onOpenThread={(task) => {
+											setShowTasks(false);
+											setRoomId(task.roomId);
+											setOpenThreadId(task.threadId);
+										}}
+										onAssign={(task, ownerId) =>
+											assignTask.mutate({
+												by: me?.id ?? "",
+												id: task.id,
+												ownerId,
+											})
+										}
+										onUpdate={(task, status, note) =>
+											updateTask.mutate({
+												by: me?.id ?? "",
+												id: task.id,
+												status,
+												note,
+											})
+										}
+									/>
+									{assignTask.error || updateTask.error ? (
+										<p className="px-3 pb-2 text-xs text-destructive">
+											{assignTask.error?.message ?? updateTask.error?.message}
+										</p>
+									) : null}
+								</div>
+							) : (
+								<RoomFeed
+									room={activeRoom}
+									messages={data.messages}
+									teammates={data.teammates}
+									me={me}
+									sending={say.isPending}
+									openThreadId={openThreadId}
+									onSend={(input) =>
+										say.mutateAsync({ authorId: me?.id ?? "", ...input })
+									}
+								/>
+							)}
 						</>
 					) : null}
 				</aside>
@@ -191,6 +277,30 @@ export function OfficeScreen() {
 							setRoomId(input.id);
 						},
 					})
+				}
+			/>
+			<CreateTaskDialog
+				open={creatingTask}
+				rooms={rooms}
+				teammates={data?.teammates ?? []}
+				defaultRoomId={activeRoom?.id ?? null}
+				hasProject={!!data?.project}
+				pending={createTask.isPending}
+				error={createTask.error?.message ?? null}
+				onOpenChange={(open) => {
+					setCreatingTask(open);
+					if (!open) createTask.reset();
+				}}
+				onSubmit={(input) =>
+					createTask.mutate(
+						{ by: me?.id ?? "", ...input },
+						{
+							onSuccess: () => {
+								setCreatingTask(false);
+								setShowTasks(true);
+							},
+						},
+					)
 				}
 			/>
 			<HireDialog

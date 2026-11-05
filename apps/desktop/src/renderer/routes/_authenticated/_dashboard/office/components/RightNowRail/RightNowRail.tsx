@@ -1,6 +1,7 @@
 import { cn } from "@superset/ui/utils";
 import type { Teammate } from "../../types";
-import { ENGINE_COLORS, engineLabel } from "../OfficeFloor/constants";
+import { EngineMark } from "../EngineMark";
+import { ENGINE_COLORS } from "../OfficeFloor/constants";
 
 interface RightNowRailProps {
 	teammates: Teammate[];
@@ -58,18 +59,11 @@ export function RightNowRail({
 							}}
 						/>
 						<span className="min-w-0 flex-1">
-							<span className="flex items-baseline gap-1.5">
+							<span className="flex items-center gap-1.5">
+								<EngineMark engine={t.engine} />
 								<span className="truncate text-[13px] font-medium text-foreground">
 									{t.name}
 								</span>
-								{t.kind === "ai" ? (
-									<span
-										className="font-mono text-[10px] uppercase tracking-[0.08em]"
-										style={{ color }}
-									>
-										{engineLabel(t.engine)}
-									</span>
-								) : null}
 								{t.paused ? (
 									<span className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
 										paused

@@ -8,6 +8,7 @@ import {
 } from "@superset/ui/select";
 import { LuX } from "react-icons/lu";
 import type { Handoff, Room, Teammate } from "../../types";
+import { EngineMark } from "../EngineMark";
 import { ENGINE_COLORS, engineLabel } from "../OfficeFloor/constants";
 
 interface TeammateCardProps {
@@ -45,6 +46,7 @@ export function TeammateCard({
 				</span>
 				<div className="min-w-0 flex-1">
 					<div className="flex items-center gap-2">
+						<EngineMark engine={t.engine} className="size-4" />
 						<span className="truncate text-sm font-medium text-foreground">
 							{t.name}
 						</span>

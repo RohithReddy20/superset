@@ -4,6 +4,7 @@ import { cn } from "@superset/ui/utils";
 import { useEffect, useRef, useState } from "react";
 import { LuCornerDownRight, LuX } from "react-icons/lu";
 import type { Message, Room, Teammate } from "../../types";
+import { EngineMark } from "../EngineMark";
 import { ENGINE_COLORS } from "../OfficeFloor/constants";
 
 interface RoomFeedProps {
@@ -12,6 +13,8 @@ interface RoomFeedProps {
 	teammates: Teammate[];
 	me: Teammate | null;
 	sending: boolean;
+	/** A thread to open, e.g. a task's; changes re-open it. */
+	openThreadId?: string | null;
 	onSend: (input: {
 		roomId: string;
 		threadId: string | null;
@@ -28,9 +31,13 @@ export function RoomFeed({
 	teammates,
 	me,
 	sending,
+	openThreadId = null,
 	onSend,
 }: RoomFeedProps) {
-	const [threadId, setThreadId] = useState<string | null>(null);
+	const [threadId, setThreadId] = useState<string | null>(openThreadId);
+	useEffect(() => {
+		if (openThreadId) setThreadId(openThreadId);
+	}, [openThreadId]);
 	const [text, setText] = useState("");
 	const byId = new Map(teammates.map((t) => [t.id, t]));
 	const roots = messages.filter(
@@ -76,6 +83,10 @@ export function RoomFeed({
 				</span>
 				<div className="min-w-0 flex-1">
 					<div className="flex items-baseline gap-1.5">
+						<EngineMark
+							engine={author?.engine}
+							className="size-3 self-center"
+						/>
 						<span className="text-[13px] font-medium text-foreground">
 							{author?.name ?? m.authorId}
 						</span>

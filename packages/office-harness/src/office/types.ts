@@ -55,6 +55,49 @@ export interface Handoff {
 	answeredAt?: number;
 }
 
+export type TaskStatus =
+	| "todo"
+	| "doing"
+	| "review"
+	| "verified"
+	| "done"
+	| "blocked";
+
+export interface TaskNote {
+	by: string;
+	text: string;
+	status: TaskStatus;
+	at: number;
+}
+
+export interface TaskCheck {
+	command: string;
+	ok: boolean;
+	output: string;
+	at: number;
+}
+
+/** One owned piece of work. Everything about it is said in its thread. */
+export interface Task {
+	id: string;
+	title: string;
+	brief: string;
+	status: TaskStatus;
+	ownerId: string | null;
+	verifierId: string | null;
+	createdById: string;
+	roomId: string;
+	threadId: string;
+	branch?: string;
+	workspacePath?: string;
+	check?: TaskCheck;
+	notes: TaskNote[];
+	/** Work and review sessions spent on this task, against the cap. */
+	rounds: { used: number; max: number };
+	createdAt: number;
+	updatedAt: number;
+}
+
 export interface InboxItem {
 	message: Message;
 	reason: "mention" | "thread" | "dm";
@@ -66,6 +109,7 @@ export interface OfficeState {
 	rooms: Room[];
 	messages: Message[];
 	handoffs: Handoff[];
+	tasks: Task[];
 }
 
 export type OfficeEvent =
@@ -73,6 +117,7 @@ export type OfficeEvent =
 	| { type: "message"; message: Message }
 	| { type: "teammate"; teammate: Teammate }
 	| { type: "handoff"; handoff: Handoff }
+	| { type: "task"; task: Task; change: "created" | "assigned" | "status" }
 	| { type: "log"; seatId: string; text: string; ts: number };
 
 export const replyTarget = (roomId: string, threadId: string | null) =>

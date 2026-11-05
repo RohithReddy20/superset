@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { z } from "zod";
 import type { Office } from "../office/Office";
-import { parseReplyTarget, replyTarget } from "../office/types";
+import { parseReplyTarget, replyTarget, type Task } from "../office/types";
 import type { Seat } from "../seat/Seat";
 
 async function result(run: () => Promise<unknown> | unknown) {
@@ -130,6 +130,135 @@ export function officeToolsServer(office: Office, seat: Seat): McpServer {
 					text: m.text,
 					at: new Date(m.ts).toISOString(),
 				}));
+			}),
+	);
+
+	const taskView = (t: Task) => ({
+		id: t.id,
+		title: t.title,
+		brief: t.brief,
+		status: t.status,
+		owner: t.ownerId,
+		verifier: t.verifierId,
+		reply_to: replyTarget(t.roomId, t.threadId),
+		branch: t.branch,
+		workspace: t.workspacePath,
+		check: t.check ? { ok: t.check.ok, command: t.check.command } : undefined,
+		rounds: `${t.rounds.used}/${t.rounds.max}`,
+		last_note: t.notes.at(-1)?.text,
+	});
+
+	server.registerTool(
+		"read_board",
+		{
+			description:
+				"Every task in the office with its owner and status. Statuses: todo, doing, review (owner finished, checks and a verifier pending), verified (ready for a person), done, blocked.",
+			inputSchema: {},
+		},
+		() => result(() => office.tasks().map(taskView)),
+	);
+
+	server.registerTool(
+		"read_task",
+		{
+			description: "One task in full, with its notes so far.",
+			inputSchema: { task_id: z.string() },
+		},
+		(args) =>
+			result(() => {
+				const task = office.task(args.task_id);
+				if (!task) throw new Error(`No task ${args.task_id}`);
+				return {
+					...taskView(task),
+					notes: task.notes.map((n) => ({
+						by: office.teammate(n.by)?.name ?? n.by,
+						status: n.status,
+						text: n.text,
+					})),
+					check_output: task.check?.output,
+				};
+			}),
+	);
+
+	server.registerTool(
+		"create_task",
+		{
+			description:
+				"Open a task for a piece of work. It gets its own thread in the room of reply_to. Give it an owner only if you are allowed to assign (a person, the lead, or the creator of an unowned task).",
+			inputSchema: {
+				reply_to: z.string(),
+				title: z.string().min(1).max(120),
+				brief: z.string().min(1).max(4000),
+				owner: z.string().optional(),
+			},
+		},
+		(args) =>
+			result(() => {
+				const target = parseReplyTarget(args.reply_to);
+				if (!target)
+					throw new Error(
+						"reply_to must be room:<id> or room:<id>/thread:<id>",
+					);
+				const owner = args.owner ? office.teammateByName(args.owner) : null;
+				if (args.owner && !owner) throw new Error(`No teammate ${args.owner}`);
+				const task = office.createTask({
+					title: args.title,
+					brief: args.brief,
+					by: seat.id,
+					roomId: target.roomId,
+					threadId: target.threadId,
+					ownerId: owner?.id ?? null,
+				});
+				office.log(seat.id, `create_task ${task.id}: ${task.title}`);
+				return taskView(task);
+			}),
+	);
+
+	server.registerTool(
+		"assign_task",
+		{
+			description:
+				"Give a task an owner. Only a person, the lead, or the creator of a still-unowned task may do this.",
+			inputSchema: { task_id: z.string(), owner: z.string() },
+		},
+		(args) =>
+			result(() => {
+				const owner = office.teammateByName(args.owner);
+				if (!owner) throw new Error(`No teammate ${args.owner}`);
+				const task = office.assignTask(args.task_id, owner.id, seat.id);
+				office.log(seat.id, `assign_task ${task.id} → ${owner.id}`);
+				return taskView(task);
+			}),
+	);
+
+	server.registerTool(
+		"update_task",
+		{
+			description:
+				"Report on a task you own or verify. Owner: doing (started), review (finished, say what changed and how you tested it), blocked (say what you need). Verifier: verified (it meets the brief), or doing with what must change. Only a person or the lead can mark done.",
+			inputSchema: {
+				task_id: z.string(),
+				status: z.enum([
+					"todo",
+					"doing",
+					"review",
+					"verified",
+					"done",
+					"blocked",
+				]),
+				note: z.string().min(1).max(4000),
+			},
+		},
+		(args) =>
+			result(() => {
+				const task = office.updateTask(
+					args.task_id,
+					{ status: args.status, note: args.note },
+					seat.id,
+				);
+				seat.noteSaid();
+				office.log(seat.id, `update_task ${task.id} → ${task.status}`);
+				return taskView(task);
 			}),
 	);
 

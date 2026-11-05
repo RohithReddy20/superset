@@ -35,7 +35,12 @@ export interface TurnContext {
 export interface SeatOptions {
 	teammate: Teammate;
 	office: Office;
+	/** Where the norms files go; also the engine's working directory unless `cwd` says otherwise. */
 	homeDir: string;
+	/** A project checkout to work in, for a task session. */
+	cwd?: string;
+	/** A label for the log, e.g. "work on T-3". */
+	label?: string;
 	mcpUrl: string;
 	/** How to start this teammate's engine; the office decides, the seat only runs it. */
 	launch: () => Promise<EngineLaunch>;
@@ -93,9 +98,10 @@ export class Seat {
 		writeFileSync(join(homeDir, "AGENTS.md"), norms);
 		writeFileSync(join(homeDir, "GEMINI.md"), norms);
 
+		const cwd = this.options.cwd ?? homeDir;
 		const launch = await this.options.launch();
 		this.log(
-			`starting ${this.options.engineLabel} (${launch.command} ${launch.args.join(" ")})`,
+			`starting ${this.options.engineLabel}${this.options.label ? ` for ${this.options.label}` : ""} in ${cwd}`,
 		);
 		this.client = new AcpRpcClient({
 			createTransport: (handlers) =>
@@ -103,7 +109,7 @@ export class Seat {
 					{
 						command: launch.command,
 						args: launch.args,
-						cwd: homeDir,
+						cwd,
 						env: launch.env,
 					},
 					handlers,
@@ -125,7 +131,8 @@ export class Seat {
 			onExit: (code, signal) => {
 				this.exit = `engine exited (code ${code ?? "none"}, signal ${signal ?? "none"})`;
 				this.log(this.exit);
-				office.setPresence(this.id, "away", "engine exited");
+				if (this.ownsPresence)
+					office.setPresence(this.id, "away", "engine exited");
 			},
 		});
 
@@ -152,14 +159,14 @@ export class Seat {
 			configOptions?: ConfigOption[];
 		} | null;
 		let created: Created = null;
-		const previous = this.teammate.acpSessionId;
+		const previous = this.options.cwd ? undefined : this.teammate.acpSessionId;
 		if (previous) {
 			try {
 				const method =
 					this.protocolVersion >= 2 ? "session/resume" : "session/load";
 				created = (await this.client.request(
 					method,
-					{ sessionId: previous, cwd: homeDir, mcpServers },
+					{ sessionId: previous, cwd, mcpServers },
 					STARTUP_TIMEOUT_MS,
 				)) as Created;
 				this.sessionId = previous;
@@ -173,27 +180,59 @@ export class Seat {
 		if (!this.sessionId) {
 			created = (await this.client.request(
 				"session/new",
-				{ cwd: homeDir, mcpServers },
+				{ cwd, mcpServers },
 				STARTUP_TIMEOUT_MS,
 			)) as Created;
 			this.sessionId = created?.sessionId ?? null;
 			if (!this.sessionId) throw new Error("session/new returned no sessionId");
-			office.rememberSession(this.id, this.sessionId);
+			if (!this.options.cwd) office.rememberSession(this.id, this.sessionId);
 			this.log(`new session ${this.sessionId}`);
 		}
 		await this.configure(
 			this.options.fullAccessModeId,
 			created?.configOptions ?? [],
 		);
-		office.setPresence(this.id, "in-office", "ready");
-		this.schedule();
+		if (!this.options.cwd) {
+			office.setPresence(this.id, "in-office", "ready");
+			this.schedule();
+		}
+	}
+
+	/**
+	 * One turn with a given prompt, for task sessions: no inbox, the caller
+	 * decides what happens after. Resolves with the engine's final text.
+	 */
+	async run(prompt: string, context: TurnContext): Promise<string> {
+		if (!this.client || !this.sessionId) throw new Error("seat not started");
+		this.turn = context;
+		this.statusSetThisTurn = false;
+		this.saidThisTurn = false;
+		this.lastText = "";
+		this.running = true;
+		try {
+			const response = (await this.client.request(
+				"session/prompt",
+				{ sessionId: this.sessionId, prompt: [{ type: "text", text: prompt }] },
+				TURN_TIMEOUT_MS,
+			)) as { stopReason?: string } | null;
+			this.log(`turn end: ${response?.stopReason ?? "no stop reason"}`);
+			return this.lastText.trim();
+		} finally {
+			this.running = false;
+			this.turn = null;
+		}
 	}
 
 	async stop(): Promise<void> {
 		this.stopped = true;
 		await this.cancel();
 		await this.client?.close();
-		this.options.office.setPresence(this.id, "away", "");
+		if (this.ownsPresence) this.options.office.setPresence(this.id, "away", "");
+	}
+
+	/** A task session comes and goes while the teammate's chat seat stays; only the chat seat reports presence on its own. */
+	private get ownsPresence(): boolean {
+		return !this.options.cwd;
 	}
 
 	async cancel(): Promise<void> {

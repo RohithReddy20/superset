@@ -8,7 +8,7 @@ import {
 } from "react";
 import type { Teammate } from "../../../../types";
 import type { PlacedRoom } from "../../../../utils/world";
-import { ENGINE_COLORS, engineLabel } from "../../constants";
+import { EngineMark } from "../../../EngineMark";
 import type { SceneFrame } from "../../scene";
 import { lookFor, lookKey, renderFace } from "../../scene/pixel";
 
@@ -116,7 +116,6 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 				))}
 				{teammates.map((t) => {
 					const isMe = t.id === meId;
-					const color = ENGINE_COLORS[t.engine ?? "human"];
 					const busy = t.presence === "focused" || t.presence === "in-meeting";
 					const line = busy && t.line ? t.line : "";
 					const away = t.presence === "away";
@@ -156,18 +155,10 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 											draggable={false}
 										/>
 									)}
+									<EngineMark engine={t.engine} className="size-3" />
 									<span className={cn(isMe && "pl-1.5")}>
 										{isMe ? "You" : t.name}
 									</span>
-									{t.kind === "ai" ? (
-										<span
-											className="rounded-[4px] px-1 font-mono text-[9px] uppercase tracking-[0.06em]"
-											style={{ color, background: `${color}22` }}
-											title={engineLabel(t.engine)}
-										>
-											{engineLabel(t.engine).slice(0, 2)}
-										</span>
-									) : null}
 									<span
 										className="size-2 rounded-full"
 										style={{
