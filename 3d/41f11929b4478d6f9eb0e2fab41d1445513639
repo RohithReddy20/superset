@@ -1,0 +1,64 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeScreen/OfficeScreen.tsx
+  s_ba0de495eca415::t_37255fbd5d829f 98-103
+  s_ba0de495eca415::t_5358c5602e97fb 77
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/scene/voxel/look.ts
+  s_ba0de495eca415::t_edf70bdbb5c273 1-62
+  s_ba0de495eca415::t_3881f80f5794e4 63-76
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/scene/assets.ts
+  s_ba0de495eca415::t_7a7a7d7889ba82 2,4,12-18
+  s_ba0de495eca415::t_ae6a11f1ebf479 1,6-10
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/world/world.ts
+  s_ba0de495eca415::t_4fe9c0c935e7e1 3,5,10-15,17-18,21-23,25-29,32-37,40-41,44-48,50-59,62-65,70,74,76-81,83-89,91-103,105,108-115,117-120,123-133,135-138,142-153,156-171,174-183,185-197,204-211,215-220,227
+  s_ba0de495eca415::t_9d86143cd7bf29 237-267,269
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/components/FloorOverlay/FloorOverlay.tsx
+  s_ba0de495eca415::t_0164ce0fcac3e7 1-160,178
+  s_ba0de495eca415::t_79f15a6ff94f3c 161-177,179-190
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/components/FloorOverlay/index.ts
+  s_ba0de495eca415::t_1d0f4be1547723 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/scene/voxel/index.ts
+  s_ba0de495eca415::t_7da832c4ea9779 1-2
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/world/index.ts
+  s_ba0de495eca415::t_dea5551d2be0dd 1-18
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/world/world.test.ts
+  s_ba0de495eca415::t_95e10596387a54 1-99
+  s_ba0de495eca415::t_aa815d9231b805 100-103
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/scene/voxel/model.ts
+  s_ba0de495eca415::t_75e9cd7be5c782 57-58
+  s_ba0de495eca415::t_068b9dfd59d4ee 1-56,59-210
+  s_ba0de495eca415::t_0704235ecc59e3 211-214
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/OfficeFloor.tsx
+  s_ba0de495eca415::t_1e3bb5900377dd 3-7,9,27,35-36,55,75-89
+  s_ba0de495eca415::t_d193fbdde1a00d 90-92
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/scene/voxel/sheet.ts
+  s_ba0de495eca415::t_caf8192e9dd5f9 1-76
+  s_ba0de495eca415::t_b343649b0e95d2 77
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/scene/index.ts
+  s_ba0de495eca415::t_ba4a07bdc1233d 4
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/scene/voxel/render.ts
+  s_ba0de495eca415::t_6f7ad1088fe5a8 26,28-33
+  s_ba0de495eca415::t_844b60e1427e05 1-25,27,34-192
+  s_ba0de495eca415::t_0dc0c6e0eb309c 193-211
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/scene/OfficeScene.ts
+  s_ba0de495eca415::t_196d62d074aa8e 6-7,9-19,23,28-46,50,56,58-59,61,63,66-67,69,73,76,83,87-89,114,118-153,162,165-175,177-182,184,186-190,192-198,200,214-215,220,223-224,234-236,238-240,247,249,254,256,260-262,270-271,274-275,279-282,284,290-291,303-304,306,310-313,315,326-331
+  s_ba0de495eca415::t_9cd77d0a8b6f4c 335-336,344-346,348-349,364
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/assets/world/CREDITS.txt
+  s_ba0de495eca415::t_2bb41e5edb5bc9 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/assets/world/office.map.json
+  s_ba0de495eca415::t_fbf2bb1f69e0fd 1-1021
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3d41f11929b4478d6f9eb0e2fab41d1445513639",
+  "prompts": {},
+  "sessions": {
+    "s_ba0de495eca415": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "45c600a5-1655-454e-8101-759a42937772",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
