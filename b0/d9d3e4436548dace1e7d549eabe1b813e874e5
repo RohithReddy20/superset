@@ -1,0 +1,66 @@
+plans/20261105-office-orchestration-notes.md
+  s_8322a827a65284::t_35908d4b2ecbe8 1-80
+  s_8322a827a65284::t_fe877082f3c1db 81-102
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/CreateTaskDialog/CreateTaskDialog.tsx
+  s_8322a827a65284::t_bd0fec1bbaf498 1-180
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/CreateTaskDialog/index.ts
+  s_8322a827a65284::t_13e68df71b9603 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/EngineMark/EngineMark.tsx
+  s_8322a827a65284::t_bf79d13f3e94ac 1-61
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/EngineMark/index.ts
+  s_8322a827a65284::t_828f584d4ce991 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/assets/world/office.json
+  s_8322a827a65284::t_97acf244f3958c 702-722
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/components/FloorOverlay/FloorOverlay.tsx
+  s_8322a827a65284::t_4dbf2d2e8bd4f4 11,158
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeScreen/OfficeScreen.tsx
+  s_8322a827a65284::t_502a84c8f971da 3,7,12,16-27,33-35,61-67,74-80,177-194,199-202,205,214-260,282-305
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/RightNowRail/RightNowRail.tsx
+  s_8322a827a65284::t_ad621224227d23 3-4,62-63
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/RoomFeed/RoomFeed.tsx
+  s_8322a827a65284::t_f5e2f870a542e4 7,16-17,34,37-40,86-89
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/TaskBoard/TaskBoard.tsx
+  s_8322a827a65284::t_e3052db41cec50 1-184
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/TaskBoard/index.ts
+  s_8322a827a65284::t_9519883f946f18 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/TeammateCard/TeammateCard.tsx
+  s_8322a827a65284::t_7d54c0f477691f 11,49
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/hooks/useOffice/useOffice.ts
+  s_8322a827a65284::t_d511c93e7889d6 4,80-115,123-125
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/types.ts
+  s_8322a827a65284::t_51fc24fd32ad78 10-11
+packages/host-service/src/office/officeRuntime.ts
+  s_8322a827a65284::t_5b209d92e8c488 1,5,11,13,25,29-31,102-103,107-110,122,124-130,154-156,158,188-538,594-598,619-622
+packages/host-service/src/office/types.ts
+  s_8322a827a65284::t_99a60d6e0e302d 52-83,96,98-99,119-132
+packages/host-service/src/trpc/router/office/office.ts
+  s_8322a827a65284::t_42d0235b8f12b2 113-176
+packages/office-harness/src/office/Office.test.ts
+  s_8322a827a65284::t_405c18f25ae318 1-130
+packages/office-harness/src/office/Office.ts
+  s_8322a827a65284::t_436aa9cb017f99 12-13,24-27,30-35,48,212-396,420,567
+packages/office-harness/src/office/types.ts
+  s_8322a827a65284::t_e321198983c865 58-100,112,120
+packages/office-harness/src/seat/Seat.ts
+  s_8322a827a65284::t_17debb19aa11f9 38,40-43,101,104,112,134-135,162,169,183,188,195-223,230-235
+packages/office-harness/src/seat/prompt.ts
+  s_8322a827a65284::t_a504255c40a784 33-35
+packages/office-harness/src/tools/officeMcp.ts
+  s_8322a827a65284::t_891b81d0ff0abc 5,136-264
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b0d9d3e4436548dace1e7d549eabe1b813e874e5",
+  "prompts": {},
+  "sessions": {
+    "s_8322a827a65284": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "915e3ab3-2509-48d4-ac28-15e170582e47",
+        "model": "unknown"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
