@@ -13,6 +13,7 @@ import {
 	isWalkable,
 	type Point,
 	roomAt,
+	type Seat,
 	type SeatTarget,
 	type WorldLayout,
 } from "../../../utils/world";
@@ -75,6 +76,9 @@ const STEP = 16;
 const DIRECTIONS: Facing[] = ["down", "left", "right", "up"];
 /** Seated sprites draw just after their chair, which sits a few pixels below their feet line. */
 const SEATED_DEPTH_LIFT = 8;
+/** Arriving this close to any seat sits you down on it; clicking this close to one walks you to it. */
+const SEAT_SNAP = 12;
+const SEAT_CLICK = 24;
 
 export class OfficeScene extends Phaser.Scene {
 	private readonly actors = new Map<string, Actor>();
@@ -305,16 +309,37 @@ export class OfficeScene extends Phaser.Scene {
 	}
 
 	private settle(actor: Actor): void {
-		const seated =
-			!!actor.seat &&
-			!actor.manual &&
+		const own =
+			actor.seat &&
 			actor.seat.x === actor.position.x &&
-			actor.seat.y === actor.position.y;
-		const facing = seated && actor.seat ? actor.seat.facing : actor.facing;
-		actor.facing = facing;
-		actor.seated = seated;
-		this.play(actor, seated ? "sit" : "idle", facing);
+			actor.seat.y === actor.position.y
+				? actor.seat
+				: null;
+		const seat =
+			own ?? (actor.manual ? this.seatNear(actor.position, SEAT_SNAP) : null);
+		if (seat) {
+			if (own) actor.manual = false;
+			actor.position = { x: seat.x, y: seat.y };
+			actor.sprite.setPosition(seat.x, seat.y);
+			actor.facing = seat.facing;
+		}
+		actor.seated = !!seat;
+		this.play(actor, seat ? "sit" : "idle", actor.facing);
 		this.layer(actor);
+	}
+
+	private seatNear(point: Point, within: number): Seat | null {
+		let best: Seat | null = null;
+		let bestDistance = within;
+		for (const zone of this.payload?.layout.map.zones ?? [])
+			for (const seat of zone.seats) {
+				const distance = Math.hypot(seat.x - point.x, seat.y - point.y);
+				if (distance <= bestDistance) {
+					best = seat;
+					bestDistance = distance;
+				}
+			}
+		return best;
 	}
 
 	private play(actor: Actor, kind: "idle" | "walk" | "sit", facing: Facing) {
@@ -388,8 +413,11 @@ export class OfficeScene extends Phaser.Scene {
 		const room = roomAt(layout, point);
 		if (room) this.callbacks.onSelectRoom(room.id);
 		const me = this.payload?.meId ? this.actors.get(this.payload.meId) : null;
-		if (!me || !isWalkable(layout, point)) return;
-		const path = findPath(layout, me.position, point);
+		if (!me) return;
+		const seat = this.seatNear(point, SEAT_CLICK);
+		const target = seat ? { x: seat.x, y: seat.y } : point;
+		if (!seat && !isWalkable(layout, target)) return;
+		const path = findPath(layout, me.position, target);
 		if (path.length === 0) return;
 		me.manual = true;
 		me.path = path;
