@@ -10,7 +10,7 @@ import type { Teammate } from "../../../../types";
 import type { PlacedRoom } from "../../../../utils/world";
 import { ENGINE_COLORS, engineLabel } from "../../constants";
 import type { SceneFrame } from "../../scene";
-import { lookFor, lookKey, renderFace } from "../../scene/voxel";
+import { lookFor, lookKey, renderFace } from "../../scene/pixel";
 
 export interface FloorOverlayHandle {
 	setFrame: (frame: SceneFrame) => void;

@@ -1,4 +1,11 @@
 import Phaser from "phaser";
+import {
+	PROPS,
+	STANDING_PX,
+	TILE,
+	TILE_NAMES,
+	tileStrip,
+} from "../../../tileset";
 import type { OfficeSnapshot, Teammate } from "../../../types";
 import {
 	type Facing,
@@ -9,14 +16,14 @@ import {
 	type SeatTarget,
 	type WorldLayout,
 } from "../../../utils/world";
-import { WORLD_IMAGE_URL } from "./assets";
+import { WORLD } from "./assets";
 import {
 	lookFor,
 	lookKey,
 	renderCharacterSheet,
 	SHEET,
-	STANDING_PX,
-} from "./voxel";
+	toCanvas,
+} from "./pixel";
 
 export interface ScenePayload {
 	state: OfficeSnapshot;
@@ -63,30 +70,28 @@ interface Actor {
 	seated: boolean;
 }
 
-const WALK_SPEED = 240;
-const STEP = 40;
+const WALK_SPEED = 90;
+const STEP = 16;
 const DIRECTIONS: Facing[] = ["down", "left", "right", "up"];
-const CHARACTER_HEIGHT_SHARE = 0.065;
+/** Seated sprites draw just after their chair, which sits a few pixels below their feet line. */
+const SEATED_DEPTH_LIFT = 8;
 
 export class OfficeScene extends Phaser.Scene {
 	private readonly actors = new Map<string, Actor>();
-	private world: Phaser.GameObjects.Image | null = null;
+	private readonly worldSize = {
+		w: WORLD.cols * WORLD.tileSize,
+		h: WORLD.rows * WORLD.tileSize,
+	};
 	private payload: ScenePayload | null = null;
 	private keys: Record<Facing, Phaser.Input.Keyboard.Key[]> | null = null;
-	private characterScale = 1;
 
 	constructor(private readonly callbacks: SceneCallbacks) {
 		super("office");
 	}
 
-	preload(): void {
-		this.load.image("world", WORLD_IMAGE_URL);
-	}
-
 	create(): void {
-		this.world = this.add.image(0, 0, "world").setOrigin(0, 0).setDepth(0);
-		this.characterScale =
-			(this.world.height * CHARACTER_HEIGHT_SHARE) / STANDING_PX;
+		this.buildFloor();
+		this.placeProps();
 
 		const keyboard = this.input.keyboard;
 		if (keyboard) {
@@ -115,10 +120,51 @@ export class OfficeScene extends Phaser.Scene {
 		this.callbacks.onReady(this);
 	}
 
+	/** Floor and wall tiles from the Tiled map, drawn from the code tileset. */
+	private buildFloor(): void {
+		this.textures.addCanvas("floor-walls", toCanvas(tileStrip()));
+		const rows: number[][] = [];
+		for (let r = 0; r < WORLD.rows; r++)
+			rows.push(
+				WORLD.floor
+					.slice(r * WORLD.cols, (r + 1) * WORLD.cols)
+					.map((name) => TILE_NAMES.indexOf(name)),
+			);
+		const map = this.make.tilemap({
+			data: rows,
+			tileWidth: TILE,
+			tileHeight: TILE,
+		});
+		const tiles = map.addTilesetImage(
+			"floor-walls",
+			"floor-walls",
+			TILE,
+			TILE,
+			0,
+			0,
+		);
+		if (tiles) map.createLayer(0, tiles, 0, 0)?.setDepth(0);
+	}
+
+	/** Every prop object from the Tiled map, drawn once per prop kind and layered by its base line. */
+	private placeProps(): void {
+		for (const placed of WORLD.props) {
+			const prop = PROPS[placed.name];
+			if (!prop) continue;
+			const key = `prop-${placed.name}`;
+			if (!this.textures.exists(key))
+				this.textures.addCanvas(key, toCanvas(prop.draw()));
+			this.add
+				.image(placed.x, placed.y, key)
+				.setOrigin(0, 1)
+				.setDepth(prop.flat ? 0.5 : 1 + placed.y);
+		}
+	}
+
 	/** Draws a teammate's sprite sheet on a canvas once and registers its frames and animations. */
 	private characterTexture(id: string): string {
 		const look = lookFor(id);
-		const key = `voxel-${lookKey(look)}`;
+		const key = `pixel-${lookKey(look)}`;
 		if (this.textures.exists(key)) return key;
 		const canvas = renderCharacterSheet(look);
 		const texture = this.textures.addCanvas(key, canvas);
@@ -163,15 +209,12 @@ export class OfficeScene extends Phaser.Scene {
 	}
 
 	private fitCamera(): void {
-		if (!this.world) return;
 		const view = this.scale.gameSize;
-		const zoom = Math.min(
-			view.width / this.world.width,
-			view.height / this.world.height,
-		);
+		const { w, h } = this.worldSize;
+		const zoom = Math.min(view.width / w, view.height / h);
 		const camera = this.cameras.main;
 		camera.setZoom(zoom);
-		camera.centerOn(this.world.width / 2, this.world.height / 2);
+		camera.centerOn(w / 2, h / 2);
 	}
 
 	private emitFrame(): void {
@@ -184,9 +227,8 @@ export class OfficeScene extends Phaser.Scene {
 		const actors: ActorFrame[] = [];
 		for (const actor of this.actors.values()) {
 			const feet = toScreen(actor.position);
-			const bodyShare = actor.seated ? 0.8 : 1;
-			const headY =
-				feet.y - STANDING_PX * this.characterScale * camera.zoom * bodyShare;
+			const bodyShare = actor.seated ? 0.66 : 1;
+			const headY = feet.y - STANDING_PX * camera.zoom * bodyShare;
 			actors.push({ id: actor.id, x: feet.x, y: feet.y, headY });
 		}
 		const signs: SignFrame[] = [];
@@ -237,7 +279,6 @@ export class OfficeScene extends Phaser.Scene {
 		const sprite = this.add
 			.sprite(0, 0, character, 0)
 			.setOrigin(cell.feetX / cell.w, cell.feetY / cell.h)
-			.setScale(this.characterScale)
 			.setInteractive({ useHandCursor: true });
 		sprite.on("pointerdown", () =>
 			this.callbacks.onSelectTeammate(teammate.id),
@@ -281,7 +322,9 @@ export class OfficeScene extends Phaser.Scene {
 	}
 
 	private layer(actor: Actor): void {
-		actor.sprite.setDepth(1 + actor.position.y);
+		actor.sprite.setDepth(
+			1 + actor.position.y + (actor.seated ? SEATED_DEPTH_LIFT : 0),
+		);
 	}
 
 	private step(actor: Actor, delta: number): void {
@@ -361,7 +404,8 @@ export function createOfficeGame(
 		type: Phaser.AUTO,
 		parent,
 		transparent: true,
-		antialias: true,
+		pixelArt: true,
+		antialias: false,
 		scale: {
 			mode: Phaser.Scale.RESIZE,
 			width: "100%",

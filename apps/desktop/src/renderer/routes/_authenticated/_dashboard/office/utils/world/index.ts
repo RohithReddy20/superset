@@ -1,4 +1,10 @@
 export {
+	type ParsedWorld,
+	type PropPlacement,
+	parseTiledWorld,
+	type TiledMap,
+} from "./tiled";
+export {
 	CELL,
 	cellOf,
 	type Facing,

@@ -1,18 +1,12 @@
-import type { WorldMap } from "../../../utils/world";
-import worldMap from "../assets/world/office.map.json";
+import { isFloorTile, PROPS } from "../../../tileset";
+import { parseTiledWorld, type TiledMap } from "../../../utils/world";
+import officeMap from "../assets/world/office.json";
 
-export const WORLD_MAP = worldMap as WorldMap;
+/** The office as drawn in Tiled: floor tiles, props, zones, seats and spawn. */
+export const WORLD = parseTiledWorld(
+	officeMap as unknown as TiledMap,
+	(name) => PROPS[name],
+	isFloorTile,
+);
 
-const imageUrls = import.meta.glob<string>("../assets/world/office.*", {
-	eager: true,
-	query: "?url",
-	import: "default",
-});
-
-export const WORLD_IMAGE_URL = (() => {
-	const match = Object.keys(imageUrls).find((k) =>
-		/\/world\/office\.(webp|png|jpg)$/.test(k),
-	);
-	if (!match) throw new Error("missing office world image");
-	return imageUrls[match] as string;
-})();
+export const WORLD_MAP = WORLD.map;
