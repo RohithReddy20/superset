@@ -1,0 +1,21 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/HireDialog/HireDialog.tsx
+  s_8322a827a65284::t_0d256ceb3d637b 1,22,42,44,66-67,93,137,153-155,157-159
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/scene/OfficeScene.ts
+  s_8322a827a65284::t_1714d1653a0d02 403-410
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e9dcf4cbf3a70727e1e14401486290eae49e9dcc",
+  "prompts": {},
+  "sessions": {
+    "s_8322a827a65284": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "915e3ab3-2509-48d4-ac28-15e170582e47",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
