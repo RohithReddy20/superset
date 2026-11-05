@@ -400,7 +400,14 @@ export class OfficeScene extends Phaser.Scene {
 			};
 			me.manual = true;
 			me.facing = facing;
-			if (isWalkable(this.payload.layout, next)) me.path = [next];
+			const seat = this.seatNear(next, SEAT_CLICK);
+			const ahead =
+				seat &&
+				Math.hypot(seat.x - next.x, seat.y - next.y) <
+					Math.hypot(seat.x - me.position.x, seat.y - me.position.y);
+			if (seat && ahead)
+				me.path = findPath(this.payload.layout, me.position, seat);
+			else if (isWalkable(this.payload.layout, next)) me.path = [next];
 			else this.play(me, "idle", facing);
 			return;
 		}

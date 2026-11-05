@@ -1,3 +1,4 @@
+import { getAgentModelSupport } from "@superset/shared/agent-models";
 import { Button } from "@superset/ui/button";
 import {
 	Dialog,
@@ -18,6 +19,7 @@ import {
 } from "@superset/ui/select";
 import { Textarea } from "@superset/ui/textarea";
 import { useState } from "react";
+import { AgentModelSelect } from "renderer/components/AgentModelSelect";
 import type { EngineId, Room } from "../../types";
 import { engineLabel } from "../OfficeFloor/constants";
 
@@ -37,9 +39,9 @@ interface HireDialogProps {
 	}) => void;
 }
 
-const ENGINES: Array<{ id: EngineId; model: string; hint: string }> = [
+const ENGINES: Array<{ id: EngineId; model: string | null; hint: string }> = [
 	{ id: "claude", model: "haiku", hint: "Claude Code" },
-	{ id: "codex", model: "gpt-6.1-luna", hint: "Codex" },
+	{ id: "codex", model: null, hint: "Codex" },
 	{ id: "agy", model: "gemini-3.8-flash", hint: "Antigravity" },
 ];
 
@@ -61,7 +63,8 @@ export function HireDialog({
 	const [name, setName] = useState("");
 	const [role, setRole] = useState("");
 	const [engine, setEngine] = useState<EngineId>("claude");
-	const [model, setModel] = useState(ENGINES[0]?.model ?? "");
+	const [model, setModel] = useState<string | null>(ENGINES[0]?.model ?? null);
+	const models = getAgentModelSupport(engine)?.models ?? [];
 	const [room, setRoom] = useState(rooms[0]?.id ?? "");
 	const id = toId(name);
 	const roomId = rooms.some((r) => r.id === room) ? room : (rooms[0]?.id ?? "");
@@ -87,7 +90,7 @@ export function HireDialog({
 								role: role.trim(),
 								room: roomId,
 								engine,
-								model: model.trim() || undefined,
+								model: model ?? undefined,
 							});
 					}}
 				>
@@ -131,7 +134,7 @@ export function HireDialog({
 								onValueChange={(value) => {
 									const next = value as EngineId;
 									setEngine(next);
-									setModel(ENGINES.find((e) => e.id === next)?.model ?? "");
+									setModel(ENGINES.find((e) => e.id === next)?.model ?? null);
 								}}
 							>
 								<SelectTrigger className="w-full">
@@ -147,13 +150,13 @@ export function HireDialog({
 							</Select>
 						</div>
 						<div className="flex flex-col gap-1.5">
-							<Label htmlFor="office-hire-model" className="text-xs">
-								Model
-							</Label>
-							<Input
-								id="office-hire-model"
+							<Label className="text-xs">Model</Label>
+							<AgentModelSelect
+								models={[...models]}
 								value={model}
-								onChange={(event) => setModel(event.target.value)}
+								onValueChange={setModel}
+								defaultLabel="Engine default"
+								triggerClassName="w-full"
 							/>
 						</div>
 					</div>
