@@ -181,6 +181,31 @@ export class OfficeRuntime {
 		if (this.started) this.startSeat(spec);
 	}
 
+	addRoom(room: { id: string; name: string }): void {
+		if (this.config.rooms.some((r) => r.id === room.id))
+			throw new Error(`room ${room.id} already exists`);
+		this.config.rooms.push({ ...room, kind: "room", members: [] });
+		this.saveConfig();
+		this.applyConfig();
+	}
+
+	moveTeammate(id: string, roomId: string): void {
+		const room = this.config.rooms.find((r) => r.id === roomId);
+		if (!room || room.kind === "dm") throw new Error(`no room ${roomId}`);
+		const spec =
+			this.config.seats.find((s) => s.id === id) ??
+			this.config.humans.find((h) => h.id === id);
+		if (!spec) throw new Error(`no teammate ${id}`);
+		for (const other of this.config.rooms) {
+			if (other.id === spec.room)
+				other.members = other.members.filter((m) => m !== id);
+		}
+		spec.room = roomId;
+		if (!room.members.includes(id)) room.members.push(id);
+		this.saveConfig();
+		this.applyConfig();
+	}
+
 	private startSeat(spec: OfficeSeatConfig): void {
 		const teammate = this.office.teammate(spec.id);
 		if (!teammate || this.seats.has(spec.id)) return;

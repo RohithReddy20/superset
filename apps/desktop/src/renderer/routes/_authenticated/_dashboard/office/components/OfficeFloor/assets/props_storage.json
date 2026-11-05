@@ -1,0 +1,42 @@
+{
+	"filing_cabinet_back": {
+		"ax": 0,
+		"ay": 28,
+		"fh": 1,
+		"fw": 1,
+		"h": 59,
+		"w": 31,
+		"x": 32,
+		"y": 0
+	},
+	"filing_cabinet_front": {
+		"ax": 0,
+		"ay": 29,
+		"fh": 1,
+		"fw": 1,
+		"h": 59,
+		"w": 31,
+		"x": 0,
+		"y": 0
+	},
+	"filing_cabinet_left": {
+		"ax": 1,
+		"ay": 28,
+		"fh": 1,
+		"fw": 1,
+		"h": 58,
+		"w": 33,
+		"x": 64,
+		"y": 0
+	},
+	"filing_cabinet_right": {
+		"ax": 1,
+		"ay": 28,
+		"fh": 1,
+		"fw": 1,
+		"h": 58,
+		"w": 34,
+		"x": 98,
+		"y": 0
+	}
+}

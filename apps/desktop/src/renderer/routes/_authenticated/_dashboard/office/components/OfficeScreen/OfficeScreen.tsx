@@ -1,17 +1,23 @@
 import { cn } from "@superset/ui/utils";
 import { useMemo, useState } from "react";
+import { LuPlus, LuUserPlus } from "react-icons/lu";
 import { PageHeader } from "renderer/routes/_authenticated/_dashboard/components/PageHeader";
 import { useOffice } from "../../hooks/useOffice";
+import { AddRoomDialog } from "../AddRoomDialog";
+import { HireDialog } from "../HireDialog";
 import { OfficeFloor } from "../OfficeFloor";
 import { RightNowRail } from "../RightNowRail";
 import { RoomFeed } from "../RoomFeed";
 import { TeammateCard } from "../TeammateCard";
 
 export function OfficeScreen() {
-	const { state, say, setPaused, hostReady } = useOffice();
+	const { state, say, setPaused, hire, addRoom, moveTeammate, hostReady } =
+		useOffice();
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [roomId, setRoomId] = useState<string | null>(null);
 	const [showLog, setShowLog] = useState(false);
+	const [addingRoom, setAddingRoom] = useState(false);
+	const [hiring, setHiring] = useState(false);
 
 	const data = state.data;
 	const rooms = useMemo(
@@ -43,22 +49,32 @@ export function OfficeScreen() {
 					</div>
 				}
 				end={
-					<button
-						type="button"
-						onClick={() => setShowLog((v) => !v)}
-						className={cn(
-							"rounded-md px-2 py-1 font-mono text-[10px] uppercase tracking-[0.1em] transition-colors",
-							showLog
-								? "bg-fill-selected text-foreground"
-								: "text-muted-foreground hover:bg-fill-hover",
-						)}
-					>
-						seat log
-					</button>
+					<div className="flex items-center gap-1">
+						<HeaderButton
+							onClick={() => setHiring(true)}
+							disabled={!data}
+							icon={<LuUserPlus className="size-3.5" />}
+						>
+							hire
+						</HeaderButton>
+						<HeaderButton
+							onClick={() => setAddingRoom(true)}
+							disabled={!data}
+							icon={<LuPlus className="size-3.5" />}
+						>
+							room
+						</HeaderButton>
+						<HeaderButton
+							active={showLog}
+							onClick={() => setShowLog((v) => !v)}
+						>
+							seat log
+						</HeaderButton>
+					</div>
 				}
 			/>
 			<div className="flex min-h-0 flex-1">
-				<div className="relative min-w-0 flex-1 bg-background">
+				<div className="relative min-w-0 flex-1 bg-[#1b1a1f]">
 					{!hostReady ? (
 						<Empty text="Waiting for the local host…" />
 					) : state.isError ? (
@@ -68,17 +84,24 @@ export function OfficeScreen() {
 					) : !data ? (
 						<Empty text="Opening the office…" />
 					) : (
-						<div className="absolute inset-0 p-6">
+						<div className="absolute inset-0">
 							<OfficeFloor
 								state={data}
 								selectedId={selectedId}
+								meId={me?.id ?? null}
 								onSelectTeammate={(id) => setSelectedId(id)}
 								onSelectRoom={(id) => setRoomId(id)}
 							/>
 						</div>
 					)}
+					{data ? (
+						<div className="pointer-events-none absolute bottom-3 left-3 font-mono text-[10px] text-white/40">
+							click the floor or use the arrow keys to walk · click a teammate
+							to open them
+						</div>
+					) : null}
 					{showLog && data ? (
-						<div className="absolute inset-x-6 bottom-4 max-h-48 overflow-y-auto rounded-md border border-border bg-card/95 p-2 font-mono text-[10px] leading-relaxed text-muted-foreground backdrop-blur">
+						<div className="absolute inset-x-6 bottom-8 max-h-48 overflow-y-auto rounded-md border border-border bg-card/95 p-2 font-mono text-[10px] leading-relaxed text-muted-foreground backdrop-blur">
 							{data.log.slice(-60).map((l) => (
 								<div key={`${l.ts}-${l.seatId}-${l.text.slice(0, 20)}`}>
 									<span className="text-foreground">[{l.seatId}]</span> {l.text}
@@ -105,24 +128,28 @@ export function OfficeScreen() {
 							<TeammateCard
 								teammate={selected}
 								handoffs={data.handoffs}
+								rooms={rooms}
 								names={names}
 								onClose={() => setSelectedId(null)}
 								onTogglePaused={(paused) =>
 									setPaused.mutate({ id: selected.id, paused })
+								}
+								onMove={(targetRoomId) =>
+									moveTeammate.mutate({ id: selected.id, roomId: targetRoomId })
 								}
 							/>
 						</div>
 					) : null}
 					{data && activeRoom ? (
 						<>
-							<div className="flex items-center gap-1 border-b border-border px-2 py-1.5">
+							<div className="flex items-center gap-1 overflow-x-auto border-b border-border px-2 py-1.5">
 								{rooms.map((r) => (
 									<button
 										type="button"
 										key={r.id}
 										onClick={() => setRoomId(r.id)}
 										className={cn(
-											"rounded-md px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] transition-colors",
+											"shrink-0 rounded-md px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] transition-colors",
 											r.id === activeRoom.id
 												? "bg-fill-selected text-foreground"
 												: "text-muted-foreground hover:bg-fill-hover",
@@ -146,7 +173,73 @@ export function OfficeScreen() {
 					) : null}
 				</aside>
 			</div>
+			<AddRoomDialog
+				open={addingRoom}
+				pending={addRoom.isPending}
+				error={addRoom.error?.message ?? null}
+				onOpenChange={(open) => {
+					setAddingRoom(open);
+					if (!open) addRoom.reset();
+				}}
+				onSubmit={(input) =>
+					addRoom.mutate(input, {
+						onSuccess: () => {
+							setAddingRoom(false);
+							setRoomId(input.id);
+						},
+					})
+				}
+			/>
+			<HireDialog
+				open={hiring}
+				rooms={rooms}
+				pending={hire.isPending}
+				error={hire.error?.message ?? null}
+				onOpenChange={(open) => {
+					setHiring(open);
+					if (!open) hire.reset();
+				}}
+				onSubmit={(input) =>
+					hire.mutate(input, {
+						onSuccess: () => {
+							setHiring(false);
+							setSelectedId(input.id);
+						},
+					})
+				}
+			/>
 		</div>
+	);
+}
+
+function HeaderButton({
+	children,
+	icon,
+	active,
+	disabled,
+	onClick,
+}: {
+	children: React.ReactNode;
+	icon?: React.ReactNode;
+	active?: boolean;
+	disabled?: boolean;
+	onClick: () => void;
+}) {
+	return (
+		<button
+			type="button"
+			onClick={onClick}
+			disabled={disabled}
+			className={cn(
+				"flex items-center gap-1 rounded-md px-2 py-1 font-mono text-[10px] uppercase tracking-[0.1em] transition-colors disabled:opacity-50",
+				active
+					? "bg-fill-selected text-foreground"
+					: "text-muted-foreground hover:bg-fill-hover",
+			)}
+		>
+			{icon}
+			{children}
+		</button>
 	);
 }
 

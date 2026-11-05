@@ -62,6 +62,7 @@
 		"native-keymap": "3.3.9",
 		"node-addon-api": "7.1.1",
 		"node-pty": "1.2.0-beta.14",
+		"phaser": "3.90.0",
 		"pi-acp": "0.0.34",
 		"utf-8-validate": "6.0.6",
 		"ws": "8.21.3"

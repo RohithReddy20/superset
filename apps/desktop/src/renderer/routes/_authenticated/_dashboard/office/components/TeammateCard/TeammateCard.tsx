@@ -1,22 +1,33 @@
 import { Button } from "@superset/ui/button";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@superset/ui/select";
 import { LuX } from "react-icons/lu";
-import type { Handoff, Teammate } from "../../types";
+import type { Handoff, Room, Teammate } from "../../types";
 import { ENGINE_COLORS, engineLabel } from "../OfficeFloor/constants";
 
 interface TeammateCardProps {
 	teammate: Teammate;
 	handoffs: Handoff[];
+	rooms: Room[];
 	names: Map<string, string>;
 	onClose: () => void;
 	onTogglePaused: (paused: boolean) => void;
+	onMove: (roomId: string) => void;
 }
 
 export function TeammateCard({
 	teammate: t,
 	handoffs,
+	rooms,
 	names,
 	onClose,
 	onTogglePaused,
+	onMove,
 }: TeammateCardProps) {
 	const color = ENGINE_COLORS[t.engine ?? "human"];
 	const mine = handoffs
@@ -110,8 +121,20 @@ export function TeammateCard({
 					</ul>
 				</div>
 			) : null}
-			{t.kind === "ai" ? (
-				<div className="mt-3 flex justify-end">
+			<div className="mt-3 flex items-center justify-between gap-2">
+				<Select value={t.roomId} onValueChange={onMove}>
+					<SelectTrigger className="h-8 w-[160px] text-xs">
+						<SelectValue placeholder="Move to a room" />
+					</SelectTrigger>
+					<SelectContent>
+						{rooms.map((r) => (
+							<SelectItem key={r.id} value={r.id}>
+								#{r.name}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				{t.kind === "ai" ? (
 					<Button
 						variant="outline"
 						size="sm"
@@ -119,8 +142,8 @@ export function TeammateCard({
 					>
 						{t.paused ? "Resume" : "Pause"}
 					</Button>
-				</div>
-			) : null}
+				) : null}
+			</div>
 		</div>
 	);
 }

@@ -117,6 +117,7 @@
         "native-keymap": "3.3.9",
         "node-addon-api": "7.1.1",
         "node-pty": "1.2.0-beta.14",
+        "phaser": "3.90.0",
         "pi-acp": "0.0.34",
         "utf-8-validate": "6.0.6",
         "ws": "8.21.3",
@@ -5770,6 +5771,8 @@
     "pg-protocol": ["pg-protocol@1.16.0", "", {}, "sha512-sILXutLVjCLjcDuOmvhX5e2Z4cS5qG/6Bu3VkpFwdf/633ElGLpEh9bgmuI5I4sqKqkifQiGyiCcx1HdtrK7tg=="],
 
     "pg-types": ["pg-types@2.2.0", "", { "dependencies": { "pg-int8": "1.0.1", "postgres-array": "~2.0.0", "postgres-bytea": "~1.0.0", "postgres-date": "~1.0.4", "postgres-interval": "^1.1.0" } }, "sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA=="],
+
+    "phaser": ["phaser@3.90.0", "", { "dependencies": { "eventemitter3": "^5.0.1" } }, "sha512-/cziz/5ZIn02uDkC9RzN8VF9x3Gs3XdFFf9nkiMEQT3p7hQlWuyjy4QWosU802qqno2YSLn2BfqwOKLv/sSVfQ=="],
 
     "pi-acp": ["pi-acp@0.0.34", "", { "dependencies": { "@agentclientprotocol/sdk": "^0.26.0", "cross-spawn": "^7.0.6", "zod": "^3.25.0" }, "bin": { "pi-acp": "dist/index.js" } }, "sha512-MrCp37UbpUzkTkzTIMJQf1RYrT+kr4fgGDGFoLmBN26UupuCZp0XxVIY+7XYsMo3yDnzDeZUJ0jPyM3Si6Bkkg=="],
 

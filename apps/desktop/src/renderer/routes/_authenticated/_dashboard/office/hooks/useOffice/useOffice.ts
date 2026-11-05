@@ -61,5 +61,29 @@ export function useOffice() {
 		onSuccess: refresh,
 	});
 
-	return { state, say, setPaused, hire, hostReady: !!client };
+	const addRoom = useMutation({
+		mutationFn: (input: { id: string; name: string }) => {
+			if (!client) throw new Error("No local host");
+			return client.office.addRoom.mutate(input);
+		},
+		onSuccess: refresh,
+	});
+
+	const moveTeammate = useMutation({
+		mutationFn: (input: { id: string; roomId: string }) => {
+			if (!client) throw new Error("No local host");
+			return client.office.moveTeammate.mutate(input);
+		},
+		onSuccess: refresh,
+	});
+
+	return {
+		state,
+		say,
+		setPaused,
+		hire,
+		addRoom,
+		moveTeammate,
+		hostReady: !!client,
+	};
 }

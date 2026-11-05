@@ -75,6 +75,41 @@ export const officeRouter = router({
 			return { ok: true };
 		}),
 
+	addRoom: protectedProcedure
+		.input(
+			z.object({
+				id: z
+					.string()
+					.regex(/^[a-z0-9-]{2,24}$/, "lowercase letters, digits and dashes"),
+				name: z.string().min(1).max(40),
+			}),
+		)
+		.mutation(({ ctx, input }): { ok: true } => {
+			try {
+				officeOf(ctx.runtime).addRoom(input);
+			} catch (error) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: (error as Error).message,
+				});
+			}
+			return { ok: true };
+		}),
+
+	moveTeammate: protectedProcedure
+		.input(z.object({ id: z.string(), roomId: z.string() }))
+		.mutation(({ ctx, input }): { ok: true } => {
+			try {
+				officeOf(ctx.runtime).moveTeammate(input.id, input.roomId);
+			} catch (error) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: (error as Error).message,
+				});
+			}
+			return { ok: true };
+		}),
+
 	stop: protectedProcedure.mutation(async ({ ctx }): Promise<{ ok: true }> => {
 		await officeOf(ctx.runtime).stop();
 		return { ok: true };
