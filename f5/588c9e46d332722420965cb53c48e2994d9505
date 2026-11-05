@@ -1,0 +1,76 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/layout/index.ts
+  s_ba0de495eca415::t_0bcc058389753a 2-7,9-12
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/AddRoomDialog/AddRoomDialog.tsx
+  s_ba0de495eca415::t_975b7679bde104 1-87
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/OfficeFloor.tsx
+  s_ba0de495eca415::t_deb019aebbcfa1 1-4,9,17,21-26,29,37-59,61-64,67-69
+  s_ba0de495eca415::t_a266e015d02da9 71-73
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/scene/OfficeScene.ts
+  s_ba0de495eca415::t_19ec7a1fa62b1c 1-463
+  s_ba0de495eca415::t_c8dedd39c27578 464-582
+packages/host-service/src/office/officeRuntime.ts
+  s_ba0de495eca415::t_5dddb212215259 184-208
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeScreen/OfficeScreen.tsx
+  s_ba0de495eca415::t_8e6570ddda8a84 3,6-7,14-15,19-20,52-73,77,87,91,97-102,104,131,137-139,145,152,176-210,215-241,244
+  s_ba0de495eca415::t_81af12240b946d 242-243,245
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/scene/assets.ts
+  s_ba0de495eca415::t_8deda693fe4407 1-60
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/AddRoomDialog/index.ts
+  s_ba0de495eca415::t_3509992d48c78a 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/scene/index.ts
+  s_ba0de495eca415::t_72419ee1486cb8 1
+  s_ba0de495eca415::t_838bf74317418d 2-5
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/TeammateCard/TeammateCard.tsx
+  s_ba0de495eca415::t_25deae0569ae1b 2-8,10,16,20,26,30
+  s_ba0de495eca415::t_023899bbcf5ca7 124-137,145-146
+packages/host-service/src/trpc/router/office/office.ts
+  s_ba0de495eca415::t_10962c6e99b45c 78-112
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/hooks/useOffice/useOffice.ts
+  s_ba0de495eca415::t_463da98a30810c 64-88
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/layout/layout.ts
+  s_ba0de495eca415::t_57585da328c91f 222,235
+  s_ba0de495eca415::t_213876fbde7830 3-16,20-24,27-30,33,36-45,48-68,70-77,80,88,90-101,104-109,112-144,147-174,180-221,223-234,236-252,254-277,279-304,306-308,311-374
+  s_ba0de495eca415::t_a8f4580a24ed36 375
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/HireDialog/HireDialog.tsx
+  s_ba0de495eca415::t_d2ac54673f55ff 1-189
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/HireDialog/index.ts
+  s_ba0de495eca415::t_1d25cb9748b1e1 1
+apps/desktop/package.json
+  s_ba0de495eca415::t_84ccd1a33dffff 65
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/assets/CREDITS.txt
+  s_ba0de495eca415::t_de2c2bcfadc7e7 1-5
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/assets/props_decor.json
+  s_ba0de495eca415::t_41a104a85966e5 1-122
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/assets/props_desk_items.json
+  s_ba0de495eca415::t_5c4a5b15ccc581 1-122
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/assets/props_desks.json
+  s_ba0de495eca415::t_57dec46951542b 1-42
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/assets/props_kitchen.json
+  s_ba0de495eca415::t_c1fbb61d14f8bc 1-82
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/assets/props_meeting.json
+  s_ba0de495eca415::t_fd234e52ba3f67 1-122
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/assets/props_seating.json
+  s_ba0de495eca415::t_367dc0e4aa23e4 1-42
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/assets/props_storage.json
+  s_ba0de495eca415::t_f71ebb8a503dcc 1-42
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/assets/props_tech.json
+  s_ba0de495eca415::t_4d939cef5e3023 1-82
+bun.lock
+  s_ba0de495eca415::t_c2c76e645a32ea 120,5775-5776
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f5588c9e46d332722420965cb53c48e2994d9505",
+  "prompts": {},
+  "sessions": {
+    "s_ba0de495eca415": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "45c600a5-1655-454e-8101-759a42937772",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
