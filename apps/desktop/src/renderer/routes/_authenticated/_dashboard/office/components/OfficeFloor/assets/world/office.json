@@ -5,8 +5,8 @@
 	"orientation": "orthogonal",
 	"renderorder": "right-down",
 	"infinite": false,
-	"width": 28,
-	"height": 18,
+	"width": 52,
+	"height": 34,
 	"tilewidth": 32,
 	"tileheight": 32,
 	"compressionlevel": -1,
@@ -15,12 +15,12 @@
 			"firstgid": 1,
 			"name": "floor-walls",
 			"image": "floor-walls.png",
-			"imagewidth": 448,
+			"imagewidth": 928,
 			"imageheight": 32,
 			"tilewidth": 32,
 			"tileheight": 32,
-			"tilecount": 14,
-			"columns": 14,
+			"tilecount": 29,
+			"columns": 29,
 			"margin": 0,
 			"spacing": 0,
 			"tiles": [
@@ -75,12 +75,12 @@
 						{
 							"name": "name",
 							"type": "string",
-							"value": "wall-cap"
+							"value": "floor-wood-0"
 						},
 						{
 							"name": "blocked",
 							"type": "bool",
-							"value": true
+							"value": false
 						}
 					]
 				},
@@ -90,12 +90,12 @@
 						{
 							"name": "name",
 							"type": "string",
-							"value": "wall-face"
+							"value": "floor-wood-1"
 						},
 						{
 							"name": "blocked",
 							"type": "bool",
-							"value": true
+							"value": false
 						}
 					]
 				},
@@ -105,12 +105,12 @@
 						{
 							"name": "name",
 							"type": "string",
-							"value": "side-left"
+							"value": "floor-wood-2"
 						},
 						{
 							"name": "blocked",
 							"type": "bool",
-							"value": true
+							"value": false
 						}
 					]
 				},
@@ -120,12 +120,12 @@
 						{
 							"name": "name",
 							"type": "string",
-							"value": "side-right"
+							"value": "floor-carpet-0"
 						},
 						{
 							"name": "blocked",
 							"type": "bool",
-							"value": true
+							"value": false
 						}
 					]
 				},
@@ -135,12 +135,12 @@
 						{
 							"name": "name",
 							"type": "string",
-							"value": "front"
+							"value": "floor-carpet-1"
 						},
 						{
 							"name": "blocked",
 							"type": "bool",
-							"value": true
+							"value": false
 						}
 					]
 				},
@@ -150,12 +150,12 @@
 						{
 							"name": "name",
 							"type": "string",
-							"value": "corner-tl"
+							"value": "floor-tile-0"
 						},
 						{
 							"name": "blocked",
 							"type": "bool",
-							"value": true
+							"value": false
 						}
 					]
 				},
@@ -165,7 +165,7 @@
 						{
 							"name": "name",
 							"type": "string",
-							"value": "corner-tr"
+							"value": "cap-0"
 						},
 						{
 							"name": "blocked",
@@ -180,7 +180,7 @@
 						{
 							"name": "name",
 							"type": "string",
-							"value": "corner-bl"
+							"value": "cap-1"
 						},
 						{
 							"name": "blocked",
@@ -195,7 +195,7 @@
 						{
 							"name": "name",
 							"type": "string",
-							"value": "corner-br"
+							"value": "cap-2"
 						},
 						{
 							"name": "blocked",
@@ -210,7 +210,7 @@
 						{
 							"name": "name",
 							"type": "string",
-							"value": "face-left"
+							"value": "cap-3"
 						},
 						{
 							"name": "blocked",
@@ -225,7 +225,232 @@
 						{
 							"name": "name",
 							"type": "string",
-							"value": "face-right"
+							"value": "cap-4"
+						},
+						{
+							"name": "blocked",
+							"type": "bool",
+							"value": true
+						}
+					]
+				},
+				{
+					"id": 14,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "cap-5"
+						},
+						{
+							"name": "blocked",
+							"type": "bool",
+							"value": true
+						}
+					]
+				},
+				{
+					"id": 15,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "cap-6"
+						},
+						{
+							"name": "blocked",
+							"type": "bool",
+							"value": true
+						}
+					]
+				},
+				{
+					"id": 16,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "cap-7"
+						},
+						{
+							"name": "blocked",
+							"type": "bool",
+							"value": true
+						}
+					]
+				},
+				{
+					"id": 17,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "cap-8"
+						},
+						{
+							"name": "blocked",
+							"type": "bool",
+							"value": true
+						}
+					]
+				},
+				{
+					"id": 18,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "cap-9"
+						},
+						{
+							"name": "blocked",
+							"type": "bool",
+							"value": true
+						}
+					]
+				},
+				{
+					"id": 19,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "cap-10"
+						},
+						{
+							"name": "blocked",
+							"type": "bool",
+							"value": true
+						}
+					]
+				},
+				{
+					"id": 20,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "cap-11"
+						},
+						{
+							"name": "blocked",
+							"type": "bool",
+							"value": true
+						}
+					]
+				},
+				{
+					"id": 21,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "cap-12"
+						},
+						{
+							"name": "blocked",
+							"type": "bool",
+							"value": true
+						}
+					]
+				},
+				{
+					"id": 22,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "cap-13"
+						},
+						{
+							"name": "blocked",
+							"type": "bool",
+							"value": true
+						}
+					]
+				},
+				{
+					"id": 23,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "cap-14"
+						},
+						{
+							"name": "blocked",
+							"type": "bool",
+							"value": true
+						}
+					]
+				},
+				{
+					"id": 24,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "cap-15"
+						},
+						{
+							"name": "blocked",
+							"type": "bool",
+							"value": true
+						}
+					]
+				},
+				{
+					"id": 25,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "face-0"
+						},
+						{
+							"name": "blocked",
+							"type": "bool",
+							"value": true
+						}
+					]
+				},
+				{
+					"id": 26,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "face-2"
+						},
+						{
+							"name": "blocked",
+							"type": "bool",
+							"value": true
+						}
+					]
+				},
+				{
+					"id": 27,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "face-8"
+						},
+						{
+							"name": "blocked",
+							"type": "bool",
+							"value": true
+						}
+					]
+				},
+				{
+					"id": 28,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "face-10"
 						},
 						{
 							"name": "blocked",
@@ -237,11 +462,11 @@
 			]
 		},
 		{
-			"firstgid": 15,
+			"firstgid": 30,
 			"name": "props",
-			"tilewidth": 176,
-			"tileheight": 100,
-			"tilecount": 24,
+			"tilewidth": 224,
+			"tileheight": 128,
+			"tilecount": 32,
 			"columns": 0,
 			"margin": 0,
 			"spacing": 0,
@@ -683,6 +908,150 @@
 							"value": 72
 						}
 					]
+				},
+				{
+					"id": 24,
+					"image": "props/armchair-front.png",
+					"imagewidth": 30,
+					"imageheight": 30,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "armchair-front"
+						},
+						{
+							"name": "footprint",
+							"type": "int",
+							"value": 24
+						}
+					]
+				},
+				{
+					"id": 25,
+					"image": "props/armchair-back.png",
+					"imagewidth": 30,
+					"imageheight": 30,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "armchair-back"
+						},
+						{
+							"name": "footprint",
+							"type": "int",
+							"value": 24
+						}
+					]
+				},
+				{
+					"id": 26,
+					"image": "props/dining-table.png",
+					"imagewidth": 64,
+					"imageheight": 36,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "dining-table"
+						},
+						{
+							"name": "footprint",
+							"type": "int",
+							"value": 28
+						}
+					]
+				},
+				{
+					"id": 27,
+					"image": "props/tv-screen.png",
+					"imagewidth": 72,
+					"imageheight": 42,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "tv-screen"
+						},
+						{
+							"name": "footprint",
+							"type": "int",
+							"value": 0
+						}
+					]
+				},
+				{
+					"id": 28,
+					"image": "props/fridge.png",
+					"imagewidth": 30,
+					"imageheight": 62,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "fridge"
+						},
+						{
+							"name": "footprint",
+							"type": "int",
+							"value": 18
+						}
+					]
+				},
+				{
+					"id": 29,
+					"image": "props/ping-pong.png",
+					"imagewidth": 96,
+					"imageheight": 54,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "ping-pong"
+						},
+						{
+							"name": "footprint",
+							"type": "int",
+							"value": 44
+						}
+					]
+				},
+				{
+					"id": 30,
+					"image": "props/rug-lobby.png",
+					"imagewidth": 224,
+					"imageheight": 128,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "rug-lobby"
+						},
+						{
+							"name": "footprint",
+							"type": "int",
+							"value": 0
+						}
+					]
+				},
+				{
+					"id": 31,
+					"image": "props/rug-studio.png",
+					"imagewidth": 176,
+					"imageheight": 100,
+					"properties": [
+						{
+							"name": "name",
+							"type": "string",
+							"value": "rug-studio"
+						},
+						{
+							"name": "footprint",
+							"type": "int",
+							"value": 0
+						}
+					]
 				}
 			]
 		}
@@ -692,35 +1061,92 @@
 			"id": 1,
 			"name": "floor",
 			"type": "tilelayer",
-			"width": 28,
-			"height": 18,
+			"width": 52,
+			"height": 34,
 			"x": 0,
 			"y": 0,
 			"opacity": 1,
 			"visible": true,
 			"data": [
-				9, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-				4, 4, 4, 10, 13, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-				5, 5, 5, 5, 5, 5, 5, 5, 14, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 6, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-				2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 7, 6, 1, 1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 6, 1, 1,
+				10, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
+				14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 10, 14, 14, 14,
+				14, 14, 14, 14, 14, 14, 10, 14, 14, 14, 14, 14, 14, 14, 14, 10, 12, 28,
+				26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
+				26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 27, 20, 28, 26, 26, 26, 26,
+				26, 26, 26, 27, 20, 28, 26, 26, 26, 26, 26, 26, 27, 18, 12, 1, 1, 1, 1,
 				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				7, 6, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-				3, 3, 3, 3, 7, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1, 1, 1, 1, 7, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 6, 2, 2, 2, 2, 2, 2,
-				2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 7, 6, 1, 1,
+				1, 1, 1, 20, 8, 7, 8, 7, 8, 7, 8, 7, 8, 20, 8, 7, 8, 7, 8, 7, 8, 7, 18,
+				12, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+				2, 2, 2, 2, 2, 2, 2, 2, 20, 7, 8, 7, 8, 7, 8, 7, 8, 7, 20, 7, 8, 7, 8,
+				7, 8, 7, 8, 18, 12, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 20, 8, 7, 8, 7, 8, 7, 8, 7, 8,
+				20, 8, 7, 8, 7, 8, 7, 8, 7, 18, 12, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 20, 7, 8, 7, 8,
+				7, 8, 7, 8, 7, 20, 7, 8, 7, 8, 7, 8, 7, 8, 18, 12, 3, 3, 3, 3, 3, 3, 3,
+				3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+				20, 8, 7, 8, 7, 8, 7, 8, 7, 8, 20, 8, 7, 8, 7, 8, 7, 8, 7, 18, 12, 1, 1,
 				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				7, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				1, 1, 1, 1, 7, 6, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-				3, 3, 3, 3, 3, 3, 3, 3, 7, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 6, 1, 1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 11, 8, 8,
-				8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-				12
+				1, 1, 1, 1, 1, 20, 7, 8, 7, 8, 7, 8, 7, 8, 7, 20, 7, 8, 7, 8, 7, 8, 7,
+				8, 18, 12, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 20, 8, 7, 8, 7, 8, 7, 8, 7, 8, 20, 8,
+				7, 8, 7, 8, 7, 8, 7, 18, 12, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 20, 7, 8, 7, 8, 7, 8,
+				7, 8, 7, 20, 7, 8, 7, 8, 7, 8, 7, 8, 18, 12, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+				2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 18,
+				17, 7, 8, 23, 15, 15, 15, 15, 15, 14, 17, 7, 8, 23, 15, 15, 15, 15, 10,
+				12, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1, 20, 29, 8, 7, 28, 26, 26, 26, 26, 26, 26, 27, 8,
+				7, 28, 26, 26, 26, 27, 18, 12, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 24, 4, 6, 5, 4, 6, 5,
+				4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 18, 12, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+				3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 29, 4,
+				6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 18, 12, 1, 1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 18,
+				12, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5,
+				4, 6, 5, 18, 12, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 21, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4,
+				6, 5, 4, 6, 5, 4, 6, 5, 18, 12, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+				2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 20, 4, 6, 5, 4, 6,
+				5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 18, 10, 15, 15, 15, 15, 15, 15,
+				15, 17, 9, 9, 23, 15, 15, 15, 15, 11, 15, 15, 15, 15, 15, 15, 17, 4, 6,
+				23, 15, 15, 15, 15, 15, 14, 15, 15, 15, 11, 15, 15, 15, 15, 17, 7, 8,
+				23, 15, 15, 15, 15, 15, 15, 10, 12, 28, 26, 26, 26, 26, 26, 26, 27, 9,
+				9, 28, 26, 26, 26, 27, 20, 28, 26, 26, 26, 26, 26, 27, 4, 6, 28, 26, 26,
+				26, 26, 26, 26, 26, 26, 27, 20, 28, 26, 26, 26, 27, 8, 7, 28, 26, 26,
+				26, 26, 26, 27, 18, 12, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 20,
+				5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 20, 8, 7, 8, 7,
+				8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 18, 12, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+				9, 9, 9, 9, 20, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5,
+				20, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 18, 12, 9, 9, 9, 9, 9, 9,
+				9, 9, 9, 9, 9, 9, 9, 9, 9, 20, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4,
+				6, 5, 4, 6, 5, 20, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 18, 12, 9,
+				9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 24, 5, 4, 6, 5, 4, 6, 5, 4, 6,
+				5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 24, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7,
+				8, 18, 12, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 29, 5, 4, 6, 5,
+				4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 29, 8, 7, 8, 7, 8, 7, 8, 7,
+				8, 7, 8, 7, 8, 7, 18, 12, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+				6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 8, 7, 8, 7,
+				8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 18, 12, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+				9, 9, 9, 9, 9, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6,
+				5, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 18, 12, 9, 9, 9, 9, 9,
+				9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 21, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5,
+				4, 6, 5, 4, 6, 5, 21, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 18, 12,
+				9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 20, 5, 4, 6, 5, 4, 6, 5, 4,
+				6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 20, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7,
+				8, 7, 18, 12, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 20, 5, 4, 6,
+				5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 20, 7, 8, 7, 8, 7, 8, 7,
+				8, 7, 8, 7, 8, 7, 8, 18, 12, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+				9, 20, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 20, 8,
+				7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 18, 12, 9, 9, 9, 9, 9, 9, 9, 9,
+				9, 9, 9, 9, 9, 9, 9, 20, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5,
+				4, 6, 5, 20, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 18, 12, 9, 9, 9,
+				9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 20, 5, 4, 6, 5, 4, 6, 5, 4, 6, 5, 4,
+				6, 5, 4, 6, 5, 4, 6, 5, 20, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7,
+				18, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 10,
+				11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+				11, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 10
 			]
 		},
 		{
@@ -736,8 +1162,8 @@
 				{
 					"id": 1,
 					"name": "clock",
-					"gid": 35,
-					"x": 440,
+					"gid": 50,
+					"x": 600,
 					"y": 52,
 					"width": 16,
 					"height": 16,
@@ -747,8 +1173,8 @@
 				{
 					"id": 2,
 					"name": "poster",
-					"gid": 34,
-					"x": 516,
+					"gid": 49,
+					"x": 484,
 					"y": 58,
 					"width": 24,
 					"height": 32,
@@ -757,20 +1183,20 @@
 				},
 				{
 					"id": 3,
-					"name": "window",
-					"gid": 32,
-					"x": 128,
-					"y": 60,
-					"width": 64,
-					"height": 44,
+					"name": "poster",
+					"gid": 49,
+					"x": 708,
+					"y": 58,
+					"width": 24,
+					"height": 32,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 4,
 					"name": "window",
-					"gid": 32,
-					"x": 288,
+					"gid": 47,
+					"x": 128,
 					"y": 60,
 					"width": 64,
 					"height": 44,
@@ -780,8 +1206,8 @@
 				{
 					"id": 5,
 					"name": "window",
-					"gid": 32,
-					"x": 704,
+					"gid": 47,
+					"x": 352,
 					"y": 60,
 					"width": 64,
 					"height": 44,
@@ -790,9 +1216,31 @@
 				},
 				{
 					"id": 6,
+					"name": "window",
+					"gid": 47,
+					"x": 800,
+					"y": 60,
+					"width": 64,
+					"height": 44,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 7,
+					"name": "window",
+					"gid": 47,
+					"x": 912,
+					"y": 60,
+					"width": 64,
+					"height": 44,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 8,
 					"name": "logo-bracket",
-					"gid": 33,
-					"x": 422,
+					"gid": 48,
+					"x": 582,
 					"y": 60,
 					"width": 52,
 					"height": 36,
@@ -800,21 +1248,32 @@
 					"visible": true
 				},
 				{
-					"id": 7,
-					"name": "door",
-					"gid": 31,
-					"x": 576,
-					"y": 62,
-					"width": 32,
-					"height": 56,
+					"id": 9,
+					"name": "tv-screen",
+					"gid": 57,
+					"x": 1164,
+					"y": 60,
+					"width": 72,
+					"height": 42,
 					"rotation": 0,
 					"visible": true
 				},
 				{
-					"id": 8,
+					"id": 10,
+					"name": "tv-screen",
+					"gid": 57,
+					"x": 1468,
+					"y": 60,
+					"width": 72,
+					"height": 42,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 11,
 					"name": "printer",
-					"gid": 27,
-					"x": 223,
+					"gid": 42,
+					"x": 249,
 					"y": 115,
 					"width": 34,
 					"height": 28,
@@ -822,44 +1281,11 @@
 					"visible": true
 				},
 				{
-					"id": 9,
-					"name": "bookshelf",
-					"gid": 24,
-					"x": 40,
-					"y": 128,
-					"width": 48,
-					"height": 64,
-					"rotation": 0,
-					"visible": true
-				},
-				{
-					"id": 10,
-					"name": "plant-tall",
-					"gid": 20,
-					"x": 102,
-					"y": 128,
-					"width": 26,
-					"height": 52,
-					"rotation": 0,
-					"visible": true
-				},
-				{
-					"id": 11,
-					"name": "water-cooler",
-					"gid": 26,
-					"x": 278,
-					"y": 128,
-					"width": 20,
-					"height": 50,
-					"rotation": 0,
-					"visible": true
-				},
-				{
 					"id": 12,
 					"name": "plant-tall",
-					"gid": 20,
-					"x": 832,
-					"y": 128,
+					"gid": 35,
+					"x": 1062,
+					"y": 115,
 					"width": 26,
 					"height": 52,
 					"rotation": 0,
@@ -867,97 +1293,119 @@
 				},
 				{
 					"id": 13,
-					"name": "kitchen-counter",
-					"gid": 36,
-					"x": 432,
-					"y": 128,
-					"width": 96,
-					"height": 44,
+					"name": "plant-tall",
+					"gid": 35,
+					"x": 1312,
+					"y": 115,
+					"width": 26,
+					"height": 52,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 14,
-					"name": "whiteboard",
-					"gid": 25,
-					"x": 672,
-					"y": 134,
-					"width": 64,
-					"height": 56,
+					"name": "plant-small",
+					"gid": 34,
+					"x": 1382,
+					"y": 115,
+					"width": 26,
+					"height": 32,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 15,
-					"name": "stool",
-					"gid": 37,
-					"x": 427,
-					"y": 154,
-					"width": 16,
-					"height": 22,
+					"name": "plant-small",
+					"gid": 34,
+					"x": 1600,
+					"y": 115,
+					"width": 26,
+					"height": 32,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 16,
-					"name": "stool",
-					"gid": 37,
-					"x": 456,
-					"y": 154,
-					"width": 16,
-					"height": 22,
+					"name": "bookshelf",
+					"gid": 39,
+					"x": 46,
+					"y": 128,
+					"width": 48,
+					"height": 64,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 17,
-					"name": "stool",
-					"gid": 37,
-					"x": 485,
-					"y": 154,
-					"width": 16,
-					"height": 22,
+					"name": "water-cooler",
+					"gid": 41,
+					"x": 300,
+					"y": 128,
+					"width": 20,
+					"height": 50,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 18,
-					"name": "chair-front",
-					"gid": 18,
-					"x": 85,
-					"y": 160,
-					"width": 22,
-					"height": 26,
+					"name": "plant-tall",
+					"gid": 35,
+					"x": 448,
+					"y": 128,
+					"width": 26,
+					"height": 52,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 19,
-					"name": "chair-front",
-					"gid": 18,
-					"x": 149,
-					"y": 160,
-					"width": 22,
-					"height": 26,
+					"name": "bookshelf",
+					"gid": 39,
+					"x": 677,
+					"y": 128,
+					"width": 48,
+					"height": 64,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 20,
-					"name": "chair-front",
-					"gid": 18,
-					"x": 245,
-					"y": 160,
-					"width": 22,
-					"height": 26,
+					"name": "plant-tall",
+					"gid": 35,
+					"x": 742,
+					"y": 128,
+					"width": 26,
+					"height": 52,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 21,
+					"name": "plant-tall",
+					"gid": 35,
+					"x": 902,
+					"y": 128,
+					"width": 26,
+					"height": 52,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 22,
+					"name": "bookshelf",
+					"gid": 39,
+					"x": 949,
+					"y": 128,
+					"width": 48,
+					"height": 64,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 23,
 					"name": "chair-front",
-					"gid": 18,
-					"x": 309,
+					"gid": 33,
+					"x": 117,
 					"y": 160,
 					"width": 22,
 					"height": 26,
@@ -965,99 +1413,77 @@
 					"visible": true
 				},
 				{
-					"id": 22,
-					"name": "desk-back",
-					"gid": 16,
-					"x": 64,
-					"y": 192,
-					"width": 64,
-					"height": 46,
-					"rotation": 0,
-					"visible": true
-				},
-				{
-					"id": 23,
-					"name": "desk-back",
-					"gid": 16,
-					"x": 128,
-					"y": 192,
-					"width": 64,
-					"height": 46,
-					"rotation": 0,
-					"visible": true
-				},
-				{
 					"id": 24,
-					"name": "desk-back",
-					"gid": 16,
-					"x": 224,
-					"y": 192,
-					"width": 64,
-					"height": 46,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 181,
+					"y": 160,
+					"width": 22,
+					"height": 26,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 25,
-					"name": "desk-back",
-					"gid": 16,
-					"x": 288,
-					"y": 192,
-					"width": 64,
-					"height": 46,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 341,
+					"y": 160,
+					"width": 22,
+					"height": 26,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 26,
-					"name": "desk-front",
-					"gid": 15,
-					"x": 64,
-					"y": 234,
-					"width": 64,
-					"height": 46,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 405,
+					"y": 160,
+					"width": 22,
+					"height": 26,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 27,
-					"name": "desk-front",
-					"gid": 15,
-					"x": 128,
-					"y": 234,
-					"width": 64,
-					"height": 46,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 565,
+					"y": 160,
+					"width": 22,
+					"height": 26,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 28,
-					"name": "desk-front",
-					"gid": 15,
-					"x": 224,
-					"y": 234,
-					"width": 64,
-					"height": 46,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 629,
+					"y": 160,
+					"width": 22,
+					"height": 26,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 29,
-					"name": "desk-front",
-					"gid": 15,
-					"x": 288,
-					"y": 234,
-					"width": 64,
-					"height": 46,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 789,
+					"y": 160,
+					"width": 22,
+					"height": 26,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 30,
 					"name": "chair-front",
-					"gid": 18,
-					"x": 649,
-					"y": 237,
+					"gid": 33,
+					"x": 853,
+					"y": 160,
 					"width": 22,
 					"height": 26,
 					"rotation": 0,
@@ -1066,9 +1492,9 @@
 				{
 					"id": 31,
 					"name": "chair-front",
-					"gid": 18,
-					"x": 693,
-					"y": 237,
+					"gid": 33,
+					"x": 1145,
+					"y": 167,
 					"width": 22,
 					"height": 26,
 					"rotation": 0,
@@ -1077,9 +1503,9 @@
 				{
 					"id": 32,
 					"name": "chair-front",
-					"gid": 18,
-					"x": 737,
-					"y": 237,
+					"gid": 33,
+					"x": 1189,
+					"y": 167,
 					"width": 22,
 					"height": 26,
 					"rotation": 0,
@@ -1087,10 +1513,10 @@
 				},
 				{
 					"id": 33,
-					"name": "chair-back",
-					"gid": 17,
-					"x": 85,
-					"y": 260,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 1233,
+					"y": 167,
 					"width": 22,
 					"height": 26,
 					"rotation": 0,
@@ -1098,10 +1524,10 @@
 				},
 				{
 					"id": 34,
-					"name": "chair-back",
-					"gid": 17,
-					"x": 149,
-					"y": 260,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 1449,
+					"y": 167,
 					"width": 22,
 					"height": 26,
 					"rotation": 0,
@@ -1109,10 +1535,10 @@
 				},
 				{
 					"id": 35,
-					"name": "chair-back",
-					"gid": 17,
-					"x": 245,
-					"y": 260,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 1493,
+					"y": 167,
 					"width": 22,
 					"height": 26,
 					"rotation": 0,
@@ -1120,10 +1546,10 @@
 				},
 				{
 					"id": 36,
-					"name": "chair-back",
-					"gid": 17,
-					"x": 309,
-					"y": 260,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 1537,
+					"y": 167,
 					"width": 22,
 					"height": 26,
 					"rotation": 0,
@@ -1131,186 +1557,186 @@
 				},
 				{
 					"id": 37,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 96,
+					"y": 192,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 38,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 160,
+					"y": 192,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 39,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 320,
+					"y": 192,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 40,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 384,
+					"y": 192,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 41,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 544,
+					"y": 192,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 42,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 608,
+					"y": 192,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 43,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 768,
+					"y": 192,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 44,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 832,
+					"y": 192,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 45,
 					"name": "meeting-table",
-					"gid": 23,
-					"x": 640,
-					"y": 275,
+					"gid": 38,
+					"x": 1136,
+					"y": 205,
 					"width": 128,
 					"height": 52,
 					"rotation": 0,
 					"visible": true
 				},
 				{
-					"id": 38,
-					"name": "chair-back",
-					"gid": 17,
-					"x": 649,
-					"y": 297,
-					"width": 22,
-					"height": 26,
-					"rotation": 0,
-					"visible": true
-				},
-				{
-					"id": 39,
-					"name": "chair-back",
-					"gid": 17,
-					"x": 693,
-					"y": 297,
-					"width": 22,
-					"height": 26,
-					"rotation": 0,
-					"visible": true
-				},
-				{
-					"id": 40,
-					"name": "chair-back",
-					"gid": 17,
-					"x": 737,
-					"y": 297,
-					"width": 22,
-					"height": 26,
-					"rotation": 0,
-					"visible": true
-				},
-				{
-					"id": 41,
-					"name": "rug-meeting",
-					"gid": 30,
-					"x": 616,
-					"y": 326,
-					"width": 176,
-					"height": 100,
-					"rotation": 0,
-					"visible": true
-				},
-				{
-					"id": 42,
-					"name": "chair-front",
-					"gid": 18,
-					"x": 85,
-					"y": 333,
-					"width": 22,
-					"height": 26,
-					"rotation": 0,
-					"visible": true
-				},
-				{
-					"id": 43,
-					"name": "chair-front",
-					"gid": 18,
-					"x": 149,
-					"y": 333,
-					"width": 22,
-					"height": 26,
-					"rotation": 0,
-					"visible": true
-				},
-				{
-					"id": 44,
-					"name": "chair-front",
-					"gid": 18,
-					"x": 245,
-					"y": 333,
-					"width": 22,
-					"height": 26,
-					"rotation": 0,
-					"visible": true
-				},
-				{
-					"id": 45,
-					"name": "chair-front",
-					"gid": 18,
-					"x": 309,
-					"y": 333,
-					"width": 22,
-					"height": 26,
-					"rotation": 0,
-					"visible": true
-				},
-				{
 					"id": 46,
-					"name": "desk-back",
-					"gid": 16,
-					"x": 64,
-					"y": 365,
-					"width": 64,
-					"height": 46,
+					"name": "meeting-table",
+					"gid": 38,
+					"x": 1440,
+					"y": 205,
+					"width": 128,
+					"height": 52,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 47,
-					"name": "desk-back",
-					"gid": 16,
-					"x": 128,
-					"y": 365,
-					"width": 64,
-					"height": 46,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 1145,
+					"y": 227,
+					"width": 22,
+					"height": 26,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 48,
-					"name": "desk-back",
-					"gid": 16,
-					"x": 224,
-					"y": 365,
-					"width": 64,
-					"height": 46,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 1189,
+					"y": 227,
+					"width": 22,
+					"height": 26,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 49,
-					"name": "desk-back",
-					"gid": 16,
-					"x": 288,
-					"y": 365,
-					"width": 64,
-					"height": 46,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 1233,
+					"y": 227,
+					"width": 22,
+					"height": 26,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 50,
-					"name": "desk-front",
-					"gid": 15,
-					"x": 64,
-					"y": 407,
-					"width": 64,
-					"height": 46,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 1449,
+					"y": 227,
+					"width": 22,
+					"height": 26,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 51,
-					"name": "desk-front",
-					"gid": 15,
-					"x": 128,
-					"y": 407,
-					"width": 64,
-					"height": 46,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 1493,
+					"y": 227,
+					"width": 22,
+					"height": 26,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 52,
-					"name": "desk-front",
-					"gid": 15,
-					"x": 224,
-					"y": 407,
-					"width": 64,
-					"height": 46,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 1537,
+					"y": 227,
+					"width": 22,
+					"height": 26,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 53,
 					"name": "desk-front",
-					"gid": 15,
-					"x": 288,
-					"y": 407,
+					"gid": 30,
+					"x": 96,
+					"y": 234,
 					"width": 64,
 					"height": 46,
 					"rotation": 0,
@@ -1318,131 +1744,1473 @@
 				},
 				{
 					"id": 54,
-					"name": "sofa",
-					"gid": 21,
-					"x": 592,
-					"y": 426,
-					"width": 96,
-					"height": 40,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 160,
+					"y": 234,
+					"width": 64,
+					"height": 46,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 55,
-					"name": "floor-lamp",
-					"gid": 28,
-					"x": 541,
-					"y": 426,
-					"width": 18,
-					"height": 56,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 320,
+					"y": 234,
+					"width": 64,
+					"height": 46,
 					"rotation": 0,
 					"visible": true
 				},
 				{
 					"id": 56,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 384,
+					"y": 234,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 57,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 544,
+					"y": 234,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 58,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 608,
+					"y": 234,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 59,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 768,
+					"y": 234,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 60,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 832,
+					"y": 234,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 61,
+					"name": "rug-meeting",
+					"gid": 45,
+					"x": 1112,
+					"y": 256,
+					"width": 176,
+					"height": 100,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 62,
+					"name": "rug-meeting",
+					"gid": 45,
+					"x": 1416,
+					"y": 256,
+					"width": 176,
+					"height": 100,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 63,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 117,
+					"y": 260,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 64,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 181,
+					"y": 260,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 65,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 341,
+					"y": 260,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 66,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 405,
+					"y": 260,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 67,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 565,
+					"y": 260,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 68,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 629,
+					"y": 260,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 69,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 789,
+					"y": 260,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 70,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 853,
+					"y": 260,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 71,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 117,
+					"y": 346,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 72,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 181,
+					"y": 346,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 73,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 341,
+					"y": 346,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 74,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 405,
+					"y": 346,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 75,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 565,
+					"y": 346,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 76,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 629,
+					"y": 346,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 77,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 789,
+					"y": 346,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 78,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 853,
+					"y": 346,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 79,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 96,
+					"y": 378,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 80,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 160,
+					"y": 378,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 81,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 320,
+					"y": 378,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 82,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 384,
+					"y": 378,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 83,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 544,
+					"y": 378,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 84,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 608,
+					"y": 378,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 85,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 768,
+					"y": 378,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 86,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 832,
+					"y": 378,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 87,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 96,
+					"y": 420,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 88,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 160,
+					"y": 420,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 89,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 320,
+					"y": 420,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 90,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 384,
+					"y": 420,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 91,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 544,
+					"y": 420,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 92,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 608,
+					"y": 420,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 93,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 768,
+					"y": 420,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 94,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 832,
+					"y": 420,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 95,
 					"name": "plant-small",
-					"gid": 19,
-					"x": 733,
-					"y": 426,
+					"gid": 34,
+					"x": 1472,
+					"y": 429,
 					"width": 26,
 					"height": 32,
 					"rotation": 0,
 					"visible": true
 				},
 				{
-					"id": 57,
+					"id": 96,
+					"name": "bookshelf",
+					"gid": 39,
+					"x": 1528,
+					"y": 435,
+					"width": 48,
+					"height": 64,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 97,
+					"name": "phone-booth",
+					"gid": 53,
+					"x": 1196,
+					"y": 445,
+					"width": 40,
+					"height": 72,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 98,
+					"name": "phone-booth",
+					"gid": 53,
+					"x": 1244,
+					"y": 445,
+					"width": 40,
+					"height": 72,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 99,
+					"name": "phone-booth",
+					"gid": 53,
+					"x": 1292,
+					"y": 445,
+					"width": 40,
+					"height": 72,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 100,
 					"name": "chair-back",
-					"gid": 17,
-					"x": 85,
-					"y": 433,
+					"gid": 32,
+					"x": 117,
+					"y": 446,
 					"width": 22,
 					"height": 26,
 					"rotation": 0,
 					"visible": true
 				},
 				{
-					"id": 58,
+					"id": 101,
 					"name": "chair-back",
-					"gid": 17,
+					"gid": 32,
+					"x": 181,
+					"y": 446,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 102,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 341,
+					"y": 446,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 103,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 405,
+					"y": 446,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 104,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 565,
+					"y": 446,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 105,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 629,
+					"y": 446,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 106,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 789,
+					"y": 446,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 107,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 853,
+					"y": 446,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 108,
+					"name": "floor-lamp",
+					"gid": 43,
+					"x": 1607,
+					"y": 499,
+					"width": 18,
+					"height": 56,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 109,
+					"name": "armchair-front",
+					"gid": 54,
+					"x": 1502,
+					"y": 512,
+					"width": 30,
+					"height": 30,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 110,
+					"name": "armchair-front",
+					"gid": 54,
+					"x": 1572,
+					"y": 512,
+					"width": 30,
+					"height": 30,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 111,
+					"name": "whiteboard",
+					"gid": 40,
+					"x": 464,
+					"y": 531,
+					"width": 64,
+					"height": 56,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 112,
+					"name": "plant-small",
+					"gid": 34,
+					"x": 38,
+					"y": 570,
+					"width": 26,
+					"height": 32,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 113,
+					"name": "plant-small",
+					"gid": 34,
+					"x": 973,
+					"y": 570,
+					"width": 26,
+					"height": 32,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 114,
+					"name": "clock",
+					"gid": 50,
+					"x": 1048,
+					"y": 628,
+					"width": 16,
+					"height": 16,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 115,
+					"name": "poster",
+					"gid": 49,
+					"x": 225,
+					"y": 634,
+					"width": 24,
+					"height": 32,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 116,
+					"name": "poster",
+					"gid": 49,
+					"x": 1217,
+					"y": 634,
+					"width": 24,
+					"height": 32,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 117,
+					"name": "logo-bracket",
+					"gid": 48,
+					"x": 1030,
+					"y": 636,
+					"width": 52,
+					"height": 36,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 118,
+					"name": "plant-tall",
+					"gid": 35,
+					"x": 701,
+					"y": 685,
+					"width": 26,
+					"height": 52,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 119,
+					"name": "plant-tall",
+					"gid": 35,
+					"x": 870,
+					"y": 685,
+					"width": 26,
+					"height": 52,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 120,
+					"name": "plant-tall",
+					"gid": 35,
+					"x": 1190,
+					"y": 685,
+					"width": 26,
+					"height": 52,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 121,
+					"name": "plant-tall",
+					"gid": 35,
+					"x": 38,
+					"y": 691,
+					"width": 26,
+					"height": 52,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 122,
+					"name": "bookshelf",
+					"gid": 39,
+					"x": 632,
+					"y": 691,
+					"width": 48,
+					"height": 64,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 123,
+					"name": "bookshelf",
+					"gid": 39,
+					"x": 936,
+					"y": 691,
+					"width": 48,
+					"height": 64,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 124,
+					"name": "plant-tall",
+					"gid": 35,
+					"x": 1094,
+					"y": 691,
+					"width": 26,
+					"height": 52,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 125,
+					"name": "whiteboard",
+					"gid": 40,
+					"x": 1568,
+					"y": 691,
+					"width": 64,
+					"height": 56,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 126,
+					"name": "water-cooler",
+					"gid": 41,
+					"x": 448,
+					"y": 698,
+					"width": 20,
+					"height": 50,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 127,
+					"name": "kitchen-counter",
+					"gid": 51,
+					"x": 96,
+					"y": 704,
+					"width": 96,
+					"height": 44,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 128,
+					"name": "fridge",
+					"gid": 58,
+					"x": 388,
+					"y": 704,
+					"width": 30,
+					"height": 62,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 129,
+					"name": "stool",
+					"gid": 52,
+					"x": 107,
+					"y": 730,
+					"width": 16,
+					"height": 22,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 130,
+					"name": "stool",
+					"gid": 52,
+					"x": 136,
+					"y": 730,
+					"width": 16,
+					"height": 22,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 131,
+					"name": "stool",
+					"gid": 52,
+					"x": 165,
+					"y": 730,
+					"width": 16,
+					"height": 22,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 132,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 1237,
+					"y": 736,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 133,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 1301,
+					"y": 736,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 134,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 1461,
+					"y": 736,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 135,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 1525,
+					"y": 736,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 136,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 1216,
+					"y": 768,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 137,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 1280,
+					"y": 768,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 138,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 1440,
+					"y": 768,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 139,
+					"name": "desk-back",
+					"gid": 31,
+					"x": 1504,
+					"y": 768,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 140,
+					"name": "floor-lamp",
+					"gid": 43,
+					"x": 746,
+					"y": 800,
+					"width": 18,
+					"height": 56,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 141,
+					"name": "floor-lamp",
+					"gid": 43,
+					"x": 900,
+					"y": 800,
+					"width": 18,
+					"height": 56,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 142,
+					"name": "sofa",
+					"gid": 36,
+					"x": 784,
+					"y": 806,
+					"width": 96,
+					"height": 40,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 143,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 1216,
+					"y": 810,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 144,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 1280,
+					"y": 810,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 145,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 1440,
+					"y": 810,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 146,
+					"name": "desk-front",
+					"gid": 30,
+					"x": 1504,
+					"y": 810,
+					"width": 64,
+					"height": 46,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 147,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 117,
+					"y": 812,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 148,
+					"name": "chair-front",
+					"gid": 33,
 					"x": 149,
-					"y": 433,
+					"y": 812,
 					"width": 22,
 					"height": 26,
 					"rotation": 0,
 					"visible": true
 				},
 				{
-					"id": 59,
+					"id": 149,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 325,
+					"y": 812,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 150,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 357,
+					"y": 812,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 151,
 					"name": "chair-back",
-					"gid": 17,
-					"x": 245,
-					"y": 433,
+					"gid": 32,
+					"x": 1237,
+					"y": 836,
 					"width": 22,
 					"height": 26,
 					"rotation": 0,
 					"visible": true
 				},
 				{
-					"id": 60,
+					"id": 152,
 					"name": "chair-back",
-					"gid": 17,
-					"x": 309,
-					"y": 433,
+					"gid": 32,
+					"x": 1301,
+					"y": 836,
 					"width": 22,
 					"height": 26,
 					"rotation": 0,
 					"visible": true
 				},
 				{
-					"id": 61,
+					"id": 153,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 1461,
+					"y": 836,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 154,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 1525,
+					"y": 836,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 155,
+					"name": "dining-table",
+					"gid": 56,
+					"x": 112,
+					"y": 838,
+					"width": 64,
+					"height": 36,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 156,
+					"name": "dining-table",
+					"gid": 56,
+					"x": 320,
+					"y": 838,
+					"width": 64,
+					"height": 36,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 157,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 117,
+					"y": 860,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 158,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 149,
+					"y": 860,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 159,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 325,
+					"y": 860,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 160,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 357,
+					"y": 860,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 161,
 					"name": "coffee-table",
-					"gid": 22,
-					"x": 616,
-					"y": 470,
+					"gid": 37,
+					"x": 808,
+					"y": 861,
 					"width": 48,
 					"height": 26,
 					"rotation": 0,
 					"visible": true
 				},
 				{
-					"id": 62,
-					"name": "rug-lounge",
-					"gid": 29,
-					"x": 576,
-					"y": 486,
+					"id": 162,
+					"name": "armchair-back",
+					"gid": 55,
+					"x": 772,
+					"y": 909,
+					"width": 30,
+					"height": 30,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 163,
+					"name": "armchair-back",
+					"gid": 55,
+					"x": 862,
+					"y": 909,
+					"width": 30,
+					"height": 30,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 164,
+					"name": "rug-lobby",
+					"gid": 60,
+					"x": 720,
+					"y": 915,
+					"width": 224,
+					"height": 128,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 165,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 1353,
+					"y": 928,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 166,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 1397,
+					"y": 928,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 167,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 1441,
+					"y": 928,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 168,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 117,
+					"y": 953,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 169,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 149,
+					"y": 953,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 170,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 325,
+					"y": 953,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 171,
+					"name": "chair-front",
+					"gid": 33,
+					"x": 357,
+					"y": 953,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 172,
+					"name": "meeting-table",
+					"gid": 38,
+					"x": 1344,
+					"y": 966,
 					"width": 128,
-					"height": 80,
+					"height": 52,
 					"rotation": 0,
 					"visible": true
 				},
 				{
-					"id": 63,
-					"name": "phone-booth",
-					"gid": 38,
-					"x": 786,
-					"y": 496,
-					"width": 40,
-					"height": 72,
+					"id": 173,
+					"name": "dining-table",
+					"gid": 56,
+					"x": 112,
+					"y": 979,
+					"width": 64,
+					"height": 36,
 					"rotation": 0,
 					"visible": true
 				},
 				{
-					"id": 64,
-					"name": "phone-booth",
-					"gid": 38,
-					"x": 831,
-					"y": 496,
-					"width": 40,
-					"height": 72,
+					"id": 174,
+					"name": "dining-table",
+					"gid": 56,
+					"x": 320,
+					"y": 979,
+					"width": 64,
+					"height": 36,
 					"rotation": 0,
 					"visible": true
 				},
 				{
-					"id": 65,
+					"id": 175,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 1353,
+					"y": 988,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 176,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 1397,
+					"y": 988,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 177,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 1441,
+					"y": 988,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 178,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 117,
+					"y": 1001,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 179,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 149,
+					"y": 1001,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 180,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 325,
+					"y": 1001,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 181,
+					"name": "chair-back",
+					"gid": 32,
+					"x": 357,
+					"y": 1001,
+					"width": 22,
+					"height": 26,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 182,
+					"name": "ping-pong",
+					"gid": 59,
+					"x": 960,
+					"y": 1011,
+					"width": 96,
+					"height": 54,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 183,
+					"name": "rug-studio",
+					"gid": 61,
+					"x": 1320,
+					"y": 1017,
+					"width": 176,
+					"height": 100,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 184,
 					"name": "plant-small",
-					"gid": 19,
-					"x": 525,
-					"y": 499,
+					"gid": 34,
+					"x": 448,
+					"y": 1043,
+					"width": 26,
+					"height": 32,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 185,
+					"name": "plant-small",
+					"gid": 34,
+					"x": 550,
+					"y": 1043,
+					"width": 26,
+					"height": 32,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 186,
+					"name": "plant-small",
+					"gid": 34,
+					"x": 1190,
+					"y": 1043,
+					"width": 26,
+					"height": 32,
+					"rotation": 0,
+					"visible": true
+				},
+				{
+					"id": 187,
+					"name": "plant-small",
+					"gid": 34,
+					"x": 1600,
+					"y": 1043,
 					"width": 26,
 					"height": 32,
 					"rotation": 0,
@@ -1461,100 +3229,337 @@
 			"y": 0,
 			"objects": [
 				{
-					"id": 66,
-					"name": "pod-a",
+					"id": 188,
+					"name": "pod-1",
 					"class": "team",
 					"type": "team",
-					"x": 64,
+					"x": 96,
 					"y": 126,
 					"width": 128,
 					"height": 172,
 					"rotation": 0,
-					"visible": true
+					"visible": true,
+					"properties": []
 				},
 				{
-					"id": 67,
-					"name": "pod-b",
+					"id": 189,
+					"name": "pod-2",
 					"class": "team",
 					"type": "team",
-					"x": 224,
+					"x": 320,
 					"y": 126,
 					"width": 128,
 					"height": 172,
 					"rotation": 0,
-					"visible": true
+					"visible": true,
+					"properties": []
 				},
 				{
-					"id": 68,
-					"name": "pod-c",
+					"id": 190,
+					"name": "pod-3",
 					"class": "team",
 					"type": "team",
-					"x": 64,
-					"y": 299,
+					"x": 544,
+					"y": 126,
 					"width": 128,
 					"height": 172,
 					"rotation": 0,
-					"visible": true
+					"visible": true,
+					"properties": []
 				},
 				{
-					"id": 69,
-					"name": "pod-d",
+					"id": 191,
+					"name": "pod-4",
 					"class": "team",
 					"type": "team",
-					"x": 224,
-					"y": 299,
+					"x": 768,
+					"y": 126,
 					"width": 128,
 					"height": 172,
 					"rotation": 0,
-					"visible": true
+					"visible": true,
+					"properties": []
 				},
 				{
-					"id": 70,
+					"id": 192,
+					"name": "pod-5",
+					"class": "team",
+					"type": "team",
+					"x": 96,
+					"y": 312,
+					"width": 128,
+					"height": 172,
+					"rotation": 0,
+					"visible": true,
+					"properties": []
+				},
+				{
+					"id": 193,
+					"name": "pod-6",
+					"class": "team",
+					"type": "team",
+					"x": 320,
+					"y": 312,
+					"width": 128,
+					"height": 172,
+					"rotation": 0,
+					"visible": true,
+					"properties": []
+				},
+				{
+					"id": 194,
+					"name": "pod-7",
+					"class": "team",
+					"type": "team",
+					"x": 544,
+					"y": 312,
+					"width": 128,
+					"height": 172,
+					"rotation": 0,
+					"visible": true,
+					"properties": []
+				},
+				{
+					"id": 195,
+					"name": "pod-8",
+					"class": "team",
+					"type": "team",
+					"x": 768,
+					"y": 312,
+					"width": 128,
+					"height": 172,
+					"rotation": 0,
+					"visible": true,
+					"properties": []
+				},
+				{
+					"id": 196,
+					"name": "huddle",
+					"class": "meeting",
+					"type": "meeting",
+					"x": 1056,
+					"y": 64,
+					"width": 288,
+					"height": 256,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "label",
+							"type": "string",
+							"value": "Huddle room"
+						},
+						{
+							"name": "signX",
+							"type": "int",
+							"value": 1200
+						},
+						{
+							"name": "signY",
+							"type": "int",
+							"value": 304
+						}
+					]
+				},
+				{
+					"id": 197,
 					"name": "meeting",
 					"class": "meeting",
 					"type": "meeting",
-					"x": 616,
-					"y": 226,
-					"width": 176,
-					"height": 100,
+					"x": 1376,
+					"y": 64,
+					"width": 256,
+					"height": 256,
 					"rotation": 0,
-					"visible": true
+					"visible": true,
+					"properties": [
+						{
+							"name": "label",
+							"type": "string",
+							"value": "Meeting room"
+						},
+						{
+							"name": "signX",
+							"type": "int",
+							"value": 1504
+						},
+						{
+							"name": "signY",
+							"type": "int",
+							"value": 304
+						}
+					]
 				},
 				{
-					"id": 71,
-					"name": "kitchen",
-					"class": "lounge",
-					"type": "lounge",
-					"x": 400,
-					"y": 80,
-					"width": 160,
-					"height": 96,
-					"rotation": 0,
-					"visible": true
-				},
-				{
-					"id": 72,
-					"name": "lounge",
-					"class": "lounge",
-					"type": "lounge",
-					"x": 576,
-					"y": 406,
-					"width": 128,
-					"height": 80,
-					"rotation": 0,
-					"visible": true
-				},
-				{
-					"id": 73,
+					"id": 198,
 					"name": "booths",
 					"class": "booth",
 					"type": "booth",
-					"x": 784,
-					"y": 424,
-					"width": 90,
-					"height": 80,
+					"x": 1184,
+					"y": 384,
+					"width": 160,
+					"height": 96,
 					"rotation": 0,
-					"visible": true
+					"visible": true,
+					"properties": [
+						{
+							"name": "label",
+							"type": "string",
+							"value": "Phone booths"
+						},
+						{
+							"name": "signX",
+							"type": "int",
+							"value": 1264
+						},
+						{
+							"name": "signY",
+							"type": "int",
+							"value": 480
+						}
+					]
+				},
+				{
+					"id": 199,
+					"name": "library",
+					"class": "lounge",
+					"type": "lounge",
+					"x": 1472,
+					"y": 384,
+					"width": 160,
+					"height": 192,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "label",
+							"type": "string",
+							"value": "Library"
+						},
+						{
+							"name": "signX",
+							"type": "int",
+							"value": 1552
+						},
+						{
+							"name": "signY",
+							"type": "int",
+							"value": 557
+						}
+					]
+				},
+				{
+					"id": 200,
+					"name": "kitchen",
+					"class": "lounge",
+					"type": "lounge",
+					"x": 32,
+					"y": 640,
+					"width": 480,
+					"height": 416,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "label",
+							"type": "string",
+							"value": "Kitchen"
+						},
+						{
+							"name": "signX",
+							"type": "int",
+							"value": 248
+						},
+						{
+							"name": "signY",
+							"type": "int",
+							"value": 774
+						}
+					]
+				},
+				{
+					"id": 201,
+					"name": "lounge",
+					"class": "lounge",
+					"type": "lounge",
+					"x": 544,
+					"y": 640,
+					"width": 608,
+					"height": 416,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "label",
+							"type": "string",
+							"value": "Lounge"
+						},
+						{
+							"name": "signX",
+							"type": "int",
+							"value": 832
+						},
+						{
+							"name": "signY",
+							"type": "int",
+							"value": 973
+						}
+					]
+				},
+				{
+					"id": 202,
+					"name": "studio-1",
+					"class": "team",
+					"type": "team",
+					"x": 1216,
+					"y": 702,
+					"width": 128,
+					"height": 172,
+					"rotation": 0,
+					"visible": true,
+					"properties": []
+				},
+				{
+					"id": 203,
+					"name": "studio-2",
+					"class": "team",
+					"type": "team",
+					"x": 1440,
+					"y": 702,
+					"width": 128,
+					"height": 172,
+					"rotation": 0,
+					"visible": true,
+					"properties": []
+				},
+				{
+					"id": 204,
+					"name": "review",
+					"class": "meeting",
+					"type": "meeting",
+					"x": 1216,
+					"y": 896,
+					"width": 416,
+					"height": 160,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "label",
+							"type": "string",
+							"value": "Review table"
+						},
+						{
+							"name": "signX",
+							"type": "int",
+							"value": 1408
+						},
+						{
+							"name": "signY",
+							"type": "int",
+							"value": 883
+						}
+					]
 				}
 			]
 		},
@@ -1569,10 +3574,10 @@
 			"y": 0,
 			"objects": [
 				{
-					"id": 74,
-					"name": "pod-a",
+					"id": 205,
+					"name": "pod-1",
 					"point": true,
-					"x": 96,
+					"x": 128,
 					"y": 158,
 					"width": 0,
 					"height": 0,
@@ -1582,7 +3587,7 @@
 						{
 							"name": "zone",
 							"type": "string",
-							"value": "pod-a"
+							"value": "pod-1"
 						},
 						{
 							"name": "facing",
@@ -1592,10 +3597,10 @@
 					]
 				},
 				{
-					"id": 75,
-					"name": "pod-a",
+					"id": 206,
+					"name": "pod-1",
 					"point": true,
-					"x": 96,
+					"x": 128,
 					"y": 254,
 					"width": 0,
 					"height": 0,
@@ -1605,7 +3610,7 @@
 						{
 							"name": "zone",
 							"type": "string",
-							"value": "pod-a"
+							"value": "pod-1"
 						},
 						{
 							"name": "facing",
@@ -1615,10 +3620,10 @@
 					]
 				},
 				{
-					"id": 76,
-					"name": "pod-a",
+					"id": 207,
+					"name": "pod-1",
 					"point": true,
-					"x": 160,
+					"x": 192,
 					"y": 158,
 					"width": 0,
 					"height": 0,
@@ -1628,7 +3633,7 @@
 						{
 							"name": "zone",
 							"type": "string",
-							"value": "pod-a"
+							"value": "pod-1"
 						},
 						{
 							"name": "facing",
@@ -1638,10 +3643,10 @@
 					]
 				},
 				{
-					"id": 77,
-					"name": "pod-a",
+					"id": 208,
+					"name": "pod-1",
 					"point": true,
-					"x": 160,
+					"x": 192,
 					"y": 254,
 					"width": 0,
 					"height": 0,
@@ -1651,7 +3656,7 @@
 						{
 							"name": "zone",
 							"type": "string",
-							"value": "pod-a"
+							"value": "pod-1"
 						},
 						{
 							"name": "facing",
@@ -1661,10 +3666,10 @@
 					]
 				},
 				{
-					"id": 78,
-					"name": "pod-b",
+					"id": 209,
+					"name": "pod-2",
 					"point": true,
-					"x": 256,
+					"x": 352,
 					"y": 158,
 					"width": 0,
 					"height": 0,
@@ -1674,7 +3679,7 @@
 						{
 							"name": "zone",
 							"type": "string",
-							"value": "pod-b"
+							"value": "pod-2"
 						},
 						{
 							"name": "facing",
@@ -1684,10 +3689,10 @@
 					]
 				},
 				{
-					"id": 79,
-					"name": "pod-b",
+					"id": 210,
+					"name": "pod-2",
 					"point": true,
-					"x": 256,
+					"x": 352,
 					"y": 254,
 					"width": 0,
 					"height": 0,
@@ -1697,7 +3702,7 @@
 						{
 							"name": "zone",
 							"type": "string",
-							"value": "pod-b"
+							"value": "pod-2"
 						},
 						{
 							"name": "facing",
@@ -1707,10 +3712,10 @@
 					]
 				},
 				{
-					"id": 80,
-					"name": "pod-b",
+					"id": 211,
+					"name": "pod-2",
 					"point": true,
-					"x": 320,
+					"x": 416,
 					"y": 158,
 					"width": 0,
 					"height": 0,
@@ -1720,7 +3725,7 @@
 						{
 							"name": "zone",
 							"type": "string",
-							"value": "pod-b"
+							"value": "pod-2"
 						},
 						{
 							"name": "facing",
@@ -1730,10 +3735,10 @@
 					]
 				},
 				{
-					"id": 81,
-					"name": "pod-b",
+					"id": 212,
+					"name": "pod-2",
 					"point": true,
-					"x": 320,
+					"x": 416,
 					"y": 254,
 					"width": 0,
 					"height": 0,
@@ -1743,7 +3748,7 @@
 						{
 							"name": "zone",
 							"type": "string",
-							"value": "pod-b"
+							"value": "pod-2"
 						},
 						{
 							"name": "facing",
@@ -1753,11 +3758,11 @@
 					]
 				},
 				{
-					"id": 82,
-					"name": "pod-c",
+					"id": 213,
+					"name": "pod-3",
 					"point": true,
-					"x": 96,
-					"y": 331,
+					"x": 576,
+					"y": 158,
 					"width": 0,
 					"height": 0,
 					"rotation": 0,
@@ -1766,7 +3771,7 @@
 						{
 							"name": "zone",
 							"type": "string",
-							"value": "pod-c"
+							"value": "pod-3"
 						},
 						{
 							"name": "facing",
@@ -1776,11 +3781,11 @@
 					]
 				},
 				{
-					"id": 83,
-					"name": "pod-c",
+					"id": 214,
+					"name": "pod-3",
 					"point": true,
-					"x": 96,
-					"y": 427,
+					"x": 576,
+					"y": 254,
 					"width": 0,
 					"height": 0,
 					"rotation": 0,
@@ -1789,7 +3794,7 @@
 						{
 							"name": "zone",
 							"type": "string",
-							"value": "pod-c"
+							"value": "pod-3"
 						},
 						{
 							"name": "facing",
@@ -1799,379 +3804,11 @@
 					]
 				},
 				{
-					"id": 84,
-					"name": "pod-c",
-					"point": true,
-					"x": 160,
-					"y": 331,
-					"width": 0,
-					"height": 0,
-					"rotation": 0,
-					"visible": true,
-					"properties": [
-						{
-							"name": "zone",
-							"type": "string",
-							"value": "pod-c"
-						},
-						{
-							"name": "facing",
-							"type": "string",
-							"value": "down"
-						}
-					]
-				},
-				{
-					"id": 85,
-					"name": "pod-c",
-					"point": true,
-					"x": 160,
-					"y": 427,
-					"width": 0,
-					"height": 0,
-					"rotation": 0,
-					"visible": true,
-					"properties": [
-						{
-							"name": "zone",
-							"type": "string",
-							"value": "pod-c"
-						},
-						{
-							"name": "facing",
-							"type": "string",
-							"value": "up"
-						}
-					]
-				},
-				{
-					"id": 86,
-					"name": "pod-d",
-					"point": true,
-					"x": 256,
-					"y": 331,
-					"width": 0,
-					"height": 0,
-					"rotation": 0,
-					"visible": true,
-					"properties": [
-						{
-							"name": "zone",
-							"type": "string",
-							"value": "pod-d"
-						},
-						{
-							"name": "facing",
-							"type": "string",
-							"value": "down"
-						}
-					]
-				},
-				{
-					"id": 87,
-					"name": "pod-d",
-					"point": true,
-					"x": 256,
-					"y": 427,
-					"width": 0,
-					"height": 0,
-					"rotation": 0,
-					"visible": true,
-					"properties": [
-						{
-							"name": "zone",
-							"type": "string",
-							"value": "pod-d"
-						},
-						{
-							"name": "facing",
-							"type": "string",
-							"value": "up"
-						}
-					]
-				},
-				{
-					"id": 88,
-					"name": "pod-d",
-					"point": true,
-					"x": 320,
-					"y": 331,
-					"width": 0,
-					"height": 0,
-					"rotation": 0,
-					"visible": true,
-					"properties": [
-						{
-							"name": "zone",
-							"type": "string",
-							"value": "pod-d"
-						},
-						{
-							"name": "facing",
-							"type": "string",
-							"value": "down"
-						}
-					]
-				},
-				{
-					"id": 89,
-					"name": "pod-d",
-					"point": true,
-					"x": 320,
-					"y": 427,
-					"width": 0,
-					"height": 0,
-					"rotation": 0,
-					"visible": true,
-					"properties": [
-						{
-							"name": "zone",
-							"type": "string",
-							"value": "pod-d"
-						},
-						{
-							"name": "facing",
-							"type": "string",
-							"value": "up"
-						}
-					]
-				},
-				{
-					"id": 90,
-					"name": "meeting",
-					"point": true,
-					"x": 660,
-					"y": 229,
-					"width": 0,
-					"height": 0,
-					"rotation": 0,
-					"visible": true,
-					"properties": [
-						{
-							"name": "zone",
-							"type": "string",
-							"value": "meeting"
-						},
-						{
-							"name": "facing",
-							"type": "string",
-							"value": "down"
-						}
-					]
-				},
-				{
-					"id": 91,
-					"name": "meeting",
-					"point": true,
-					"x": 660,
-					"y": 291,
-					"width": 0,
-					"height": 0,
-					"rotation": 0,
-					"visible": true,
-					"properties": [
-						{
-							"name": "zone",
-							"type": "string",
-							"value": "meeting"
-						},
-						{
-							"name": "facing",
-							"type": "string",
-							"value": "up"
-						}
-					]
-				},
-				{
-					"id": 92,
-					"name": "meeting",
-					"point": true,
-					"x": 704,
-					"y": 229,
-					"width": 0,
-					"height": 0,
-					"rotation": 0,
-					"visible": true,
-					"properties": [
-						{
-							"name": "zone",
-							"type": "string",
-							"value": "meeting"
-						},
-						{
-							"name": "facing",
-							"type": "string",
-							"value": "down"
-						}
-					]
-				},
-				{
-					"id": 93,
-					"name": "meeting",
-					"point": true,
-					"x": 704,
-					"y": 291,
-					"width": 0,
-					"height": 0,
-					"rotation": 0,
-					"visible": true,
-					"properties": [
-						{
-							"name": "zone",
-							"type": "string",
-							"value": "meeting"
-						},
-						{
-							"name": "facing",
-							"type": "string",
-							"value": "up"
-						}
-					]
-				},
-				{
-					"id": 94,
-					"name": "meeting",
-					"point": true,
-					"x": 748,
-					"y": 229,
-					"width": 0,
-					"height": 0,
-					"rotation": 0,
-					"visible": true,
-					"properties": [
-						{
-							"name": "zone",
-							"type": "string",
-							"value": "meeting"
-						},
-						{
-							"name": "facing",
-							"type": "string",
-							"value": "down"
-						}
-					]
-				},
-				{
-					"id": 95,
-					"name": "meeting",
-					"point": true,
-					"x": 748,
-					"y": 291,
-					"width": 0,
-					"height": 0,
-					"rotation": 0,
-					"visible": true,
-					"properties": [
-						{
-							"name": "zone",
-							"type": "string",
-							"value": "meeting"
-						},
-						{
-							"name": "facing",
-							"type": "string",
-							"value": "up"
-						}
-					]
-				},
-				{
-					"id": 96,
-					"name": "kitchen",
-					"point": true,
-					"x": 435,
-					"y": 150,
-					"width": 0,
-					"height": 0,
-					"rotation": 0,
-					"visible": true,
-					"properties": [
-						{
-							"name": "zone",
-							"type": "string",
-							"value": "kitchen"
-						},
-						{
-							"name": "facing",
-							"type": "string",
-							"value": "up"
-						}
-					]
-				},
-				{
-					"id": 97,
-					"name": "kitchen",
-					"point": true,
-					"x": 464,
-					"y": 150,
-					"width": 0,
-					"height": 0,
-					"rotation": 0,
-					"visible": true,
-					"properties": [
-						{
-							"name": "zone",
-							"type": "string",
-							"value": "kitchen"
-						},
-						{
-							"name": "facing",
-							"type": "string",
-							"value": "up"
-						}
-					]
-				},
-				{
-					"id": 98,
-					"name": "kitchen",
-					"point": true,
-					"x": 493,
-					"y": 150,
-					"width": 0,
-					"height": 0,
-					"rotation": 0,
-					"visible": true,
-					"properties": [
-						{
-							"name": "zone",
-							"type": "string",
-							"value": "kitchen"
-						},
-						{
-							"name": "facing",
-							"type": "string",
-							"value": "up"
-						}
-					]
-				},
-				{
-					"id": 99,
-					"name": "lounge",
-					"point": true,
-					"x": 614,
-					"y": 414,
-					"width": 0,
-					"height": 0,
-					"rotation": 0,
-					"visible": true,
-					"properties": [
-						{
-							"name": "zone",
-							"type": "string",
-							"value": "lounge"
-						},
-						{
-							"name": "facing",
-							"type": "string",
-							"value": "down"
-						}
-					]
-				},
-				{
-					"id": 100,
-					"name": "lounge",
+					"id": 215,
+					"name": "pod-3",
 					"point": true,
 					"x": 640,
-					"y": 414,
+					"y": 158,
 					"width": 0,
 					"height": 0,
 					"rotation": 0,
@@ -2180,7 +3817,7 @@
 						{
 							"name": "zone",
 							"type": "string",
-							"value": "lounge"
+							"value": "pod-3"
 						},
 						{
 							"name": "facing",
@@ -2190,11 +3827,11 @@
 					]
 				},
 				{
-					"id": 101,
-					"name": "lounge",
+					"id": 216,
+					"name": "pod-3",
 					"point": true,
-					"x": 666,
-					"y": 414,
+					"x": 640,
+					"y": 254,
 					"width": 0,
 					"height": 0,
 					"rotation": 0,
@@ -2203,7 +3840,30 @@
 						{
 							"name": "zone",
 							"type": "string",
-							"value": "lounge"
+							"value": "pod-3"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 217,
+					"name": "pod-4",
+					"point": true,
+					"x": 800,
+					"y": 158,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-4"
 						},
 						{
 							"name": "facing",
@@ -2213,11 +3873,724 @@
 					]
 				},
 				{
-					"id": 102,
+					"id": 218,
+					"name": "pod-4",
+					"point": true,
+					"x": 800,
+					"y": 254,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-4"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 219,
+					"name": "pod-4",
+					"point": true,
+					"x": 864,
+					"y": 158,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-4"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 220,
+					"name": "pod-4",
+					"point": true,
+					"x": 864,
+					"y": 254,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-4"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 221,
+					"name": "pod-5",
+					"point": true,
+					"x": 128,
+					"y": 344,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-5"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 222,
+					"name": "pod-5",
+					"point": true,
+					"x": 128,
+					"y": 440,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-5"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 223,
+					"name": "pod-5",
+					"point": true,
+					"x": 192,
+					"y": 344,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-5"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 224,
+					"name": "pod-5",
+					"point": true,
+					"x": 192,
+					"y": 440,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-5"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 225,
+					"name": "pod-6",
+					"point": true,
+					"x": 352,
+					"y": 344,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-6"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 226,
+					"name": "pod-6",
+					"point": true,
+					"x": 352,
+					"y": 440,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-6"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 227,
+					"name": "pod-6",
+					"point": true,
+					"x": 416,
+					"y": 344,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-6"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 228,
+					"name": "pod-6",
+					"point": true,
+					"x": 416,
+					"y": 440,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-6"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 229,
+					"name": "pod-7",
+					"point": true,
+					"x": 576,
+					"y": 344,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-7"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 230,
+					"name": "pod-7",
+					"point": true,
+					"x": 576,
+					"y": 440,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-7"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 231,
+					"name": "pod-7",
+					"point": true,
+					"x": 640,
+					"y": 344,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-7"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 232,
+					"name": "pod-7",
+					"point": true,
+					"x": 640,
+					"y": 440,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-7"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 233,
+					"name": "pod-8",
+					"point": true,
+					"x": 800,
+					"y": 344,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-8"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 234,
+					"name": "pod-8",
+					"point": true,
+					"x": 800,
+					"y": 440,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-8"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 235,
+					"name": "pod-8",
+					"point": true,
+					"x": 864,
+					"y": 344,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-8"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 236,
+					"name": "pod-8",
+					"point": true,
+					"x": 864,
+					"y": 440,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "pod-8"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 237,
+					"name": "huddle",
+					"point": true,
+					"x": 1156,
+					"y": 159,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "huddle"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 238,
+					"name": "huddle",
+					"point": true,
+					"x": 1156,
+					"y": 221,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "huddle"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 239,
+					"name": "huddle",
+					"point": true,
+					"x": 1200,
+					"y": 159,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "huddle"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 240,
+					"name": "huddle",
+					"point": true,
+					"x": 1200,
+					"y": 221,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "huddle"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 241,
+					"name": "huddle",
+					"point": true,
+					"x": 1244,
+					"y": 159,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "huddle"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 242,
+					"name": "huddle",
+					"point": true,
+					"x": 1244,
+					"y": 221,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "huddle"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 243,
+					"name": "meeting",
+					"point": true,
+					"x": 1460,
+					"y": 159,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "meeting"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 244,
+					"name": "meeting",
+					"point": true,
+					"x": 1460,
+					"y": 221,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "meeting"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 245,
+					"name": "meeting",
+					"point": true,
+					"x": 1504,
+					"y": 159,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "meeting"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 246,
+					"name": "meeting",
+					"point": true,
+					"x": 1504,
+					"y": 221,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "meeting"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 247,
+					"name": "meeting",
+					"point": true,
+					"x": 1548,
+					"y": 159,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "meeting"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 248,
+					"name": "meeting",
+					"point": true,
+					"x": 1548,
+					"y": 221,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "meeting"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 249,
 					"name": "booths",
 					"point": true,
-					"x": 806,
-					"y": 498,
+					"x": 1216,
+					"y": 447,
 					"width": 0,
 					"height": 0,
 					"rotation": 0,
@@ -2236,11 +4609,11 @@
 					]
 				},
 				{
-					"id": 103,
+					"id": 250,
 					"name": "booths",
 					"point": true,
-					"x": 851,
-					"y": 498,
+					"x": 1264,
+					"y": 447,
 					"width": 0,
 					"height": 0,
 					"rotation": 0,
@@ -2250,6 +4623,949 @@
 							"name": "zone",
 							"type": "string",
 							"value": "booths"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 251,
+					"name": "booths",
+					"point": true,
+					"x": 1312,
+					"y": 447,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "booths"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 252,
+					"name": "library",
+					"point": true,
+					"x": 1517,
+					"y": 502,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "library"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 253,
+					"name": "library",
+					"point": true,
+					"x": 1587,
+					"y": 502,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "library"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 254,
+					"name": "kitchen",
+					"point": true,
+					"x": 115,
+					"y": 726,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 255,
+					"name": "kitchen",
+					"point": true,
+					"x": 144,
+					"y": 726,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 256,
+					"name": "kitchen",
+					"point": true,
+					"x": 173,
+					"y": 726,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 257,
+					"name": "kitchen",
+					"point": true,
+					"x": 128,
+					"y": 804,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 258,
+					"name": "kitchen",
+					"point": true,
+					"x": 128,
+					"y": 854,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 259,
+					"name": "kitchen",
+					"point": true,
+					"x": 160,
+					"y": 804,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 260,
+					"name": "kitchen",
+					"point": true,
+					"x": 160,
+					"y": 854,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 261,
+					"name": "kitchen",
+					"point": true,
+					"x": 336,
+					"y": 804,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 262,
+					"name": "kitchen",
+					"point": true,
+					"x": 336,
+					"y": 854,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 263,
+					"name": "kitchen",
+					"point": true,
+					"x": 368,
+					"y": 804,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 264,
+					"name": "kitchen",
+					"point": true,
+					"x": 368,
+					"y": 854,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 265,
+					"name": "kitchen",
+					"point": true,
+					"x": 128,
+					"y": 945,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 266,
+					"name": "kitchen",
+					"point": true,
+					"x": 128,
+					"y": 995,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 267,
+					"name": "kitchen",
+					"point": true,
+					"x": 160,
+					"y": 945,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 268,
+					"name": "kitchen",
+					"point": true,
+					"x": 160,
+					"y": 995,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 269,
+					"name": "kitchen",
+					"point": true,
+					"x": 336,
+					"y": 945,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 270,
+					"name": "kitchen",
+					"point": true,
+					"x": 336,
+					"y": 995,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 271,
+					"name": "kitchen",
+					"point": true,
+					"x": 368,
+					"y": 945,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 272,
+					"name": "kitchen",
+					"point": true,
+					"x": 368,
+					"y": 995,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "kitchen"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 273,
+					"name": "lounge",
+					"point": true,
+					"x": 806,
+					"y": 794,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "lounge"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 274,
+					"name": "lounge",
+					"point": true,
+					"x": 832,
+					"y": 794,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "lounge"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 275,
+					"name": "lounge",
+					"point": true,
+					"x": 858,
+					"y": 794,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "lounge"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 276,
+					"name": "lounge",
+					"point": true,
+					"x": 787,
+					"y": 901,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "lounge"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 277,
+					"name": "lounge",
+					"point": true,
+					"x": 877,
+					"y": 901,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "lounge"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 278,
+					"name": "studio-1",
+					"point": true,
+					"x": 1248,
+					"y": 734,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "studio-1"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 279,
+					"name": "studio-1",
+					"point": true,
+					"x": 1248,
+					"y": 830,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "studio-1"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 280,
+					"name": "studio-1",
+					"point": true,
+					"x": 1312,
+					"y": 734,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "studio-1"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 281,
+					"name": "studio-1",
+					"point": true,
+					"x": 1312,
+					"y": 830,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "studio-1"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 282,
+					"name": "studio-2",
+					"point": true,
+					"x": 1472,
+					"y": 734,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "studio-2"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 283,
+					"name": "studio-2",
+					"point": true,
+					"x": 1472,
+					"y": 830,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "studio-2"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 284,
+					"name": "studio-2",
+					"point": true,
+					"x": 1536,
+					"y": 734,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "studio-2"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 285,
+					"name": "studio-2",
+					"point": true,
+					"x": 1536,
+					"y": 830,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "studio-2"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 286,
+					"name": "review",
+					"point": true,
+					"x": 1364,
+					"y": 920,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "review"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 287,
+					"name": "review",
+					"point": true,
+					"x": 1364,
+					"y": 982,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "review"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 288,
+					"name": "review",
+					"point": true,
+					"x": 1408,
+					"y": 920,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "review"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 289,
+					"name": "review",
+					"point": true,
+					"x": 1408,
+					"y": 982,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "review"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "up"
+						}
+					]
+				},
+				{
+					"id": 290,
+					"name": "review",
+					"point": true,
+					"x": 1452,
+					"y": 920,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "review"
+						},
+						{
+							"name": "facing",
+							"type": "string",
+							"value": "down"
+						}
+					]
+				},
+				{
+					"id": 291,
+					"name": "review",
+					"point": true,
+					"x": 1452,
+					"y": 982,
+					"width": 0,
+					"height": 0,
+					"rotation": 0,
+					"visible": true,
+					"properties": [
+						{
+							"name": "zone",
+							"type": "string",
+							"value": "review"
 						},
 						{
 							"name": "facing",
@@ -2271,11 +5587,11 @@
 			"y": 0,
 			"objects": [
 				{
-					"id": 104,
+					"id": 292,
 					"name": "spawn",
 					"point": true,
-					"x": 592,
-					"y": 102,
+					"x": 816,
+					"y": 688,
 					"width": 0,
 					"height": 0,
 					"rotation": 0,

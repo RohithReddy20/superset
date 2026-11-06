@@ -119,18 +119,22 @@ export function OfficeScreen() {
 								meId={me?.id ?? null}
 								onSelectTeammate={(id) => setSelectedId(id)}
 								onSelectRoom={(id) => setRoomId(id)}
+								onMoveTeammates={async (ids, toRoomId) => {
+									for (const id of ids)
+										await moveTeammate.mutateAsync({ id, roomId: toRoomId });
+								}}
+								onSay={async (input) => {
+									if (!me) throw new Error("No person here to send it");
+									return say.mutateAsync({ authorId: me.id, ...input });
+								}}
+								onOpenThread={(inRoom, threadId) => {
+									setShowTasks(false);
+									setRoomId(inRoom);
+									setOpenThreadId(threadId);
+								}}
 							/>
 						</div>
 					)}
-					{data ? (
-						<div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full border border-border bg-background/90 px-3 py-1.5 text-[12px] text-muted-foreground shadow-sm backdrop-blur">
-							<span className="font-medium text-foreground">
-								Click the office
-							</span>{" "}
-							to walk around, or use the arrow keys · click a teammate to open
-							them
-						</div>
-					) : null}
 					{showLog && data ? (
 						<div className="absolute inset-x-6 bottom-8 max-h-48 overflow-y-auto rounded-md border border-border bg-card/95 p-2 font-mono text-[10px] leading-relaxed text-muted-foreground backdrop-blur">
 							{data.log.slice(-60).map((l) => (

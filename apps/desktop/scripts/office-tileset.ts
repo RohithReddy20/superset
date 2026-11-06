@@ -3,15 +3,20 @@
  *
  *   bun run scripts/office-tileset.ts          # refresh floor-walls.png, props/*.png and the tilesets inside office.json
  *   bun run scripts/office-tileset.ts --map    # also rebuild office.json layers from the layout below (discards Tiled edits)
- *   bun run scripts/office-tileset.ts --preview out.png   # also render the map with a few teammates, 3x
+ *   bun run scripts/office-tileset.ts --preview out.png   # also render the map with a few teammates, 2x
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { deflateSync } from "node:zlib";
 import {
+	capTileName,
 	drawFigure,
+	EDGE,
+	type FloorMaterial,
 	FRAME,
+	faceTileName,
+	floorTileName,
 	isFloorTile,
 	PROP_NAMES,
 	PROPS,
@@ -27,8 +32,8 @@ const OUT = join(
 	"../src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/assets/world",
 );
 const T = TILE;
-const COLS = 28;
-const ROWS = 18;
+const COLS = 52;
+const ROWS = 34;
 
 /* ---------- png ---------- */
 const CRC = new Uint32Array(256).map((_, n) => {
@@ -85,7 +90,6 @@ interface Place {
 	name: string;
 	cx: number;
 	base: number;
-	w?: number;
 }
 interface SeatSpec {
 	x: number;
@@ -100,11 +104,17 @@ interface ZoneSpec {
 	y: number;
 	w: number;
 	h: number;
+	label?: string;
+	sign?: { x: number; y: number };
 }
 
 const places: Place[] = [];
 const seats: SeatSpec[] = [];
 const zones: ZoneSpec[] = [];
+const walls = new Uint8Array(COLS * ROWS);
+const floors: FloorMaterial[] = new Array(COLS * ROWS).fill("concrete");
+const spawn = { x: 25.5 * T, y: 21.5 * T };
+
 const size = (name: string) => {
 	const s = PROPS[name]?.draw();
 	return { w: s?.w ?? 0, h: s?.h ?? 0 };
@@ -114,6 +124,63 @@ const put = (name: string, cx: number, base: number) =>
 const seat = (x: number, y: number, facing: Facing, zone: string) =>
 	seats.push({ x: Math.round(x), y: Math.round(y), facing, zone });
 
+/** Sets a block of cells, columns c0..c1 and rows r0..r1 inclusive. */
+function cells(
+	c0: number,
+	r0: number,
+	c1: number,
+	r1: number,
+	set: (i: number) => void,
+) {
+	for (let r = r0; r <= r1; r++)
+		for (let c = c0; c <= c1; c++) set(r * COLS + c);
+}
+const wall = (c0: number, r0: number, c1: number, r1: number) =>
+	cells(c0, r0, c1, r1, (i) => {
+		walls[i] = 1;
+	});
+const doorway = (
+	c0: number,
+	r0: number,
+	c1: number,
+	r1: number,
+	m: FloorMaterial,
+) =>
+	cells(c0, r0, c1, r1, (i) => {
+		walls[i] = 0;
+		floors[i] = m;
+	});
+const paint = (
+	c0: number,
+	r0: number,
+	c1: number,
+	r1: number,
+	m: FloorMaterial,
+) =>
+	cells(c0, r0, c1, r1, (i) => {
+		floors[i] = m;
+	});
+
+/** An area covering tiles c0..c1, r0..r1, with its name shown at `sign` (tile units). */
+function area(
+	id: string,
+	kind: ZoneSpec["kind"],
+	[c0, r0, c1, r1]: [number, number, number, number],
+	label: string,
+	sign: [number, number],
+) {
+	zones.push({
+		id,
+		kind,
+		x: c0 * T,
+		y: r0 * T,
+		w: (c1 - c0 + 1) * T,
+		h: (r1 - r0 + 1) * T,
+		label,
+		sign: { x: sign[0] * T, y: sign[1] * T },
+	});
+}
+
 function pod(id: string, cx: number, top: number) {
 	for (let i = 0; i < 2; i++) {
 		const x = (cx - 2 + 2 * i) * T + T;
@@ -121,8 +188,8 @@ function pod(id: string, cx: number, top: number) {
 		put("desk-back", x, top * T + 26);
 		put("desk-front", x, top * T + 68);
 		put("chair-back", x, top * T + 94);
-		seats.push({ x, y: top * T - 8, facing: "down", zone: id });
-		seats.push({ x, y: top * T + 88, facing: "up", zone: id });
+		seat(x, top * T - 8, "down", id);
+		seat(x, top * T + 88, "up", id);
 	}
 	zones.push({
 		id,
@@ -134,107 +201,196 @@ function pod(id: string, cx: number, top: number) {
 	});
 }
 
-function layout() {
-	put("window", 5 * T, 2 * T - 4);
-	put("window", 10 * T, 2 * T - 4);
-	put("window", 23 * T, 2 * T - 4);
-	put("logo-bracket", 14 * T, 2 * T - 4);
-	put("clock", 14 * T, T + 20);
-	put("poster", 16.5 * T, 2 * T - 6);
-	put("door", 18.5 * T, 2 * T - 2);
-	put("bookshelf", 2 * T, 4 * T);
-	put("plant-tall", 3.6 * T, 4 * T);
-	put("printer", 7.5 * T, 3.6 * T);
-	put("water-cooler", 9 * T, 4 * T);
-	put("plant-tall", 26.4 * T, 4 * T);
-
-	pod("pod-a", 4, 5.2);
-	pod("pod-b", 9, 5.2);
-	pod("pod-c", 4, 10.6);
-	pod("pod-d", 9, 10.6);
-
-	put("rug-meeting", 22 * T, 10.2 * T);
-	put("whiteboard", 22 * T, 4.2 * T);
-	put("meeting-table", 22 * T, 8.6 * T);
+/** A table for six with its rug; `base` is the table's bottom edge. */
+function tableForSix(zone: string, cx: number, base: number, rug: string) {
+	put(rug, cx, base + 51);
+	put("meeting-table", cx, base);
 	for (const dx of [-44, 0, 44]) {
-		put("chair-front", 22 * T + dx, 8.6 * T - 38);
-		put("chair-back", 22 * T + dx, 8.6 * T + 22);
-		seat(22 * T + dx, 8.6 * T - 46, "down", "meeting");
-		seat(22 * T + dx, 8.6 * T + 16, "up", "meeting");
+		put("chair-front", cx + dx, base - 38);
+		put("chair-back", cx + dx, base + 22);
+		seat(cx + dx, base - 46, "down", zone);
+		seat(cx + dx, base + 16, "up", zone);
 	}
-	zones.push({
-		id: "meeting",
-		kind: "meeting",
-		x: 22 * T - 88,
-		y: 10.2 * T - 100,
-		w: 176,
-		h: 100,
-	});
-
-	put("kitchen-counter", 15 * T, 4 * T);
-	for (let i = 0; i < 3; i++) {
-		const x = (13.6 + i * 0.9) * T;
-		put("stool", x, 4.8 * T);
-		seats.push({ x, y: 4.8 * T - 4, facing: "up", zone: "kitchen" });
-	}
-	zones.push({
-		id: "kitchen",
-		kind: "lounge",
-		x: 12.5 * T,
-		y: 2.5 * T,
-		w: 5 * T,
-		h: 3 * T,
-	});
-
-	put("rug-lounge", 20 * T, 15.2 * T);
-	put("sofa", 20 * T, 13.3 * T);
-	put("coffee-table", 20 * T, 14.7 * T);
-	put("floor-lamp", 17.2 * T, 13.3 * T);
-	put("plant-small", 23.3 * T, 13.3 * T);
-	put("plant-small", 16.8 * T, 15.6 * T);
-	for (const dx of [-26, 0, 26])
-		seat(20 * T + dx, 13.3 * T - 12, "down", "lounge");
-	zones.push({
-		id: "lounge",
-		kind: "lounge",
-		x: 20 * T - 64,
-		y: 15.2 * T - 80,
-		w: 128,
-		h: 80,
-	});
-
-	for (const cx of [25.2, 26.6]) {
-		put("phone-booth", cx * T, 15.5 * T);
-		seat(cx * T, 15.5 * T + 2, "up", "booths");
-	}
-	zones.push({
-		id: "booths",
-		kind: "booth",
-		x: 24.5 * T,
-		y: 15.5 * T - 72,
-		w: 2.8 * T,
-		h: 80,
-	});
 }
 
+/** A table for four; `base` is the table's bottom edge. */
+function tableForFour(zone: string, cx: number, base: number) {
+	put("dining-table", cx, base);
+	for (const dx of [-16, 16]) {
+		put("chair-front", cx + dx, base - 26);
+		put("chair-back", cx + dx, base + 22);
+		seat(cx + dx, base - 34, "down", zone);
+		seat(cx + dx, base + 16, "up", zone);
+	}
+}
+
+function shell() {
+	wall(0, 0, COLS - 1, 1);
+	wall(0, 0, 0, ROWS - 1);
+	wall(COLS - 1, 0, COLS - 1, ROWS - 1);
+	wall(0, ROWS - 1, COLS - 1, ROWS - 1);
+	wall(1, 18, 50, 19);
+	wall(32, 2, 32, 17);
+	wall(33, 10, 50, 11);
+	wall(42, 2, 42, 9);
+	wall(16, 20, 16, 32);
+	wall(36, 20, 36, 32);
+
+	paint(33, 2, 50, 9, "carpet");
+	paint(33, 12, 50, 17, "wood");
+	paint(1, 20, 15, 32, "tile");
+	paint(17, 20, 35, 32, "wood");
+	paint(37, 20, 50, 32, "carpet");
+
+	doorway(9, 18, 10, 19, "tile");
+	doorway(24, 18, 25, 19, "wood");
+	doorway(42, 18, 43, 19, "carpet");
+	doorway(32, 14, 32, 15, "wood");
+	doorway(34, 10, 35, 11, "carpet");
+	doorway(44, 10, 45, 11, "carpet");
+	doorway(16, 25, 16, 26, "wood");
+	doorway(36, 25, 36, 26, "carpet");
+}
+
+function engineering() {
+	for (const cx of [5, 12, 26, 29.5]) put("window", cx * T, 2 * T - 4);
+	put("poster", 15.5 * T, 2 * T - 6);
+	put("logo-bracket", 19 * T, 2 * T - 4);
+	put("clock", 19 * T, T + 20);
+	put("poster", 22.5 * T, 2 * T - 6);
+	put("bookshelf", 2.2 * T, 4 * T);
+	put("printer", 8.3 * T, 3.6 * T);
+	put("water-cooler", 9.7 * T, 4 * T);
+	put("plant-tall", 14.4 * T, 4 * T);
+	put("bookshelf", 21.9 * T, 4 * T);
+	put("plant-tall", 23.6 * T, 4 * T);
+	put("plant-tall", 28.6 * T, 4 * T);
+	put("bookshelf", 30.4 * T, 4 * T);
+	let n = 1;
+	for (const top of [5.2, 11])
+		for (const cx of [5, 12, 19, 26]) pod(`pod-${n++}`, cx, top);
+	put("whiteboard", 15.5 * T, 16.6 * T);
+	put("plant-small", 1.6 * T, 17.8 * T);
+	put("plant-small", 30.8 * T, 17.8 * T);
+}
+
+function meetingRooms() {
+	put("tv-screen", 37.5 * T, 2 * T - 4);
+	put("plant-tall", 33.6 * T, 3.6 * T);
+	put("plant-tall", 41.4 * T, 3.6 * T);
+	tableForSix("huddle", 37.5 * T, 6.4 * T, "rug-meeting");
+	area("huddle", "meeting", [33, 2, 41, 9], "Huddle room", [37.5, 9.5]);
+
+	put("tv-screen", 47 * T, 2 * T - 4);
+	put("plant-small", 43.6 * T, 3.6 * T);
+	put("plant-small", 50.4 * T, 3.6 * T);
+	tableForSix("meeting", 47 * T, 6.4 * T, "rug-meeting");
+	area("meeting", "meeting", [43, 2, 50, 9], "Meeting room", [47, 9.5]);
+}
+
+function hall() {
+	for (const cx of [38, 39.5, 41]) {
+		put("phone-booth", cx * T, 13.9 * T);
+		seat(cx * T, 13.9 * T + 2, "up", "booths");
+	}
+	area("booths", "booth", [37, 12, 41, 14], "Phone booths", [39.5, 15]);
+
+	put("bookshelf", 48.5 * T, 13.6 * T);
+	put("floor-lamp", 50.5 * T, 15.6 * T);
+	put("plant-small", 46.4 * T, 13.4 * T);
+	for (const cx of [47.4, 49.6]) {
+		put("armchair-front", cx * T, 16 * T);
+		seat(cx * T, 16 * T - 10, "down", "library");
+	}
+	area("library", "lounge", [46, 12, 50, 17], "Library", [48.5, 17.4]);
+}
+
+function kitchen() {
+	put("kitchen-counter", 4.5 * T, 22 * T);
+	for (const cx of [3.6, 4.5, 5.4]) {
+		put("stool", cx * T, 22.8 * T);
+		seat(cx * T, 22.8 * T - 4, "up", "kitchen");
+	}
+	put("poster", 7.4 * T, 20 * T - 6);
+	put("fridge", 12.6 * T, 22 * T);
+	put("water-cooler", 14.3 * T, 21.8 * T);
+	put("plant-tall", 1.6 * T, 21.6 * T);
+	for (const base of [26.2, 30.6])
+		for (const cx of [4.5, 11]) tableForFour("kitchen", cx * T, base * T);
+	put("plant-small", 14.4 * T, 32.6 * T);
+	area("kitchen", "lounge", [1, 20, 15, 32], "Kitchen", [7.75, 24.2]);
+}
+
+function lobby() {
+	put("bookshelf", 20.5 * T, 21.6 * T);
+	put("plant-tall", 22.3 * T, 21.4 * T);
+	put("plant-tall", 27.6 * T, 21.4 * T);
+	put("bookshelf", 30 * T, 21.6 * T);
+	put("logo-bracket", 33 * T, 20 * T - 4);
+	put("clock", 33 * T, 19 * T + 20);
+	put("plant-tall", 34.6 * T, 21.6 * T);
+
+	put("rug-lobby", 26 * T, 28.6 * T);
+	put("sofa", 26 * T, 25.2 * T);
+	for (const dx of [-26, 0, 26])
+		seat(26 * T + dx, 25.2 * T - 12, "down", "lounge");
+	put("coffee-table", 26 * T, 26.9 * T);
+	for (const cx of [24.6, 27.4]) {
+		put("armchair-back", cx * T, 28.4 * T);
+		seat(cx * T, 28.4 * T - 8, "up", "lounge");
+	}
+	put("floor-lamp", 23.6 * T, 25 * T);
+	put("floor-lamp", 28.4 * T, 25 * T);
+	put("ping-pong", 31.5 * T, 31.6 * T);
+	put("plant-small", 17.6 * T, 32.6 * T);
+	area("lounge", "lounge", [17, 20, 35, 32], "Lounge", [26, 30.4]);
+}
+
+function studio() {
+	put("poster", 38.4 * T, 20 * T - 6);
+	put("plant-tall", 37.6 * T, 21.4 * T);
+	put("whiteboard", 50 * T, 21.6 * T);
+	pod("studio-1", 40, 23.2);
+	pod("studio-2", 47, 23.2);
+	tableForSix("review", 44 * T, 30.2 * T, "rug-studio");
+	area("review", "meeting", [38, 28, 50, 32], "Review table", [44, 27.6]);
+	put("plant-small", 37.6 * T, 32.6 * T);
+	put("plant-small", 50.4 * T, 32.6 * T);
+}
+
+function layout() {
+	shell();
+	engineering();
+	meetingRooms();
+	hall();
+	kitchen();
+	lobby();
+	studio();
+}
+
+const isWall = (c: number, r: number) =>
+	c < 0 || r < 0 || c >= COLS || r >= ROWS || walls[r * COLS + c] === 1;
+const isFace = (c: number, r: number) =>
+	r < ROWS && isWall(c, r) && !isWall(c, r + 1);
+const isCap = (c: number, r: number) => isWall(c, r) && !isFace(c, r);
+
 function floorName(c: number, r: number): string {
-	const L = c === 0;
-	const R = c === COLS - 1;
-	if (r === 0) return L ? "corner-tl" : R ? "corner-tr" : "wall-cap";
-	if (r === 1) return L ? "face-left" : R ? "face-right" : "wall-face";
-	if (r === ROWS - 1) return L ? "corner-bl" : R ? "corner-br" : "front";
-	if (L) return "side-left";
-	if (R) return "side-right";
-	return (
-		[
-			"floor-0",
-			"floor-0",
-			"floor-1",
-			"floor-0",
-			"floor-2",
-			"floor-0",
-			"floor-0",
-		][(c * 7 + r * 3) % 7] ?? "floor-0"
+	if (isFace(c, r))
+		return faceTileName(
+			(isFace(c + 1, r) ? 0 : EDGE.e) | (isFace(c - 1, r) ? 0 : EDGE.w),
+		);
+	if (isCap(c, r))
+		return capTileName(
+			(isCap(c, r - 1) ? 0 : EDGE.n) |
+				(isCap(c + 1, r) ? 0 : EDGE.e) |
+				(isCap(c, r + 1) ? 0 : EDGE.s) |
+				(isCap(c - 1, r) ? 0 : EDGE.w),
+		);
+	const material = floors[r * COLS + c] ?? "concrete";
+	const pattern = [0, 0, 1, 0, 2, 0, 0][(c * 7 + r * 3) % 7] ?? 0;
+	return floorTileName(
+		material,
+		material === "concrete" ? pattern : c * 5 + r * 3,
 	);
 }
 
@@ -359,6 +515,15 @@ function layers() {
 				height: Math.round(z.h),
 				rotation: 0,
 				visible: true,
+				properties: [
+					...(z.label ? [prop("label", z.label)] : []),
+					...(z.sign
+						? [
+								prop("signX", Math.round(z.sign.x), "int"),
+								prop("signY", Math.round(z.sign.y), "int"),
+							]
+						: []),
+				],
 			})),
 		},
 		{
@@ -397,8 +562,8 @@ function layers() {
 					id: nextId++,
 					name: "spawn",
 					point: true,
-					x: Math.round(18.5 * T),
-					y: Math.round(3.2 * T),
+					x: Math.round(spawn.x),
+					y: Math.round(spawn.y),
 					width: 0,
 					height: 0,
 					rotation: 0,
@@ -478,29 +643,35 @@ function preview(map: {
 					y - FRAME.feetY,
 				),
 		});
-	const seatAt = (i: number) => seats[i] as SeatSpec;
-	for (const [i, o] of [
-		[0, outfitA],
-		[1, outfitB],
-		[6, outfitB],
-		[17, outfitA],
-		[16, outfitB],
-		[23, outfitA],
+	const seatIn = (zone: string, i: number) =>
+		seats.filter((s) => s.zone === zone)[i] as SeatSpec;
+	for (const [zone, i, o] of [
+		["pod-1", 0, outfitA],
+		["pod-1", 1, outfitB],
+		["pod-2", 3, outfitB],
+		["huddle", 0, outfitA],
+		["huddle", 4, outfitB],
+		["kitchen", 5, outfitA],
+		["lounge", 1, outfitB],
+		["lounge", 3, outfitA],
+		["library", 0, outfitB],
+		["booths", 1, outfitA],
+		["studio-1", 2, outfitB],
 	] as const) {
-		const s = seatAt(i);
+		const s = seatIn(zone, i);
 		sit(o, s.facing === "up" ? "back" : "front", s.x, s.y, s.y + 8);
 	}
 	items.push({
-		order: 9.5 * T,
+		order: 15 * T,
 		draw: () =>
 			room.blit(
 				drawFigure(outfitB, { view: "side", step: 1 }),
-				13.2 * T - FRAME.feetX,
-				9.5 * T - FRAME.feetY,
+				33.5 * T - FRAME.feetX,
+				15 * T - FRAME.feetY,
 			),
 	});
 	for (const item of items.sort((a, b) => a.order - b.order)) item.draw();
-	const k = 3;
+	const k = 2;
 	const big = new Sprite(room.w * k, room.h * k);
 	for (let y = 0; y < big.h; y++)
 		for (let x = 0; x < big.w; x++)
@@ -528,6 +699,7 @@ const mapPath = join(OUT, "office.json");
 const existing = existsSync(mapPath)
 	? JSON.parse(readFileSync(mapPath, "utf8"))
 	: null;
+const rebuild = !existing || args.includes("--map");
 const map = {
 	...(existing ?? {}),
 	type: "map",
@@ -536,21 +708,20 @@ const map = {
 	orientation: "orthogonal",
 	renderorder: "right-down",
 	infinite: false,
-	width: existing?.width ?? COLS,
-	height: existing?.height ?? ROWS,
+	width: rebuild ? COLS : existing.width,
+	height: rebuild ? ROWS : existing.height,
 	tilewidth: T,
 	tileheight: T,
 	compressionlevel: -1,
 	tilesets: tilesets(),
-	layers: existing && !args.includes("--map") ? existing.layers : layers(),
+	layers: rebuild ? layers() : existing.layers,
 	nextlayerid: 6,
 	nextobjectid: 1000,
 };
 writeFileSync(mapPath, `${JSON.stringify(map, null, "\t")}\n`);
 const previewIndex = args.indexOf("--preview");
 if (previewIndex >= 0) {
-	if (!existing || args.includes("--map")) void 0;
-	else layout();
+	if (!rebuild) layout();
 	writeFileSync(
 		args[previewIndex + 1] ?? "office-preview.png",
 		encodePng(preview(map)),

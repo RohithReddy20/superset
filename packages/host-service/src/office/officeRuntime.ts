@@ -168,6 +168,7 @@ export class OfficeRuntime {
 	}): { id: string } {
 		const author = this.office.teammate(input.authorId);
 		if (author?.kind !== "human") throw new Error("Only a person posts here");
+		this.joinRoom(input.authorId, input.roomId);
 		const { message } = this.office.post({
 			authorId: input.authorId,
 			roomId: input.roomId,
@@ -558,6 +559,15 @@ ${check.output.slice(-600)}`
 		if (this.config.rooms.some((r) => r.id === room.id))
 			throw new Error(`room ${room.id} already exists`);
 		this.config.rooms.push({ ...room, kind: "room", members: [] });
+		this.saveConfig();
+		this.applyConfig();
+	}
+
+	/** A person may post in any room; posting makes them a member, their home room stays. */
+	private joinRoom(personId: string, roomId: string): void {
+		const room = this.config.rooms.find((r) => r.id === roomId);
+		if (!room || room.kind === "dm" || room.members.includes(personId)) return;
+		room.members.push(personId);
 		this.saveConfig();
 		this.applyConfig();
 	}

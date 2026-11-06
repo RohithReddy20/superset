@@ -100,3 +100,40 @@ against a scratch repository with a one-line test gate:
 Not done yet: the worktree is not registered as a Paradev workspace (it is a plain git worktree,
 so it does not show in the sidebar); no PR is opened; no token budget, only rounds; the review
 session has no "changes requested" loop test yet beyond the code path.
+
+## 2026-11-06: a bigger office, a camera, and talking to a group
+
+The floor was one 28x18 room fitted to the pane. It is now a 52x34 office with walls and doorways,
+and the view follows the person instead of fitting the map.
+
+- **Map.** `scripts/office-tileset.ts --map` builds it from wall rectangles, doorways and painted
+  floor materials. Wall tiles are chosen per cell: a wall cell with floor below is a face, any
+  other is a cap, and caps outline the sides that drop. Rooms: engineering (8 pods), huddle room
+  (the first `meeting` zone, where hand-off pairs meet), meeting room, phone booths, library,
+  kitchen (counter and four tables), lounge (sofa, armchairs, ping-pong), design studio (2 pods
+  and a review table). Zones carry `label`, `signX`, `signY`; areas with no chat room in them
+  show their label on the floor.
+- **Camera.** Zoom steps 1, 1.5, 2, 2.5, 3; the start zoom shows about 18 tile rows. Wheel or the
+  -/+ buttons step; zooming out past 1 shows the whole office. Dragging the floor pans and stops
+  following until you move again. The overlay is positioned on `POST_RENDER`, after the camera
+  has moved, so name tags do not trail the sprites by a frame.
+- **Mouse.** Double-click walks; a single click picks the room under it and clears the picked
+  group. Clicking an AI teammate picks it (Shift/Cmd adds), Shift-drag picks everyone in a box,
+  Esc clears. Dragging a picked teammate, or its name tag, carries the whole group; dropping it on
+  another chat room's area calls `office.moveTeammate` for each, anywhere else they walk back.
+  Room signs hang under their area and tags shrink to a face below zoom 1, so neither covers
+  the people in the whole-office view.
+- **Group chat.** Picking teammates opens a small chat at the bottom left. Its thread in each room
+  is the person's latest root message there whose mentions equal the group
+  (`utils/groupThreads`). The first message mentions everyone and starts that thread; later ones
+  are thread replies, which reach them as thread participants. Posting in a room the person is not
+  in makes them a member (`OfficeRuntime.joinRoom`), their home room stays.
+- **Checked in the running app (CDP, renderer 3005):** single click does not move you, double-click
+  walks, drag pans and the camera returns on an arrow key, Shift-click and Shift-box pick, Esc
+  clears, dragging Scout carried Scout and Bash into planning, dragging Bash's tag brought both
+  back, a group message to Scout and Bash got an "ok" from each in the chat, and a follow-up
+  without mentions reached them. No console errors.
+- **Open:** only areas that hold a chat room accept a drop (an empty pod cannot become a room by
+  dropping); a group spread over rooms gets one thread per room; Scout answered "thanks, that is
+  all" with a message saying it would not reply, so the seat norms should say to stay silent
+  when there is nothing to add.

@@ -1,1 +1,5 @@
-export { FloorOverlay, type FloorOverlayHandle } from "./FloorOverlay";
+export {
+	type AreaLabel,
+	FloorOverlay,
+	type FloorOverlayHandle,
+} from "./FloorOverlay";

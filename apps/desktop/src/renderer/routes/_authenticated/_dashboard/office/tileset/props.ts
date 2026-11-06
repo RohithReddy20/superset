@@ -1,3 +1,4 @@
+import type { PaletteKey } from "./palette";
 import { Sprite } from "./pixels";
 
 export interface Prop {
@@ -257,12 +258,100 @@ function floorLamp(): Sprite {
 	return s;
 }
 
-function rug(w: number, h: number): Sprite {
+function rug(w: number, h: number, accent: PaletteKey = "g4"): Sprite {
 	const s = new Sprite(w, h);
 	s.rect(0, 0, w, h, "g3");
 	s.frame(0, 0, w, h, "g2");
-	s.frame(2, 2, w - 4, h - 4, "g4");
+	s.frame(2, 2, w - 4, h - 4, accent);
 	s.frame(5, 5, w - 10, h - 10, "g2");
+	return s;
+}
+
+function armchair(backView: boolean): Sprite {
+	const s = new Sprite(30, 30);
+	if (backView) {
+		s.box(0, 8, 30, 16, "g5");
+		s.box(3, 0, 24, 18, "tealD");
+		s.hline(4, 1, 22, "teal");
+		s.hline(4, 14, 22, "g2");
+	} else {
+		s.box(3, 0, 24, 13, "tealD");
+		s.hline(4, 1, 22, "teal");
+		s.box(0, 9, 7, 16, "g5");
+		s.box(23, 9, 7, 16, "g5");
+		s.hline(1, 10, 5, "g7");
+		s.hline(24, 10, 5, "g7");
+		s.box(6, 12, 18, 9, "teal");
+		s.hline(7, 13, 16, "g9");
+		s.box(6, 20, 18, 5, "g3");
+	}
+	s.rect(2, 24, 3, 4, "g1");
+	s.rect(25, 24, 3, 4, "g1");
+	s.rect(5, 26, 20, 2, "shadow");
+	return s;
+}
+
+function diningTable(): Sprite {
+	const s = new Sprite(64, 36);
+	s.box(0, 4, 64, 18, "g6");
+	s.hline(1, 5, 62, "g8");
+	s.box(0, 21, 64, 6, "g4");
+	s.rect(3, 27, 3, 9, "g1");
+	s.rect(58, 27, 3, 9, "g1");
+	s.rect(7, 27, 50, 2, "shadow");
+	for (const x of [10, 44]) {
+		s.box(x, 8, 10, 8, "g10");
+		s.rect(x + 3, 10, 4, 4, "g11");
+	}
+	s.box(28, 9, 8, 6, "rust");
+	s.rect(30, 9, 4, 2, "gold");
+	return s;
+}
+
+function tvScreen(): Sprite {
+	const s = new Sprite(72, 42);
+	s.box(0, 0, 72, 42, "g1");
+	s.rect(3, 3, 66, 34, "pane");
+	s.rect(8, 8, 28, 3, "screen");
+	s.rect(8, 14, 40, 2, "paneL");
+	s.rect(8, 19, 32, 2, "paneL");
+	s.rect(48, 25, 4, 9, "teal");
+	s.rect(54, 20, 4, 14, "gold");
+	s.rect(60, 28, 4, 6, "rust");
+	s.rect(33, 38, 6, 2, "g5");
+	return s;
+}
+
+function fridge(): Sprite {
+	const s = new Sprite(30, 62);
+	s.box(0, 0, 30, 58, "g8");
+	s.hline(1, 1, 28, "g10");
+	s.hline(1, 20, 28, "g6");
+	s.rect(24, 6, 2, 10, "g5");
+	s.rect(24, 25, 2, 18, "g5");
+	s.rect(6, 30, 3, 3, "rust");
+	s.rect(11, 34, 3, 3, "gold");
+	s.rect(7, 40, 5, 4, "g11");
+	s.rect(2, 58, 3, 4, "g1");
+	s.rect(25, 58, 3, 4, "g1");
+	s.rect(4, 58, 22, 2, "shadow");
+	return s;
+}
+
+function pingPong(): Sprite {
+	const s = new Sprite(96, 54);
+	s.box(0, 6, 96, 32, "tealD");
+	s.hline(1, 7, 94, "teal");
+	s.hline(2, 22, 92, "g9");
+	s.rect(46, 2, 4, 36, "g9");
+	s.vline(47, 3, 34, "g11");
+	s.box(0, 37, 96, 6, "g3");
+	s.rect(6, 43, 3, 11, "g1");
+	s.rect(87, 43, 3, 11, "g1");
+	s.rect(10, 43, 76, 2, "shadow");
+	s.box(16, 12, 7, 7, "rust");
+	s.box(74, 26, 7, 7, "rust");
+	s.rect(60, 14, 2, 2, "g11");
 	return s;
 }
 
@@ -409,6 +498,18 @@ export const PROPS: Record<string, Prop> = {
 	"kitchen-counter": { draw: kitchenCounter, footprint: 34 },
 	stool: { draw: stool, footprint: 10 },
 	"phone-booth": { draw: phoneBooth, footprint: 72 },
+	"armchair-front": { draw: () => armchair(false), footprint: 24 },
+	"armchair-back": { draw: () => armchair(true), footprint: 24 },
+	"dining-table": { draw: diningTable, footprint: 28 },
+	"tv-screen": { draw: tvScreen, footprint: 0 },
+	fridge: { draw: fridge, footprint: 18 },
+	"ping-pong": { draw: pingPong, footprint: 44 },
+	"rug-lobby": { draw: () => rug(224, 128, "rustD"), footprint: 0, flat: true },
+	"rug-studio": {
+		draw: () => rug(176, 100, "tealD"),
+		footprint: 0,
+		flat: true,
+	},
 };
 
 export const PROP_NAMES = Object.keys(PROPS);

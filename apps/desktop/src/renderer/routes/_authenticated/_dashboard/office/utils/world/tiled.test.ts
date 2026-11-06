@@ -44,6 +44,11 @@ const map: TiledMap = {
 					y: 32,
 					width: 64,
 					height: 64,
+					properties: [
+						{ name: "label", value: "Pod A" },
+						{ name: "signX", value: 64 },
+						{ name: "signY", value: 40 },
+					],
 				},
 			],
 		},
@@ -94,6 +99,8 @@ describe("parseTiledWorld", () => {
 		expect(world.map.zones).toHaveLength(1);
 		expect(world.map.zones[0]?.kind).toBe("team");
 		expect(world.map.zones[0]?.seats).toEqual([{ x: 64, y: 90, facing: "up" }]);
+		expect(world.map.zones[0]?.label).toBe("Pod A");
+		expect(world.map.zones[0]?.sign).toEqual({ x: 64, y: 40 });
 		expect(world.map.spawn).toEqual({ x: 100, y: 80 });
 	});
 });

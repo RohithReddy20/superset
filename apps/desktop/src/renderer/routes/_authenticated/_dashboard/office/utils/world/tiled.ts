@@ -154,12 +154,17 @@ export function parseTiledWorld(
 		const id = obj.name ?? String(obj.id);
 		const kind = (obj.class ?? obj.type ?? "team") as ZoneKind;
 		const label = prop(obj, "label");
+		const signX = prop(obj, "signX");
+		const signY = prop(obj, "signY");
 		zones.push({
 			id,
 			kind: ZONE_KINDS.includes(kind) ? kind : "team",
 			rect: { x: obj.x, y: obj.y, w: obj.width ?? 0, h: obj.height ?? 0 },
 			seats: seatsByZone.get(id) ?? [],
 			...(typeof label === "string" ? { label } : {}),
+			...(typeof signX === "number" && typeof signY === "number"
+				? { sign: { x: signX, y: signY } }
+				: {}),
 		});
 	}
 
