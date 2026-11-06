@@ -1,0 +1,72 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/scene/OfficeScene.ts
+  s_ba0de495eca415::t_196d62d074aa8e 637
+  s_8322a827a65284::t_d2d73d90369e2f 14,35-36,47,54,56-57,61-68,72-74,76,82,91-104,107-112,120-132,142-155,164-165,181-200,203-212,296,302-371,374-379,382-391,393-636,638-654,672,674,679,681-684,700,722,726,729,738,796,842,856,858-859,867
+apps/desktop/scripts/office-tileset.ts
+  s_8322a827a65284::t_39783ad463aa85 6,13,15-16,18-19,35-36,107-108,114-117,127-183,191-192,204-207,209-212,214,216-223,225,227-243,245-294,296-358,361-376,378-393,518-526,565-566,646-659,661,665,669-670,674,702,711-712,717,724
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/OfficeFloor.tsx
+  s_8322a827a65284::t_978ed3a0509280 1,3,5,7,11-12,14-18,26-33,42-44,50-53,65-85,98-103,105,120-126,128-139,148-150,157-158,160,162-172,174-176,178-205
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/assets/world/office.json
+  s_8322a827a65284::t_76f35e3b4843c9 8-9,18,22-23,78,83,93,98,108,113,123,128,138,143,153,158,168,183,198,213,228-453,465,467-469,911,913-1168,1176-1177,1186-1191,1198-1199,1209-1210,1219-1221,1223-1224,1230-1235,1241-1246,1252-1257,1263-1268,1274-1279,1286-1288,1296-1301,1307-1312,1318-1323,1329-1334,1340-1345,1351-1356,1362-1367,1373-1378,1384-1389,1395-1400,1406-1411,1417-1422,1428-1433,1439-1444,1450-1455,1461-1466,1472-1477,1484-1486,1495-1497,1506-1508,1516-1519,1527-1530,1538-1541,1549-1552,1560-1565,1571-1576,1582-1587,1593-1598,1604-1609,1615-1620,1626-1631,1637-1642,1648-1653,1659-1664,1670-1675,1681-1686,1692-1697,1703-1708,1714-1719,1725-1730,1737-1739,1747-1753,1758-1763,1769-1774,1780-1785,1791-1796,1802-1807,1813-1818,1824-1829,1835-1840,1846-1851,1857-1862,1868-1873,1876,1879-1884,1890-1895,1901-1906,1912-1917,1923-4779,4781-4793,4796,4798-4802,4804-4816,4819-4825,4827-4839,4842-4848,4850-4863,4865-4866,4868-4869,4878,4888-4889,4891-4892,4901,4911-4912,4914-4915,4924,4934-4935,4937-4938,4947,4957-4958,4960-4961,4970,4980-4981,4983-4984,4993,5003-5004,5006-5007,5016,5026-5027,5029-5030,5039,5049-5050,5052-5053,5062,5072-5073,5075-5076,5085,5095-5096,5098-5099,5108,5118-5119,5121-5122,5131,5141-5142,5144-5145,5154,5164-5165,5167-5168,5177,5182,5187-5188,5190-5191,5200,5210-5211,5213-5214,5223,5233-5234,5236-5237,5246-5269,5279-5280,5282-5283,5292,5302-5303,5305-5306,5315,5325-5326,5328-5329,5338,5348-5349,5351-5352,5361,5371-5372,5374-5375,5384,5394-5395,5397-5398,5407,5412,5417-5418,5420-5421,5430,5440-5441,5443-5444,5453,5458,5463-5464,5466-5467,5476,5481,5486-5487,5489-5490,5499,5509-5510,5512-5513,5522,5527,5532-5533,5535-5536,5545,5550,5555-5556,5558-5559,5568,5590,5593-5594
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/components/FloorControls/FloorControls.tsx
+  s_8322a827a65284::t_c1221f17aa21e2 1-55
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/components/FloorControls/index.ts
+  s_8322a827a65284::t_5817d22ec87fc4 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/components/FloorOverlay/FloorOverlay.tsx
+  s_8322a827a65284::t_2fbadbe15d1c1f 2,12-16,20-21,23,25-26,28-31,36-41,45-58,63-77,81-83,98-99,106-113,115-116,119-120,138-143,147-161,171,195,202-242,244-245,251-252,263-273
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/components/FloorOverlay/index.ts
+  s_8322a827a65284::t_f2a390143e7527 1-5
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/components/GroupChat/GroupChat.tsx
+  s_8322a827a65284::t_a5512698402ba7 1-225
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/components/GroupChat/index.ts
+  s_8322a827a65284::t_0673f90ae375ce 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/scene/index.ts
+  s_8322a827a65284::t_4f943a5331e6b8 6
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeScreen/OfficeScreen.tsx
+  s_8322a827a65284::t_073f688fd71c09 122-134
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/tileset/index.ts
+  s_8322a827a65284::t_2013912c25c4dc 13-24
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/tileset/palette.ts
+  s_8322a827a65284::t_d8515c91f9725e 18-24
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/tileset/props.ts
+  s_8322a827a65284::t_528c78d4b27747 1,261,265,270-357,501-512
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/tileset/tiles.ts
+  s_8322a827a65284::t_e42eaf5d7517ed 5,21,23-30,34,36-39,43-51,55-56,58-72,74,78-87,91-97,100-127
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/groupThreads/groupThreads.test.ts
+  s_8322a827a65284::t_8ffd6871e0d71a 1-38
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/groupThreads/groupThreads.ts
+  s_8322a827a65284::t_434ebcdec2d5f8 1-30
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/groupThreads/index.ts
+  s_8322a827a65284::t_96db4321dcbc29 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/world/tiled.test.ts
+  s_8322a827a65284::t_625fe0732c07ee 47-51,102-103
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/world/tiled.ts
+  s_8322a827a65284::t_abdfa43200e143 157-158,165-167
+packages/host-service/src/office/officeRuntime.ts
+  s_8322a827a65284::t_19a51061c3343e 171,566-574
+plans/20261105-office-orchestration-notes.md
+  s_8322a827a65284::t_ec11c7856e9453 103-139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "de75f8d0b41e4be0caa1e7f23ec40937fafc3a4f",
+  "prompts": {},
+  "sessions": {
+    "s_8322a827a65284": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "915e3ab3-2509-48d4-ac28-15e170582e47",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    },
+    "s_ba0de495eca415": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "45c600a5-1655-454e-8101-759a42937772",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
