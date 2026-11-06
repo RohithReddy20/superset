@@ -568,6 +568,35 @@ ${check.output.slice(-600)}`
 		this.applyConfig();
 	}
 
+	/**
+	 * The private chat between a person and a set of AI teammates, made on first use. One message
+	 * there reaches every member, wherever they sit.
+	 */
+	openGroup(personId: string, memberIds: string[]): { roomId: string } {
+		if (this.office.teammate(personId)?.kind !== "human")
+			throw new Error("Only a person opens a group chat");
+		const ids = [...new Set(memberIds)]
+			.filter((id) => this.office.teammate(id)?.kind === "ai")
+			.sort();
+		if (ids.length === 0) throw new Error("Pick at least one AI teammate");
+		const roomId = `group-${ids.join("+")}`;
+		const members = [personId, ...ids];
+		const existing = this.config.rooms.find((r) => r.id === roomId);
+		if (existing && members.every((m) => existing.members.includes(m)))
+			return { roomId };
+		if (existing) existing.members = members;
+		else
+			this.config.rooms.push({
+				id: roomId,
+				name: ids.map((id) => this.office.teammate(id)?.name ?? id).join(", "),
+				kind: "dm",
+				members,
+			});
+		this.saveConfig();
+		this.applyConfig();
+		return { roomId };
+	}
+
 	/** A person may post in any room; posting makes them a member, their home room stays. */
 	private joinRoom(personId: string, roomId: string): void {
 		const room = this.config.rooms.find((r) => r.id === roomId);

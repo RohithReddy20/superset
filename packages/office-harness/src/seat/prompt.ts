@@ -85,11 +85,15 @@ export function inboxPrompt(office: Office, items: InboxItem[]): string {
 		const who = author
 			? `${author.name} (${author.kind === "ai" ? "AI teammate" : "person"})`
 			: item.message.authorId;
+		const place =
+			room?.kind === "dm"
+				? room.members.length > 2
+					? `the group chat with ${room.members.map((m) => `@${m}`).join(", ")}`
+					: "your DM"
+				: `#${room?.name ?? item.message.roomId}`;
 		const where = item.message.threadId
-			? `in a thread in #${room?.name ?? item.message.roomId}`
-			: room?.kind === "dm"
-				? "in your DM"
-				: `in #${room?.name ?? item.message.roomId}`;
+			? `in a thread in ${place}`
+			: `in ${place}`;
 		const why =
 			item.reason === "mention"
 				? "mentioned you"

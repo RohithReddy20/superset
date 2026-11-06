@@ -20,6 +20,7 @@ export function OfficeScreen() {
 		hire,
 		addRoom,
 		moveTeammate,
+		openGroup,
 		createTask,
 		assignTask,
 		updateTask,
@@ -130,10 +131,9 @@ export function OfficeScreen() {
 									if (!me) throw new Error("No person here to send it");
 									return say.mutateAsync({ authorId: me.id, ...input });
 								}}
-								onOpenThread={(inRoom, threadId) => {
-									setShowTasks(false);
-									setRoomId(inRoom);
-									setOpenThreadId(threadId);
+								onOpenGroup={async (memberIds) => {
+									if (!me) throw new Error("No person here to send it");
+									return openGroup.mutateAsync({ personId: me.id, memberIds });
 								}}
 							/>
 						</div>

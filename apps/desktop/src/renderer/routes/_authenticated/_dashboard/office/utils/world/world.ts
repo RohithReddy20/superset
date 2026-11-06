@@ -55,8 +55,16 @@ export interface WorldLayout {
 	blocked: Uint8Array;
 	rooms: PlacedRoom[];
 	huddle: Zone | null;
+	/** Each teammate's own seat, before huddles; pass it back as `previous` to keep seats stable. */
+	homes: Map<string, SeatTarget>;
 	/** Where each teammate should be right now, after hand-offs and huddles. */
 	targets: Map<string, SeatTarget>;
+}
+
+/** Where a teammate was put down for a move into `roomId`; they take the free seat nearest it. */
+export interface SeatHint {
+	roomId: string;
+	near: Point;
 }
 
 export const CELL = 16;
@@ -66,11 +74,16 @@ export function layoutWorld({
 	rooms,
 	teammates,
 	handoffs,
+	previous,
+	hints,
 }: {
 	map: WorldMap;
 	rooms: Room[];
 	teammates: Teammate[];
 	handoffs: Handoff[];
+	/** The last layout's homes: everyone keeps their seat while it still fits their room. */
+	previous?: Map<string, SeatTarget>;
+	hints?: Map<string, SeatHint>;
 }): WorldLayout {
 	const byId = new Map(teammates.map((t) => [t.id, t]));
 	const teamZones = map.zones.filter((z) => z.kind === "team");
@@ -98,7 +111,10 @@ export function layoutWorld({
 	const free = new Map<string, Seat[]>(
 		map.zones.map((z) => [z.id, [...z.seats]]),
 	);
-	const takeSeat = (zone: Zone | undefined): SeatTarget | null => {
+	const takeSeat = (
+		zone: Zone | undefined,
+		near: Point | undefined,
+	): SeatTarget | null => {
 		const pools = [
 			zone,
 			...spareZones.filter((z) => z !== zone),
@@ -106,24 +122,46 @@ export function layoutWorld({
 			...map.zones.filter((z) => z.kind === "meeting"),
 		];
 		for (const pool of pools) {
-			const seat = pool ? free.get(pool.id)?.shift() : undefined;
-			if (seat && pool) return { ...seat, zoneId: pool.id };
+			const seats = pool ? free.get(pool.id) : undefined;
+			if (!pool || !seats || seats.length === 0) continue;
+			const index = near ? nearestIndex(seats, near) : 0;
+			const [seat] = seats.splice(index, 1);
+			if (seat) return { ...seat, zoneId: pool.id };
 		}
 		return null;
+	};
+	const claim = (seat: SeatTarget): boolean => {
+		const seats = free.get(seat.zoneId);
+		const index =
+			seats?.findIndex((s) => s.x === seat.x && s.y === seat.y) ?? -1;
+		if (!seats || index < 0) return false;
+		seats.splice(index, 1);
+		return true;
 	};
 
 	const homes = new Map<string, SeatTarget>();
 	const byStableOrder = [...teammates].sort((a, b) => a.id.localeCompare(b.id));
+	const zoneOfRoom = new Map(placed.map((r) => [r.id, r.zone]));
+	for (const t of byStableOrder) {
+		const before = previous?.get(t.id);
+		const zone = zoneOfRoom.get(t.roomId);
+		if (before && (!zone || before.zoneId === zone.id) && claim(before))
+			homes.set(t.id, before);
+	}
+	const nearOf = (t: Teammate) => {
+		const hint = hints?.get(t.id);
+		return hint?.roomId === t.roomId ? hint.near : undefined;
+	};
 	for (const room of placed) {
 		for (const t of byStableOrder) {
-			if (t.roomId !== room.id) continue;
-			const seat = takeSeat(room.zone);
+			if (t.roomId !== room.id || homes.has(t.id)) continue;
+			const seat = takeSeat(room.zone, nearOf(t));
 			if (seat) homes.set(t.id, seat);
 		}
 	}
 	for (const t of byStableOrder) {
 		if (homes.has(t.id)) continue;
-		const seat = takeSeat(undefined);
+		const seat = takeSeat(undefined, nearOf(t));
 		homes.set(t.id, seat ?? { ...map.spawn, facing: "down", zoneId: "spawn" });
 	}
 
@@ -168,8 +206,19 @@ export function layoutWorld({
 		blocked,
 		rooms: placed,
 		huddle,
+		homes,
 		targets,
 	};
+}
+
+function nearestIndex(seats: Seat[], near: Point): number {
+	let best = 0;
+	seats.forEach((seat, index) => {
+		const here = Math.hypot(seat.x - near.x, seat.y - near.y);
+		const top = seats[best] as Seat;
+		if (here < Math.hypot(top.x - near.x, top.y - near.y)) best = index;
+	});
+	return best;
 }
 
 function inRect(rect: Rect, x: number, y: number): boolean {

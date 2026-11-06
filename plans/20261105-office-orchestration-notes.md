@@ -162,3 +162,15 @@ and the view follows the person instead of fitting the map.
   round trip (design to planning and back) also removed Scout and Bash from planning, which they
   had been members of as a second room. Restored by hand. Moving should probably only change the
   home room and leave other memberships alone.
+- **Group chat is one private room now.** The first version posted once per room the group sat in
+  (a thread reply in one, an @mention root in another), so one send showed as two messages.
+  `office.openGroup` finds or makes a `dm` room `group-<ids joined by +>` with the person and the
+  picked AI teammates; a person's message in a `dm` room reaches every AI member without
+  mentions, and their replies land in that room. The floor's chat shows that room; room tabs
+  skip `dm` rooms. Checked live: one message to Scout, Bash and Ledger across two rooms, three
+  "ok" replies in the chat.
+- **Seats stay put.** `layoutWorld` re-dealt every seat in id order on each change, so one move
+  shifted others. It now takes the last layout's `homes` as `previous` and keeps each seat while
+  it still belongs to the teammate's room; newcomers take a free seat, the one nearest where
+  they were dropped when the floor passes a `SeatHint`. Checked live: moving Ledger into Design
+  and back left Scout and Bash in place, and Ledger returned to its own desk.

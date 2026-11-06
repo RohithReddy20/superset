@@ -75,9 +75,18 @@ export interface SceneCallbacks {
 	onSelectRoom: (id: string) => void;
 	/** Asks for a new picked set; the owner sends the one it keeps back in the payload. */
 	onPick: (ids: string[]) => void;
-	onMoveTeammates: (ids: string[], roomId: string) => void;
+	/** `at` is where each one was put down, so they sit at the nearest free desk. */
+	onMoveTeammates: (
+		ids: string[],
+		roomId: string,
+		at: Map<string, Point>,
+	) => void;
 	/** Teammates were put down on desks with no room yet; they wait there for a name or a cancel. */
-	onDropOnEmptyArea: (ids: string[], zoneId: string) => void;
+	onDropOnEmptyArea: (
+		ids: string[],
+		zoneId: string,
+		at: Map<string, Point>,
+	) => void;
 	onFrame: (frame: SceneFrame) => void;
 	onView: (view: SceneView) => void;
 	onReady: (scene: OfficeScene) => void;
@@ -602,7 +611,11 @@ export class OfficeScene extends Phaser.Scene {
 				actor.carried = false;
 				this.settle(actor);
 			}
-			this.callbacks.onDropOnEmptyArea(carry.ids, carry.target.zone.id);
+			this.callbacks.onDropOnEmptyArea(
+				carry.ids,
+				carry.target.zone.id,
+				this.positionsOf(carry.ids),
+			);
 			return;
 		}
 		const roomOf = new Map(
@@ -621,7 +634,20 @@ export class OfficeScene extends Phaser.Scene {
 				actor.path = findPath(payload.layout, actor.position, actor.seat);
 		}
 		if (target && moving.length > 0)
-			this.callbacks.onMoveTeammates(moving, target.id);
+			this.callbacks.onMoveTeammates(
+				moving,
+				target.id,
+				this.positionsOf(moving),
+			);
+	}
+
+	private positionsOf(ids: string[]): Map<string, Point> {
+		const at = new Map<string, Point>();
+		for (const id of ids) {
+			const actor = this.actors.get(id);
+			if (actor) at.set(id, { ...actor.position });
+		}
+		return at;
 	}
 
 	private pickInBand(): void {

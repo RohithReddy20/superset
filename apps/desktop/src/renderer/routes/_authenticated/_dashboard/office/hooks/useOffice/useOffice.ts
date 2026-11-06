@@ -69,6 +69,14 @@ export function useOffice() {
 		onSuccess: refresh,
 	});
 
+	const openGroup = useMutation({
+		mutationFn: (input: { personId: string; memberIds: string[] }) => {
+			if (!client) throw new Error("No local host");
+			return client.office.openGroup.mutate(input);
+		},
+		onSuccess: refresh,
+	});
+
 	const moveTeammate = useMutation({
 		mutationFn: (input: { id: string; roomId: string }) => {
 			if (!client) throw new Error("No local host");
@@ -120,6 +128,7 @@ export function useOffice() {
 		hire,
 		addRoom,
 		moveTeammate,
+		openGroup,
 		createTask,
 		assignTask,
 		updateTask,

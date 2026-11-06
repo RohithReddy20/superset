@@ -1,8 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { OfficeSnapshot } from "../../types";
-import { groupThreads } from "../../utils/groupThreads";
+import { groupRoomFor } from "../../utils/groupRoomFor";
 import { roomIdFor } from "../../utils/roomIdFor";
-import { layoutWorld } from "../../utils/world";
+import {
+	layoutWorld,
+	type Point,
+	type SeatHint,
+	type SeatTarget,
+} from "../../utils/world";
 import { FloorControls } from "./components/FloorControls";
 import {
 	type AreaLabel,
@@ -37,7 +42,8 @@ interface OfficeFloorProps {
 		threadId: string | null;
 		text: string;
 	}) => Promise<{ id: string }>;
-	onOpenThread: (roomId: string, threadId: string) => void;
+	/** The person's private chat with these teammates, made when it does not exist yet. */
+	onOpenGroup: (memberIds: string[]) => Promise<{ roomId: string }>;
 }
 
 export function OfficeFloor({
@@ -49,7 +55,7 @@ export function OfficeFloor({
 	onMoveTeammates,
 	onCreateRoom,
 	onSay,
-	onOpenThread,
+	onOpenGroup,
 }: OfficeFloorProps) {
 	const hostRef = useRef<HTMLDivElement>(null);
 	const overlayRef = useRef<FloorOverlayHandle>(null);
@@ -60,9 +66,25 @@ export function OfficeFloor({
 	const [newRoom, setNewRoom] = useState<{
 		ids: string[];
 		zoneId: string;
+		at: Map<string, Point>;
 	} | null>(null);
-	const handlers = useRef({ onSelectTeammate, onSelectRoom, onMoveTeammates });
-	handlers.current = { onSelectTeammate, onSelectRoom, onMoveTeammates };
+	const previousHomes = useRef<Map<string, SeatTarget> | undefined>(undefined);
+	const seatHints = useRef(new Map<string, SeatHint>());
+	const hintMoves = (roomId: string, at: Map<string, Point>) => {
+		for (const [id, near] of at) seatHints.current.set(id, { roomId, near });
+	};
+	const handlers = useRef({
+		onSelectTeammate,
+		onSelectRoom,
+		onMoveTeammates,
+		hintMoves,
+	});
+	handlers.current = {
+		onSelectTeammate,
+		onSelectRoom,
+		onMoveTeammates,
+		hintMoves,
+	};
 
 	const layout = useMemo(
 		() =>
@@ -71,9 +93,18 @@ export function OfficeFloor({
 				rooms: state.rooms,
 				teammates: state.teammates,
 				handoffs: state.handoffs,
+				previous: previousHomes.current,
+				hints: seatHints.current,
 			}),
 		[state.rooms, state.teammates, state.handoffs],
 	);
+
+	useEffect(() => {
+		previousHomes.current = layout.homes;
+		for (const [id, hint] of seatHints.current)
+			if (state.teammates.some((t) => t.id === id && t.roomId === hint.roomId))
+				seatHints.current.delete(id);
+	}, [layout, state.teammates]);
 	const picked = useMemo(
 		() =>
 			state.teammates.filter(
@@ -81,9 +112,14 @@ export function OfficeFloor({
 			),
 		[state.teammates, pickedIds],
 	);
-	const threads = useMemo(
-		() => groupThreads(state.messages, meId, picked),
-		[state.messages, meId, picked],
+	const chat = useMemo(
+		() =>
+			groupRoomFor(
+				state.rooms,
+				meId,
+				picked.map((t) => t.id),
+			),
+		[state.rooms, meId, picked],
 	);
 	const faces = useMemo(
 		() =>
@@ -108,12 +144,13 @@ export function OfficeFloor({
 				onSelectTeammate: (id) => handlers.current.onSelectTeammate(id),
 				onSelectRoom: (id) => handlers.current.onSelectRoom(id),
 				onPick: setPickedIds,
-				onMoveTeammates: (ids, roomId) => {
+				onMoveTeammates: (ids, roomId, at) => {
+					handlers.current.hintMoves(roomId, at);
 					handlers.current
 						.onMoveTeammates(ids, roomId)
 						.catch(() => sceneRef.current?.sendHome(ids));
 				},
-				onDropOnEmptyArea: (ids, zoneId) => setNewRoom({ ids, zoneId }),
+				onDropOnEmptyArea: (ids, zoneId, at) => setNewRoom({ ids, zoneId, at }),
 				onFrame: (frame) => overlayRef.current?.setFrame(frame),
 				onView: setView,
 				onReady: (scene) => {
@@ -141,14 +178,9 @@ export function OfficeFloor({
 	}, [state, layout, selectedId, meId, picked]);
 
 	const sendToGroup = async (text: string) => {
-		for (const thread of threads) {
-			const mentions = thread.members.map((id) => `@${id}`).join(" ");
-			await onSay({
-				roomId: thread.roomId,
-				threadId: thread.rootId,
-				text: thread.rootId ? text : `${mentions} ${text}`,
-			});
-		}
+		const roomId =
+			chat?.id ?? (await onOpenGroup(picked.map((t) => t.id))).roomId;
+		await onSay({ roomId, threadId: null, text });
 	};
 
 	return (
@@ -193,11 +225,10 @@ export function OfficeFloor({
 					group={picked}
 					everyone={state.teammates}
 					rooms={state.rooms}
+					chat={chat}
 					messages={state.messages}
-					threads={threads}
 					faces={faces}
 					onSend={sendToGroup}
-					onOpenThread={onOpenThread}
 					onClose={() => setPickedIds([])}
 				/>
 			) : (
@@ -216,6 +247,7 @@ export function OfficeFloor({
 							state.rooms.map((r) => r.id),
 						);
 						await onCreateRoom({ id, name, place: newRoom.zoneId });
+						hintMoves(id, newRoom.at);
 						await onMoveTeammates(newRoom.ids, id);
 						setNewRoom(null);
 					}}

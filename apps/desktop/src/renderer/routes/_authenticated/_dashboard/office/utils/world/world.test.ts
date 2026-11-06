@@ -46,6 +46,63 @@ const teammate = (id: string, extra: Partial<Teammate> = {}): Teammate =>
 const rooms = [{ id: "eng", name: "Engineering", kind: "room" }] as Room[];
 
 describe("layoutWorld", () => {
+	test("keeps everyone's seat when others come and go, and seats a newcomer near its drop", () => {
+		const pod: WorldMap = {
+			...map,
+			zones: [
+				{
+					...(map.zones[0] as WorldMap["zones"][number]),
+					seats: [
+						{ x: 40, y: 100, facing: "down" },
+						{ x: 80, y: 100, facing: "down" },
+						{ x: 120, y: 100, facing: "down" },
+					],
+				},
+			],
+		};
+		const seatOf = (layout: ReturnType<typeof layoutWorld>, id: string) =>
+			layout.homes.get(id)?.x;
+		const first = layoutWorld({
+			map: pod,
+			rooms,
+			teammates: [teammate("b"), teammate("c")],
+			handoffs: [],
+		});
+		expect([seatOf(first, "b"), seatOf(first, "c")]).toEqual([40, 80]);
+
+		const joined = layoutWorld({
+			map: pod,
+			rooms,
+			teammates: [teammate("a"), teammate("b"), teammate("c")],
+			handoffs: [],
+			previous: first.homes,
+		});
+		expect([
+			seatOf(joined, "a"),
+			seatOf(joined, "b"),
+			seatOf(joined, "c"),
+		]).toEqual([120, 40, 80]);
+
+		const left = layoutWorld({
+			map: pod,
+			rooms,
+			teammates: [teammate("a"), teammate("c")],
+			handoffs: [],
+			previous: joined.homes,
+		});
+		expect([seatOf(left, "a"), seatOf(left, "c")]).toEqual([120, 80]);
+
+		const dropped = layoutWorld({
+			map: pod,
+			rooms,
+			teammates: [teammate("a"), teammate("c"), teammate("d")],
+			handoffs: [],
+			previous: left.homes,
+			hints: new Map([["d", { roomId: "eng", near: { x: 45, y: 104 } }]]),
+		});
+		expect(seatOf(dropped, "d")).toBe(40);
+	});
+
 	test("a room with a place sits there and the others fill the remaining areas", () => {
 		const twoPods: WorldMap = {
 			...map,

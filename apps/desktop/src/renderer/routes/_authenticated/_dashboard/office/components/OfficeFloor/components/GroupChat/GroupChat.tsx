@@ -1,36 +1,34 @@
 import { Button } from "@superset/ui/button";
 import { cn } from "@superset/ui/utils";
 import { useEffect, useRef, useState } from "react";
-import { LuExternalLink, LuSend, LuX } from "react-icons/lu";
+import { LuSend, LuX } from "react-icons/lu";
 import type { Message, Room, Teammate } from "../../../../types";
-import type { GroupThread } from "../../../../utils/groupThreads";
 import { EngineMark } from "../../../EngineMark";
 
 interface GroupChatProps {
 	group: Teammate[];
 	everyone: Teammate[];
 	rooms: Room[];
+	/** The private chat with this group; null until the first message makes it. */
+	chat: Room | null;
 	messages: Message[];
-	threads: GroupThread[];
 	faces: Map<string, string>;
 	onSend: (text: string) => Promise<void>;
-	onOpenThread: (roomId: string, threadId: string) => void;
 	onClose: () => void;
 }
 
 const timeOf = (ts: number) =>
 	new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-/** A small chat with the picked teammates: their thread in each room they sit in. */
+/** A small private chat with the picked teammates: one message reaches all of them. */
 export function GroupChat({
 	group,
 	everyone,
 	rooms,
+	chat,
 	messages,
-	threads,
 	faces,
 	onSend,
-	onOpenThread,
 	onClose,
 }: GroupChatProps) {
 	const [text, setText] = useState("");
@@ -39,16 +37,15 @@ export function GroupChat({
 	const listRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 
-	const roots = new Set(threads.flatMap((t) => (t.rootId ? [t.rootId] : [])));
-	const shown = messages
-		.filter((m) => roots.has(m.threadId ?? m.id))
-		.sort((a, b) => a.ts - b.ts);
+	const shown = chat
+		? messages.filter((m) => m.roomId === chat.id).sort((a, b) => a.ts - b.ts)
+		: [];
 	const byId = new Map(everyone.map((t) => [t.id, t]));
-	const roomName = (id: string) => rooms.find((r) => r.id === id)?.name ?? id;
+	const homes = [...new Set(group.map((t) => t.roomId))];
 	const where =
-		threads.length === 1
-			? `in ${roomName(threads[0]?.roomId ?? "")}`
-			: `in ${threads.length} rooms`;
+		homes.length === 1
+			? `${group.length === 1 ? "sits" : "sit"} in ${rooms.find((r) => r.id === homes[0])?.name ?? homes[0]}`
+			: `sit in ${homes.length} rooms`;
 	const names =
 		group.length <= 3
 			? group.map((t) => t.name).join(", ")
@@ -56,7 +53,6 @@ export function GroupChat({
 	const working = group.filter(
 		(t) => t.presence === "focused" || t.presence === "in-meeting",
 	);
-	const firstThread = threads.find((t) => t.rootId);
 
 	const shownCount = useRef(0);
 	useEffect(() => {
@@ -104,19 +100,6 @@ export function GroupChat({
 						{where} · drag them onto a room to move them
 					</div>
 				</div>
-				{firstThread?.rootId ? (
-					<Button
-						variant="ghost"
-						size="icon-xs"
-						aria-label="Open this conversation in the room"
-						title="Open in the room"
-						onClick={() =>
-							onOpenThread(firstThread.roomId, firstThread.rootId as string)
-						}
-					>
-						<LuExternalLink />
-					</Button>
-				) : null}
 				<Button
 					variant="ghost"
 					size="icon-xs"
@@ -154,9 +137,6 @@ export function GroupChat({
 										{mine ? "You" : (author?.name ?? m.authorId)}
 									</span>
 									<span className="font-mono text-[10px]">{timeOf(m.ts)}</span>
-									{threads.length > 1 ? (
-										<span>· {roomName(m.roomId)}</span>
-									) : null}
 								</div>
 								<p
 									className={cn(

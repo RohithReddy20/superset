@@ -97,6 +97,24 @@ export const officeRouter = router({
 			return { ok: true };
 		}),
 
+	openGroup: protectedProcedure
+		.input(
+			z.object({
+				personId: z.string(),
+				memberIds: z.array(z.string()).min(1).max(12),
+			}),
+		)
+		.mutation(({ ctx, input }): { roomId: string } => {
+			try {
+				return officeOf(ctx.runtime).openGroup(input.personId, input.memberIds);
+			} catch (error) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: (error as Error).message,
+				});
+			}
+		}),
+
 	moveTeammate: protectedProcedure
 		.input(z.object({ id: z.string(), roomId: z.string() }))
 		.mutation(({ ctx, input }): { ok: true } => {

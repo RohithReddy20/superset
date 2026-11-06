@@ -17,6 +17,7 @@ export {
 	type Rect,
 	roomAt,
 	type Seat,
+	type SeatHint,
 	type SeatTarget,
 	type WorldLayout,
 	type WorldMap,
