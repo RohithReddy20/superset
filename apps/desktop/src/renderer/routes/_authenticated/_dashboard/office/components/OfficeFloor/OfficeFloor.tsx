@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { OfficeSnapshot } from "../../types";
 import { groupThreads } from "../../utils/groupThreads";
+import { roomIdFor } from "../../utils/roomIdFor";
 import { layoutWorld } from "../../utils/world";
 import { FloorControls } from "./components/FloorControls";
 import {
@@ -9,6 +10,7 @@ import {
 	type FloorOverlayHandle,
 } from "./components/FloorOverlay";
 import { GroupChat } from "./components/GroupChat";
+import { NewRoomPrompt } from "./components/NewRoomPrompt";
 import type { OfficeScene, ScenePayload, SceneView } from "./scene";
 import { WORLD_MAP } from "./scene/assets";
 import { lookFor, lookKey, renderFace } from "./scene/pixel";
@@ -24,6 +26,11 @@ interface OfficeFloorProps {
 	onSelectTeammate: (id: string) => void;
 	onSelectRoom: (id: string) => void;
 	onMoveTeammates: (ids: string[], roomId: string) => Promise<void>;
+	onCreateRoom: (input: {
+		id: string;
+		name: string;
+		place: string;
+	}) => Promise<void>;
 	/** Posts as the person; returns the new message id. */
 	onSay: (input: {
 		roomId: string;
@@ -40,6 +47,7 @@ export function OfficeFloor({
 	onSelectTeammate,
 	onSelectRoom,
 	onMoveTeammates,
+	onCreateRoom,
 	onSay,
 	onOpenThread,
 }: OfficeFloorProps) {
@@ -49,6 +57,10 @@ export function OfficeFloor({
 	const latest = useRef<ScenePayload | null>(null);
 	const [view, setView] = useState<SceneView | null>(null);
 	const [pickedIds, setPickedIds] = useState<string[]>([]);
+	const [newRoom, setNewRoom] = useState<{
+		ids: string[];
+		zoneId: string;
+	} | null>(null);
 	const handlers = useRef({ onSelectTeammate, onSelectRoom, onMoveTeammates });
 	handlers.current = { onSelectTeammate, onSelectRoom, onMoveTeammates };
 
@@ -101,6 +113,7 @@ export function OfficeFloor({
 						.onMoveTeammates(ids, roomId)
 						.catch(() => sceneRef.current?.sendHome(ids));
 				},
+				onDropOnEmptyArea: (ids, zoneId) => setNewRoom({ ids, zoneId }),
 				onFrame: (frame) => overlayRef.current?.setFrame(frame),
 				onView: setView,
 				onReady: (scene) => {
@@ -194,6 +207,24 @@ export function OfficeFloor({
 					with them · drag them onto a room to move them
 				</div>
 			)}
+			{newRoom ? (
+				<NewRoomPrompt
+					count={newRoom.ids.length}
+					onCreate={async (name) => {
+						const id = roomIdFor(
+							name,
+							state.rooms.map((r) => r.id),
+						);
+						await onCreateRoom({ id, name, place: newRoom.zoneId });
+						await onMoveTeammates(newRoom.ids, id);
+						setNewRoom(null);
+					}}
+					onCancel={() => {
+						sceneRef.current?.sendHome(newRoom.ids);
+						setNewRoom(null);
+					}}
+				/>
+			) : null}
 			{view ? (
 				<FloorControls
 					view={view}

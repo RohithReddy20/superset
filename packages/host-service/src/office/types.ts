@@ -14,6 +14,14 @@ export interface OfficeTeammate {
 	lineSince: number;
 	paused: boolean;
 	budget: { dailyTurns: number; usedToday: number; day: string };
+	/** Spent on budget.day; costUsd counts only engines that report a price. */
+	usage?: OfficeUsage;
+}
+
+export interface OfficeUsage {
+	tokens: number;
+	costUsd: number;
+	priced: boolean;
 }
 
 export interface OfficeRoom {
@@ -21,6 +29,8 @@ export interface OfficeRoom {
 	name: string;
 	kind: "room" | "dm";
 	members: string[];
+	/** Area of the office floor the room sits in; unset lets the floor pick. */
+	place?: string;
 }
 
 export interface OfficeMessage {
@@ -77,6 +87,7 @@ export interface OfficeTask {
 		at: number;
 	}>;
 	rounds: { used: number; max: number };
+	usage?: OfficeUsage;
 	createdAt: number;
 	updatedAt: number;
 }
@@ -136,6 +147,7 @@ export interface OfficeConfig {
 		name: string;
 		kind?: "room" | "dm";
 		members: string[];
+		place?: string;
 	}>;
 	humans: Array<{ id: string; name: string; role: string; room: string }>;
 	seats: OfficeSeatConfig[];

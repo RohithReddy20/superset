@@ -8,6 +8,7 @@ import {
 } from "@superset/ui/select";
 import { LuX } from "react-icons/lu";
 import type { Handoff, Room, Teammate } from "../../types";
+import { formatUsage } from "../../utils/formatUsage";
 import { EngineMark } from "../EngineMark";
 import { ENGINE_COLORS, engineLabel } from "../OfficeFloor/constants";
 
@@ -93,6 +94,11 @@ export function TeammateCard({
 						<div className="text-foreground">
 							{t.budget.usedToday} / {t.budget.dailyTurns} turns
 						</div>
+						{t.usage ? (
+							<div className="text-[11px] text-muted-foreground">
+								{formatUsage(t.usage)}
+							</div>
+						) : null}
 					</div>
 				) : null}
 			</div>

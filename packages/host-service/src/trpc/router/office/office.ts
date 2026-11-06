@@ -82,6 +82,7 @@ export const officeRouter = router({
 					.string()
 					.regex(/^[a-z0-9-]{2,24}$/, "lowercase letters, digits and dashes"),
 				name: z.string().min(1).max(40),
+				place: z.string().max(40).optional(),
 			}),
 		)
 		.mutation(({ ctx, input }): { ok: true } => {

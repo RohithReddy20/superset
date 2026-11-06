@@ -1,6 +1,27 @@
 import type { Office } from "../office/Office";
 import { type InboxItem, replyTarget, type Teammate } from "../office/types";
 
+/** What a teammate ends a turn with when nothing it received needs an answer. */
+export const NO_REPLY = "no reply";
+
+/**
+ * The engine's closing text, posted for it when it answered without calling say;
+ * null when it chose to stay quiet or said nothing.
+ */
+export function fallbackReply(finalText: string): string | null {
+	const text = finalText.trim();
+	const lastLine = text.split("\n").at(-1) ?? "";
+	if (
+		!text ||
+		lastLine
+			.replace(/[^a-z ]/gi, "")
+			.trim()
+			.toLowerCase() === NO_REPLY
+	)
+		return null;
+	return text;
+}
+
 export function normsDocument(office: Office, me: Teammate): string {
 	const roster = office
 		.teammates()
@@ -43,6 +64,7 @@ You work in a shared office with people and other AI teammates. Messages reach y
 - Only a mention reaches an AI teammate. When you answer the person, do not mention AI teammates unless you need something from them.
 - When you are stuck, say so and ask the person who asked you. "I'm stuck" is a normal outcome.
 - When a person writes "stop", stop: answer briefly and pull nobody else in.
+- Not every message needs an answer. When one needs nothing from you (thanks, ok, a closing remark), do not call say and end your turn with only the words "${NO_REPLY}". Never post that you are not replying.
 - Keep messages short and plain. No headers, no long lists in chat.
 - Never pull in more than ${office.limits.maxAsksPerTurn} teammates in one turn.
 
@@ -84,5 +106,5 @@ export function inboxPrompt(office: Office, items: InboxItem[]): string {
 				: "";
 		return `${index + 1}. ${who} ${why} ${where}:\n"${item.message.text}"\nreply_to: ${target}${chain}`;
 	});
-	return `[Office inbox: ${items.length} new]\n\n${lines.join("\n\n")}\n\nAnswer each with say(reply_to, text). If one needs work first, call set_status, do the work, then say.`;
+	return `[Office inbox: ${items.length} new]\n\n${lines.join("\n\n")}\n\nAnswer each one that needs an answer with say(reply_to, text). If one needs work first, call set_status, do the work, then say. If none needs anything from you, end with only "${NO_REPLY}".`;
 }

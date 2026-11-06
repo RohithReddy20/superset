@@ -80,13 +80,20 @@ export function layoutWorld({
 	const huddle = map.zones.find((z) => z.kind === "meeting") ?? null;
 	const zoneOrder = [...teamZones, ...spareZones];
 
+	const chatRooms = rooms.filter((r) => r.kind === "room");
+	const zoneOf = new Map<string, Zone>();
+	for (const room of chatRooms) {
+		const zone = map.zones.find((z) => z.id === room.place);
+		if (zone && ![...zoneOf.values()].includes(zone)) zoneOf.set(room.id, zone);
+	}
+	const open = zoneOrder.filter((z) => ![...zoneOf.values()].includes(z));
+	const pool = open.length > 0 ? open : zoneOrder;
+	let next = 0;
 	const placed: PlacedRoom[] = [];
-	rooms
-		.filter((r) => r.kind === "room")
-		.forEach((room, index) => {
-			const zone = zoneOrder[index % Math.max(1, zoneOrder.length)];
-			if (zone) placed.push({ id: room.id, name: room.name, zone });
-		});
+	for (const room of chatRooms) {
+		const zone = zoneOf.get(room.id) ?? pool[next++ % Math.max(1, pool.length)];
+		if (zone) placed.push({ id: room.id, name: room.name, zone });
+	}
 
 	const free = new Map<string, Seat[]>(
 		map.zones.map((z) => [z.id, [...z.seats]]),
@@ -262,6 +269,21 @@ function clearLine(layout: WorldLayout, a: Point, b: Point): boolean {
 		if (!isWalkable(layout, p)) return false;
 	}
 	return true;
+}
+
+/** A desk area with no room in it yet, where a new room can be made. */
+export function emptyTeamZoneAt(
+	layout: WorldLayout,
+	point: Point,
+): Zone | null {
+	return (
+		layout.map.zones.find(
+			(z) =>
+				z.kind === "team" &&
+				inRect(z.rect, point.x, point.y) &&
+				!layout.rooms.some((r) => r.zone.id === z.id),
+		) ?? null
+	);
 }
 
 export function roomAt(layout: WorldLayout, point: Point): PlacedRoom | null {

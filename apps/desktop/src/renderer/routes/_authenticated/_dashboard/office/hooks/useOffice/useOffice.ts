@@ -62,7 +62,7 @@ export function useOffice() {
 	});
 
 	const addRoom = useMutation({
-		mutationFn: (input: { id: string; name: string }) => {
+		mutationFn: (input: { id: string; name: string; place?: string }) => {
 			if (!client) throw new Error("No local host");
 			return client.office.addRoom.mutate(input);
 		},

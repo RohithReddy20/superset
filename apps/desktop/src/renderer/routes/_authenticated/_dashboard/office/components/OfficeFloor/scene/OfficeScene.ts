@@ -8,6 +8,7 @@ import {
 } from "../../../tileset";
 import type { OfficeSnapshot, Teammate } from "../../../types";
 import {
+	emptyTeamZoneAt,
 	type Facing,
 	findPath,
 	isWalkable,
@@ -17,6 +18,7 @@ import {
 	type Seat,
 	type SeatTarget,
 	type WorldLayout,
+	type Zone,
 } from "../../../utils/world";
 import { WORLD } from "./assets";
 import {
@@ -55,6 +57,8 @@ export interface SceneFrame {
 	signs: SignFrame[];
 	/** Names of the other areas (kitchen, meeting rooms), keyed by zone id. */
 	labels: SignFrame[];
+	/** Where carried teammates would land, while they are carried over a room or empty desks. */
+	drop: { x: number; y: number; label: string } | null;
 	zoom: number;
 }
 
@@ -72,6 +76,8 @@ export interface SceneCallbacks {
 	/** Asks for a new picked set; the owner sends the one it keeps back in the payload. */
 	onPick: (ids: string[]) => void;
 	onMoveTeammates: (ids: string[], roomId: string) => void;
+	/** Teammates were put down on desks with no room yet; they wait there for a name or a cancel. */
+	onDropOnEmptyArea: (ids: string[], zoneId: string) => void;
 	onFrame: (frame: SceneFrame) => void;
 	onView: (view: SceneView) => void;
 	onReady: (scene: OfficeScene) => void;
@@ -106,7 +112,8 @@ interface Press {
 
 interface Carry {
 	ids: string[];
-	target: PlacedRoom | null;
+	/** A room to move into, or empty desks (room null) to make a new room at. */
+	target: { room: PlacedRoom | null; zone: Zone } | null;
 }
 
 const WALK_SPEED = 120;
@@ -573,20 +580,37 @@ export class OfficeScene extends Phaser.Scene {
 			actor.sprite.setPosition(actor.position.x, actor.position.y);
 		});
 		const layout = this.payload?.layout;
-		carry.target = layout ? roomAt(layout, point) : null;
+		const room = layout ? roomAt(layout, point) : null;
+		const empty = !room && layout ? emptyTeamZoneAt(layout, point) : null;
+		carry.target = room
+			? { room, zone: room.zone }
+			: empty
+				? { room: null, zone: empty }
+				: null;
 	}
 
-	/** Puts carried teammates down; over another room they move there, anywhere else they walk back. */
+	/** Puts carried teammates down: into another room, onto empty desks for a new room, or back to their seats. */
 	private drop(): void {
 		const carry = this.carry;
 		this.carry = null;
 		const payload = this.payload;
 		if (!carry || !payload) return;
+		if (carry.target && !carry.target.room) {
+			for (const id of carry.ids) {
+				const actor = this.actors.get(id);
+				if (!actor) continue;
+				actor.carried = false;
+				this.settle(actor);
+			}
+			this.callbacks.onDropOnEmptyArea(carry.ids, carry.target.zone.id);
+			return;
+		}
 		const roomOf = new Map(
 			payload.state.teammates.map((t) => [t.id, t.roomId]),
 		);
-		const moving = carry.target
-			? carry.ids.filter((id) => roomOf.get(id) !== carry.target?.id)
+		const target = carry.target?.room ?? null;
+		const moving = target
+			? carry.ids.filter((id) => roomOf.get(id) !== target.id)
 			: [];
 		for (const id of carry.ids) {
 			const actor = this.actors.get(id);
@@ -596,8 +620,8 @@ export class OfficeScene extends Phaser.Scene {
 			if (!moving.includes(id) && actor.seat)
 				actor.path = findPath(payload.layout, actor.position, actor.seat);
 		}
-		if (carry.target && moving.length > 0)
-			this.callbacks.onMoveTeammates(moving, carry.target.id);
+		if (target && moving.length > 0)
+			this.callbacks.onMoveTeammates(moving, target.id);
 	}
 
 	private pickInBand(): void {
@@ -681,7 +705,17 @@ export class OfficeScene extends Phaser.Scene {
 		const labels = this.areaLabels
 			.filter((label) => !roomZones.has(label.id))
 			.map((label) => ({ id: label.id, ...toScreen(label.point) }));
-		this.callbacks.onFrame({ actors, signs, labels, zoom: camera.zoom });
+		const target = this.carry?.target;
+		const drop = target
+			? {
+					...toScreen({
+						x: target.zone.rect.x + target.zone.rect.w / 2,
+						y: target.zone.rect.y,
+					}),
+					label: target.room ? `Move to ${target.room.name}` : "New room here",
+				}
+			: null;
+		this.callbacks.onFrame({ actors, signs, labels, drop, zoom: camera.zoom });
 	}
 
 	private syncActors(payload: ScenePayload): void {

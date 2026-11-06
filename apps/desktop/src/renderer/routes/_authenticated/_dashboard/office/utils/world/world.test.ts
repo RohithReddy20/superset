@@ -46,6 +46,29 @@ const teammate = (id: string, extra: Partial<Teammate> = {}): Teammate =>
 const rooms = [{ id: "eng", name: "Engineering", kind: "room" }] as Room[];
 
 describe("layoutWorld", () => {
+	test("a room with a place sits there and the others fill the remaining areas", () => {
+		const twoPods: WorldMap = {
+			...map,
+			zones: [
+				{ ...(map.zones[0] as WorldMap["zones"][number]), id: "a" },
+				{ ...(map.zones[0] as WorldMap["zones"][number]), id: "b" },
+			],
+		};
+		const layout = layoutWorld({
+			map: twoPods,
+			rooms: [
+				{ id: "eng", name: "Engineering", kind: "room" },
+				{ id: "ops", name: "Ops", kind: "room", place: "a" },
+			] as Room[],
+			teammates: [],
+			handoffs: [],
+		});
+		expect(layout.rooms.map((r) => [r.id, r.zone.id])).toEqual([
+			["eng", "b"],
+			["ops", "a"],
+		]);
+	});
+
 	test("seats room members in the room's zone and overflow elsewhere", () => {
 		const layout = layoutWorld({
 			map,

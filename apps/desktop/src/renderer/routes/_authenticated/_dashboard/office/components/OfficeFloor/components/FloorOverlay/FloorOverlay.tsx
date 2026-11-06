@@ -62,6 +62,7 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 		const signNodes = useRef(new Map<string, HTMLDivElement>());
 		const labelNodes = useRef(new Map<string, HTMLDivElement>());
 		const rootRef = useRef<HTMLDivElement>(null);
+		const dropRef = useRef<HTMLDivElement>(null);
 		const tagPress = useRef<{
 			id: string;
 			x: number;
@@ -118,6 +119,16 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 				}
 				for (const [id, node] of labelNodes.current)
 					if (!shown.has(id)) node.style.visibility = "hidden";
+				const drop = dropRef.current;
+				if (drop) {
+					drop.style.visibility = frame.drop ? "visible" : "hidden";
+					if (frame.drop) {
+						drop.style.transform = `translate(${frame.drop.x}px, ${frame.drop.y}px)`;
+						const text = drop.firstElementChild;
+						if (text && text.textContent !== frame.drop.label)
+							text.textContent = frame.drop.label;
+					}
+				}
 			},
 		}));
 
@@ -148,6 +159,12 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 				ref={rootRef}
 				className="group/floor pointer-events-none absolute inset-0 overflow-hidden"
 			>
+				<div
+					ref={dropRef}
+					className="invisible absolute left-0 top-0 z-10 will-change-transform"
+				>
+					<div className="-translate-x-1/2 translate-y-1.5 whitespace-nowrap rounded-full bg-[#5ec8ff] px-2.5 py-1 text-[12px] font-medium text-black shadow-md" />
+				</div>
 				{areas.map((area) => (
 					<div
 						key={area.id}

@@ -228,7 +228,10 @@ export class OfficeRuntime {
 	private readonly taskSessions = new Map<string, Seat>();
 	private readonly taskBase = new Map<string, string>();
 
-	private onTask(task: Task, change: "created" | "assigned" | "status"): void {
+	private onTask(
+		task: Task,
+		change: "created" | "assigned" | "status" | "usage",
+	): void {
 		if (change === "assigned" && task.ownerId) {
 			if (this.office.teammate(task.ownerId)?.kind === "ai")
 				void this.startWork(task.id);
@@ -352,6 +355,7 @@ export class OfficeRuntime {
 					depth: 0,
 					asks: 0,
 					replyTo: replyTarget(task.roomId, task.threadId),
+					taskId,
 				},
 			);
 			const after = this.office.task(taskId);
@@ -434,6 +438,7 @@ ${check.output.slice(-600)}`
 					depth: 0,
 					asks: 0,
 					replyTo: replyTarget(task.roomId, task.threadId),
+					taskId,
 				},
 			);
 			const after = this.office.task(taskId);
@@ -555,7 +560,7 @@ ${check.output.slice(-600)}`
 		if (this.started) this.startSeat(spec);
 	}
 
-	addRoom(room: { id: string; name: string }): void {
+	addRoom(room: { id: string; name: string; place?: string }): void {
 		if (this.config.rooms.some((r) => r.id === room.id))
 			throw new Error(`room ${room.id} already exists`);
 		this.config.rooms.push({ ...room, kind: "room", members: [] });
@@ -702,6 +707,7 @@ ${check.output.slice(-600)}`
 				name: room.name,
 				kind: room.kind ?? "room",
 				members: room.members,
+				place: room.place,
 			});
 		}
 	}

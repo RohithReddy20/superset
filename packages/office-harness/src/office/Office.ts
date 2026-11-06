@@ -12,9 +12,21 @@ import type {
 	Task,
 	TaskStatus,
 	Teammate,
+	Usage,
 } from "./types";
 
 const today = () => new Date().toISOString().slice(0, 10);
+
+function addUsage(
+	total: Usage | undefined,
+	turn: { tokens: number; costUsd: number | null },
+): Usage {
+	return {
+		tokens: (total?.tokens ?? 0) + turn.tokens,
+		costUsd: (total?.costUsd ?? 0) + (turn.costUsd ?? 0),
+		priced: (total?.priced ?? false) || turn.costUsd !== null,
+	};
+}
 
 const shortId = () => Math.random().toString(36).slice(2, 10);
 
@@ -195,14 +207,37 @@ export class Office {
 	spendTurn(id: string): boolean {
 		const teammate = this.teammate(id);
 		if (!teammate) return false;
-		if (teammate.budget.day !== today()) {
-			teammate.budget.day = today();
-			teammate.budget.usedToday = 0;
-		}
+		this.startDay(teammate);
 		if (teammate.budget.usedToday >= teammate.budget.dailyTurns) return false;
 		teammate.budget.usedToday += 1;
 		this.emit({ type: "teammate", teammate: structuredClone(teammate) });
 		return true;
+	}
+
+	/** Adds one turn's tokens and reported cost to the teammate's day and, for task sessions, to the task. */
+	recordUsage(
+		teammateId: string,
+		turn: { tokens: number; costUsd: number | null },
+		taskId?: string,
+	): void {
+		const teammate = this.teammate(teammateId);
+		if (teammate) {
+			this.startDay(teammate);
+			teammate.usage = addUsage(teammate.usage, turn);
+			this.emit({ type: "teammate", teammate: structuredClone(teammate) });
+		}
+		const task = taskId ? this.task(taskId) : undefined;
+		if (task) {
+			task.usage = addUsage(task.usage, turn);
+			this.emit({ type: "task", task: structuredClone(task), change: "usage" });
+		}
+	}
+
+	private startDay(teammate: Teammate): void {
+		if (teammate.budget.day === today()) return;
+		teammate.budget.day = today();
+		teammate.budget.usedToday = 0;
+		teammate.usage = undefined;
 	}
 
 	onInbox(teammateId: string, receive: (item: InboxItem) => void): void {

@@ -137,3 +137,28 @@ and the view follows the person instead of fitting the map.
   dropping); a group spread over rooms gets one thread per room; Scout answered "thanks, that is
   all" with a message saying it would not reply, so the seat norms should say to stay silent
   when there is nothing to add.
+
+## 2026-11-06 later: quick fixes
+
+- **Agents keep quiet when nothing needs an answer.** The seat posted an engine's closing text for
+  it whenever the engine had not called `say`, so a model that decided not to answer still had
+  its reasoning ("closes the thread, so I'm not replying") posted. The norms now tell it to end
+  with "no reply" in that case, and `fallbackReply` (seat/prompt.ts) drops a closing text whose
+  last line is that marker. Checked live: "thanks, nothing else needed" to Scout, a turn ran,
+  nothing was posted.
+- **Usage per teammate and per task.** Each turn's `PromptResponse.usage.totalTokens` (cache reads
+  included; both adapters report it) is added to the teammate's day and, for task sessions, to
+  the task (`Office.recordUsage`, `TurnContext.taskId`). Dollars come from `usage_update.cost`,
+  which only the Claude adapter sends; it is a running session total, so the seat records the
+  change over the turn. The teammate card and task cards show "87K tokens · $0.03"; Codex shows
+  tokens only. Checked live on Scout (Claude) and Bash (Codex).
+- **New room on empty desks.** Rooms can carry a `place` (a floor zone id); `layoutWorld` puts a
+  placed room there and fills the other areas in order. Carrying teammates over a desk area with
+  no room shows "New room here"; dropping asks for a name, creates the room at that place
+  (`office.addRoom` with `place`) and moves them in; cancel walks them back. Checked live with
+  Ledger, then the test room was removed from the config and state by hand: the office has no
+  way to delete a room yet.
+- Side effect found while testing: `moveTeammate` drops a teammate from its old home room, so a
+  round trip (design to planning and back) also removed Scout and Bash from planning, which they
+  had been members of as a second room. Restored by hand. Moving should probably only change the
+  home room and leave other memberships alone.

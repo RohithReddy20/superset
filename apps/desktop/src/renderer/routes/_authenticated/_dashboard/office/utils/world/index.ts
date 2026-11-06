@@ -7,6 +7,7 @@ export {
 export {
 	CELL,
 	cellOf,
+	emptyTeamZoneAt,
 	type Facing,
 	findPath,
 	isWalkable,

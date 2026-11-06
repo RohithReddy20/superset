@@ -1,0 +1,1 @@
+export { roomIdFor } from "./roomIdFor";

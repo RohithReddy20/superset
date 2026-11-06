@@ -9,6 +9,7 @@ import {
 import { cn } from "@superset/ui/utils";
 import { LuCheck, LuMessageSquare, LuRotateCcw } from "react-icons/lu";
 import type { Task, TaskStatus, Teammate } from "../../types";
+import { formatUsage } from "../../utils/formatUsage";
 import { EngineMark } from "../EngineMark";
 
 interface TaskBoardProps {
@@ -105,6 +106,7 @@ export function TaskBoard({
 							) : null}
 							<span className="ml-auto font-mono text-[10px]">
 								{task.rounds.used}/{task.rounds.max}
+								{task.usage ? ` · ${formatUsage(task.usage)}` : ""}
 								{task.check
 									? task.check.ok
 										? " · checks ✓"

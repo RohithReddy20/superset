@@ -8,7 +8,7 @@ import {
 import type { Office } from "../office/Office";
 import type { InboxItem, Teammate } from "../office/types";
 import type { EngineLaunch } from "./engines";
-import { inboxPrompt, normsDocument } from "./prompt";
+import { fallbackReply, inboxPrompt, normsDocument } from "./prompt";
 
 const STARTUP_TIMEOUT_MS = 90_000;
 const TURN_TIMEOUT_MS = 30 * 60_000;
@@ -30,6 +30,17 @@ export interface TurnContext {
 	depth: number;
 	asks: number;
 	replyTo: string;
+	/** The task a task session works on; its usage is added to the task. */
+	taskId?: string;
+}
+
+interface PromptResponse {
+	stopReason?: string;
+	usage?: {
+		totalTokens?: number;
+		inputTokens?: number;
+		outputTokens?: number;
+	} | null;
 }
 
 export interface SeatOptions {
@@ -64,6 +75,8 @@ export class Seat {
 	private stopped = false;
 	private exit: string | null = null;
 	private lastText = "";
+	/** Running session cost from the engine's usage updates; null until it reports one. */
+	private sessionCost: number | null = null;
 	private turn: TurnContext | null = null;
 	private statusSetThisTurn = false;
 	private saidThisTurn = false;
@@ -209,13 +222,15 @@ export class Seat {
 		this.saidThisTurn = false;
 		this.lastText = "";
 		this.running = true;
+		const costBefore = this.sessionCost;
 		try {
 			const response = (await this.client.request(
 				"session/prompt",
 				{ sessionId: this.sessionId, prompt: [{ type: "text", text: prompt }] },
 				TURN_TIMEOUT_MS,
-			)) as { stopReason?: string } | null;
+			)) as PromptResponse | null;
 			this.log(`turn end: ${response?.stopReason ?? "no stop reason"}`);
+			this.recordUsage(response, costBefore, context.taskId);
 			return this.lastText.trim();
 		} finally {
 			this.running = false;
@@ -299,6 +314,7 @@ export class Seat {
 		this.running = true;
 		office.setPresence(this.id, "focused", "reading the inbox");
 		this.log(`turn start: ${items.length} item(s)`);
+		const costBefore = this.sessionCost;
 		try {
 			const response = (await this.client.request(
 				"session/prompt",
@@ -307,16 +323,18 @@ export class Seat {
 					prompt: [{ type: "text", text: inboxPrompt(office, items) }],
 				},
 				TURN_TIMEOUT_MS,
-			)) as { stopReason?: string } | null;
+			)) as PromptResponse | null;
 			this.log(`turn end: ${response?.stopReason ?? "no stop reason"}`);
-			if (!this.saidThisTurn && this.lastText.trim()) {
+			this.recordUsage(response, costBefore);
+			const reply = this.saidThisTurn ? null : fallbackReply(this.lastText);
+			if (reply) {
 				const parsed = /^room:([^/\s]+)\/thread:([^/\s]+)$/.exec(replyTo);
 				if (parsed)
 					office.post({
 						authorId: this.id,
 						roomId: parsed[1] ?? "",
 						threadId: parsed[2],
-						text: this.lastText.trim(),
+						text: reply,
 						depth: this.turn.depth,
 					});
 			}
@@ -382,8 +400,32 @@ export class Seat {
 		}
 	}
 
+	/** Tokens come with the turn's response; dollars only from engines that report a running cost. */
+	private recordUsage(
+		response: PromptResponse | null,
+		costBefore: number | null,
+		taskId?: string,
+	): void {
+		const usage = response?.usage;
+		const tokens =
+			usage?.totalTokens ??
+			(usage?.inputTokens ?? 0) + (usage?.outputTokens ?? 0);
+		const costUsd =
+			this.sessionCost === null
+				? null
+				: Math.max(0, this.sessionCost - (costBefore ?? 0));
+		if (tokens === 0 && costUsd === null) return;
+		this.options.office.recordUsage(this.id, { tokens, costUsd }, taskId);
+	}
+
 	private observe(update: AcpUpdate): void {
 		const { office } = this.options;
+		if (update.sessionUpdate === "usage_update") {
+			const amount = (update.cost as { amount?: unknown } | null | undefined)
+				?.amount;
+			if (typeof amount === "number") this.sessionCost = amount;
+			return;
+		}
 		if (
 			update.sessionUpdate === "tool_call" &&
 			typeof update.title === "string"

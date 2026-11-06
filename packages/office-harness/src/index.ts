@@ -17,6 +17,7 @@ interface OfficeConfig {
 		name: string;
 		kind?: "room" | "dm";
 		members: string[];
+		place?: string;
 	}>;
 	humans: Array<{ id: string; name: string; role: string; room: string }>;
 	seats: Array<{
@@ -73,6 +74,7 @@ for (const room of config.rooms) {
 		name: room.name,
 		kind: room.kind ?? "room",
 		members: room.members,
+		place: room.place,
 	});
 }
 for (const human of config.humans)

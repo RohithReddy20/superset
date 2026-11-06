@@ -127,4 +127,33 @@ describe("tasks", () => {
 		expect(o.spendTaskRound(task.id)).toBe(true);
 		expect(o.spendTaskRound(task.id)).toBe(false);
 	});
+
+	test("adds each turn's tokens and reported cost to the teammate's day and the task", () => {
+		const o = office();
+		const task = o.createTask({
+			title: "Count usage",
+			brief: "",
+			by: "you",
+			roomId: "eng",
+			ownerId: "bash",
+		});
+		o.recordUsage("bash", { tokens: 1200, costUsd: null }, task.id);
+		expect(o.teammate("bash")?.usage).toEqual({
+			tokens: 1200,
+			costUsd: 0,
+			priced: false,
+		});
+		o.recordUsage("bash", { tokens: 300, costUsd: 0.02 }, task.id);
+		o.recordUsage("bash", { tokens: 100, costUsd: 0.01 });
+		expect(o.teammate("bash")?.usage).toEqual({
+			tokens: 1600,
+			costUsd: 0.03,
+			priced: true,
+		});
+		expect(o.task(task.id)?.usage).toEqual({
+			tokens: 1500,
+			costUsd: 0.02,
+			priced: true,
+		});
+	});
 });

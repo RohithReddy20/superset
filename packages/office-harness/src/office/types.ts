@@ -2,6 +2,13 @@ export type Presence = "away" | "in-office" | "focused" | "in-meeting";
 
 export type EngineId = "claude" | "codex" | "agy";
 
+/** Tokens spent and dollars reported; `priced` is false while no engine has reported a price. */
+export interface Usage {
+	tokens: number;
+	costUsd: number;
+	priced: boolean;
+}
+
 export interface Teammate {
 	id: string;
 	name: string;
@@ -16,6 +23,8 @@ export interface Teammate {
 	lineSince: number;
 	paused: boolean;
 	budget: { dailyTurns: number; usedToday: number; day: string };
+	/** Spent on budget.day. */
+	usage?: Usage;
 	acpSessionId?: string;
 }
 
@@ -24,6 +33,8 @@ export interface Room {
 	name: string;
 	kind: "room" | "dm";
 	members: string[];
+	/** Where the room sits on the office floor (an area of the floor map); the floor picks one when unset. */
+	place?: string;
 }
 
 export interface Message {
@@ -94,6 +105,7 @@ export interface Task {
 	notes: TaskNote[];
 	/** Work and review sessions spent on this task, against the cap. */
 	rounds: { used: number; max: number };
+	usage?: Usage;
 	createdAt: number;
 	updatedAt: number;
 }
@@ -117,7 +129,11 @@ export type OfficeEvent =
 	| { type: "message"; message: Message }
 	| { type: "teammate"; teammate: Teammate }
 	| { type: "handoff"; handoff: Handoff }
-	| { type: "task"; task: Task; change: "created" | "assigned" | "status" }
+	| {
+			type: "task";
+			task: Task;
+			change: "created" | "assigned" | "status" | "usage";
+	  }
 	| { type: "log"; seatId: string; text: string; ts: number };
 
 export const replyTarget = (roomId: string, threadId: string | null) =>

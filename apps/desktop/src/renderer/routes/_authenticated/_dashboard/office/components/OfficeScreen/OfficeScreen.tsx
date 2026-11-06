@@ -123,6 +123,9 @@ export function OfficeScreen() {
 									for (const id of ids)
 										await moveTeammate.mutateAsync({ id, roomId: toRoomId });
 								}}
+								onCreateRoom={async (input) => {
+									await addRoom.mutateAsync(input);
+								}}
 								onSay={async (input) => {
 									if (!me) throw new Error("No person here to send it");
 									return say.mutateAsync({ authorId: me.id, ...input });
