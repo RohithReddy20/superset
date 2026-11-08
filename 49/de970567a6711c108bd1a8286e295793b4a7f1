@@ -1,0 +1,42 @@
+packages/host-service/src/office/officeGuests.ts
+  s_8322a827a65284::t_bd732baf45dc84 1-205
+  s_8322a827a65284::t_8d9c9e2520f05f 206-217
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentPanel/components/AgentDetails/components/SeatRow/SeatRow.tsx
+  s_8322a827a65284::t_c34ac0ec6bd699 5-10,25,28,75-90,116-122
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useOfficeRooms/index.ts
+  s_8322a827a65284::t_f416de055b081e 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useOfficeRooms/useOfficeRooms.ts
+  s_8322a827a65284::t_7a47c05d66b8a5 1-19
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/types.ts
+  s_8322a827a65284::t_cf6e975638e4b0 54-56
+packages/host-service/src/app.ts
+  s_8322a827a65284::t_08b710f5813655 343-354,367-372
+packages/host-service/src/office/cityRooms.test.ts
+  s_8322a827a65284::t_83095aec1968d1 12,366-403
+packages/host-service/src/office/cityRooms.ts
+  s_8322a827a65284::t_81ae7365140693 88-89,100-117,139-140,176-177,200,213,247,417,500-501,511-515,552,725-735,739-747
+packages/host-service/src/office/createCityRooms.ts
+  s_8322a827a65284::t_3043321873d21b 14,28,40-41,89
+packages/host-service/src/office/officeGuests.test.ts
+  s_8322a827a65284::t_251415e4a2c368 1-128
+packages/host-service/src/office/officeRuntime.ts
+  s_8322a827a65284::t_4df5b35eeba7ec 19,90,97-102,113-121,151-164,788-792,798-803
+packages/office-harness/src/office/Office.ts
+  s_8322a827a65284::t_1100d6af5d88ee 114-124
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "49de970567a6711c108bd1a8286e295793b4a7f1",
+  "prompts": {},
+  "sessions": {
+    "s_8322a827a65284": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "915e3ab3-2509-48d4-ac28-15e170582e47",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
