@@ -1,0 +1,65 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/AgentDetails.tsx
+  s_6f7457834498e3::t_e6fe7a976b01ba 21,111
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/components/ScreenQuestion/ScreenQuestion.tsx
+  s_6f7457834498e3::t_a3bb037f193e4a 1-69
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/components/ScreenQuestion/index.ts
+  s_6f7457834498e3::t_9cd633e3d99167 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/BuildingFloor/BuildingFloor.tsx
+  s_6f7457834498e3::t_1ca7f9d6917459 29,226
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/BuildingFloor/constants.ts
+  s_6f7457834498e3::t_499dfecd802e45 1-9
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/constants.ts
+  s_6f7457834498e3::t_50c759aa637fe2 20-28
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useAgentInput/useAgentInput.ts
+  s_6f7457834498e3::t_290e1c7dfc213e 18-20,43-54
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useAgentScreens/index.ts
+  s_6f7457834498e3::t_68b17e01106ceb 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useAgentScreens/useAgentScreens.ts
+  s_6f7457834498e3::t_9019d298d5b6ad 1-46
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useCity/useCity.ts
+  s_6f7457834498e3::t_f203d95761fd63 11,55-65,80,90
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/types.ts
+  s_6f7457834498e3::t_6207a205b9097a 33-34
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/buildCity/buildCity.test.ts
+  s_6f7457834498e3::t_bb45b7aac7971d 101-128
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/buildCity/buildCity.ts
+  s_6f7457834498e3::t_9c2814ea10d1eb 59,68-69,90-95,105-106
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/buildingSnapshot/buildingSnapshot.ts
+  s_6f7457834498e3::t_3c66a09f11f810 2,79-81
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/screenAsk/index.ts
+  s_6f7457834498e3::t_e8e8dd1d6b906a 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/screenAsk/screenAsk.test.ts
+  s_6f7457834498e3::t_b7c8c5660f2371 1-90
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/screenAsk/screenAsk.ts
+  s_6f7457834498e3::t_97669241cbaba4 1-105
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/NeedsYouBar/components/NeedsYouChip/NeedsYouChip.tsx
+  s_6f7457834498e3::t_50c9a1c300a5a8 59,64,79
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/OfficeFloor.tsx
+  s_6f7457834498e3::t_f794d91e8e40ab 22,278
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/components/FloorControls/FloorControls.tsx
+  s_6f7457834498e3::t_d070b01f0cd4fa 2-10,22-23,34,79-101
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/constants.ts
+  s_6f7457834498e3::t_c9815e04a5d3a0 22-32
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/scene/OfficeScene.ts
+  s_6f7457834498e3::t_fea40e507445ef 168,211-212,316-319,475-482,484,574
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/needsYou/needsYou.ts
+  s_6f7457834498e3::t_0738ca819bd0bd 1,21-22,64
+plans/20261105-office-orchestration-notes.md
+  s_6f7457834498e3::t_b4e2d38f76c7bb 468-492
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "24964ebe4d5e394e0ce7bca3933af9b4d4430512",
+  "prompts": {},
+  "sessions": {
+    "s_6f7457834498e3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a830efbe-28d8-4c69-8e55-abf00ec0995a",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
