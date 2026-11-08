@@ -1,10 +1,11 @@
 import { cn } from "@superset/ui/utils";
 import { useMemo, useState } from "react";
-import { LuListChecks, LuPlus, LuUserPlus } from "react-icons/lu";
+import { LuListChecks, LuPlus, LuTrash2, LuUserPlus } from "react-icons/lu";
 import { PageHeader } from "renderer/routes/_authenticated/_dashboard/components/PageHeader";
 import { useOffice } from "../../hooks/useOffice";
 import { AddRoomDialog } from "../AddRoomDialog";
 import { CreateTaskDialog } from "../CreateTaskDialog";
+import { DeleteRoomDialog } from "../DeleteRoomDialog";
 import { HireDialog } from "../HireDialog";
 import { OfficeFloor } from "../OfficeFloor";
 import { RightNowRail } from "../RightNowRail";
@@ -19,6 +20,8 @@ export function OfficeScreen() {
 		setPaused,
 		hire,
 		addRoom,
+		deleteRoom,
+		setDesks,
 		moveTeammate,
 		openGroup,
 		createTask,
@@ -30,6 +33,7 @@ export function OfficeScreen() {
 	const [roomId, setRoomId] = useState<string | null>(null);
 	const [showLog, setShowLog] = useState(false);
 	const [addingRoom, setAddingRoom] = useState(false);
+	const [deletingRoom, setDeletingRoom] = useState(false);
 	const [hiring, setHiring] = useState(false);
 	const [creatingTask, setCreatingTask] = useState(false);
 	const [showTasks, setShowTasks] = useState(false);
@@ -124,6 +128,7 @@ export function OfficeScreen() {
 									for (const id of ids)
 										await moveTeammate.mutateAsync({ id, roomId: toRoomId });
 								}}
+								onSaveDesks={(desks) => setDesks.mutate({ desks })}
 								onCreateRoom={async (input) => {
 									await addRoom.mutateAsync(input);
 								}}
@@ -180,43 +185,61 @@ export function OfficeScreen() {
 					) : null}
 					{data && activeRoom ? (
 						<>
-							<div className="flex items-center gap-1 overflow-x-auto border-b border-border px-2 py-1.5">
-								<button
-									type="button"
-									onClick={() => setShowTasks(true)}
-									className={cn(
-										"flex shrink-0 items-center gap-1 rounded-md px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] transition-colors",
-										showTasks
-											? "bg-fill-selected text-foreground"
-											: "text-muted-foreground hover:bg-fill-hover",
-									)}
-								>
-									<LuListChecks className="size-3" />
-									tasks
-									{data.tasks.some(
-										(t) => t.status === "verified" || t.status === "blocked",
-									) ? (
-										<span className="size-1.5 rounded-full bg-[#39d353]" />
-									) : null}
-								</button>
-								{rooms.map((r) => (
+							<div className="flex items-center gap-1 border-b border-border px-2 py-1.5">
+								<div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
 									<button
 										type="button"
-										key={r.id}
-										onClick={() => {
-											setShowTasks(false);
-											setRoomId(r.id);
-										}}
+										onClick={() => setShowTasks(true)}
 										className={cn(
-											"shrink-0 rounded-md px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] transition-colors",
-											!showTasks && r.id === activeRoom.id
+											"flex shrink-0 items-center gap-1 rounded-md px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] transition-colors",
+											showTasks
 												? "bg-fill-selected text-foreground"
 												: "text-muted-foreground hover:bg-fill-hover",
 										)}
 									>
-										#{r.name}
+										<LuListChecks className="size-3" />
+										tasks
+										{data.tasks.some(
+											(t) => t.status === "verified" || t.status === "blocked",
+										) ? (
+											<span className="size-1.5 rounded-full bg-[#39d353]" />
+										) : null}
 									</button>
-								))}
+									{rooms.map((r) => (
+										<button
+											type="button"
+											key={r.id}
+											onClick={() => {
+												setShowTasks(false);
+												setRoomId(r.id);
+											}}
+											className={cn(
+												"shrink-0 rounded-md px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] transition-colors",
+												!showTasks && r.id === activeRoom.id
+													? "bg-fill-selected text-foreground"
+													: "text-muted-foreground hover:bg-fill-hover",
+											)}
+										>
+											#{r.name}
+										</button>
+									))}
+								</div>
+								{!showTasks ? (
+									<button
+										type="button"
+										onClick={() => setDeletingRoom(true)}
+										disabled={rooms.length < 2}
+										aria-label={`Delete #${activeRoom.name}`}
+										title={
+											rooms.length < 2
+												? "The office needs at least one room"
+												: `Delete #${activeRoom.name}`
+										}
+										className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-fill-hover hover:text-destructive disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
+									>
+										<LuTrash2 className="size-3" />
+									</button>
+								) : null}
 							</div>
 							{showTasks ? (
 								<div className="min-h-0 flex-1 overflow-y-auto">
@@ -286,6 +309,38 @@ export function OfficeScreen() {
 					})
 				}
 			/>
+			{data && activeRoom ? (
+				<DeleteRoomDialog
+					open={deletingRoom}
+					roomName={activeRoom.name}
+					messageCount={
+						data.messages.filter((m) => m.roomId === activeRoom.id).length
+					}
+					sitting={data.teammates
+						.filter((t) => t.roomId === activeRoom.id)
+						.map((t) => t.name)}
+					fallbackRoomName={
+						rooms.find((r) => r.id !== activeRoom.id)?.name ?? null
+					}
+					pending={deleteRoom.isPending}
+					error={deleteRoom.error?.message ?? null}
+					onOpenChange={(open) => {
+						setDeletingRoom(open);
+						if (!open) deleteRoom.reset();
+					}}
+					onConfirm={() =>
+						deleteRoom.mutate(
+							{ id: activeRoom.id },
+							{
+								onSuccess: () => {
+									setDeletingRoom(false);
+									setRoomId(null);
+								},
+							},
+						)
+					}
+				/>
+			) : null}
 			<CreateTaskDialog
 				open={creatingTask}
 				rooms={rooms}

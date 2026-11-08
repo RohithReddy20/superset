@@ -1,6 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import type { Handoff, Room, Teammate } from "../../types";
-import { findPath, isWalkable, layoutWorld, type WorldMap } from "./world";
+import {
+	changedDesks,
+	findPath,
+	isWalkable,
+	layoutWorld,
+	storedDesks,
+	type WorldMap,
+} from "./world";
 
 const map: WorldMap = {
 	image: { w: 320, h: 160 },
@@ -101,6 +108,92 @@ describe("layoutWorld", () => {
 			hints: new Map([["d", { roomId: "eng", near: { x: 45, y: 104 } }]]),
 		});
 		expect(seatOf(dropped, "d")).toBe(40);
+	});
+
+	describe("stored desks", () => {
+		const pods: WorldMap = {
+			...map,
+			zones: [
+				{
+					...(map.zones[0] as WorldMap["zones"][number]),
+					seats: [
+						{ x: 40, y: 100, facing: "down" },
+						{ x: 80, y: 100, facing: "down" },
+						{ x: 120, y: 100, facing: "up" },
+					],
+				},
+				{
+					...(map.zones[0] as WorldMap["zones"][number]),
+					id: "b",
+					seats: [
+						{ x: 200, y: 100, facing: "down" },
+						{ x: 240, y: 100, facing: "down" },
+					],
+				},
+			],
+		};
+		const desk = (zoneId: string, x: number) => ({ zoneId, x, y: 100 });
+
+		test("a restart puts everyone back at the desk the office stored", () => {
+			const team = [
+				teammate("b", { desk: desk("a", 120) }),
+				teammate("c", { desk: desk("a", 40) }),
+			];
+			const dealt = layoutWorld({
+				map: pods,
+				rooms,
+				teammates: team,
+				handoffs: [],
+			});
+			expect(dealt.homes.get("b")?.x).toBe(40);
+
+			const restarted = layoutWorld({
+				map: pods,
+				rooms,
+				teammates: team,
+				handoffs: [],
+				previous: storedDesks(team),
+			});
+			expect(restarted.homes.get("b")).toEqual({
+				zoneId: "a",
+				x: 120,
+				y: 100,
+				facing: "up",
+			});
+			expect(restarted.homes.get("c")?.x).toBe(40);
+			expect(changedDesks(restarted.homes, team)).toEqual([]);
+		});
+
+		test("a desk that is gone from the map or outside the room's area falls back to a free seat", () => {
+			const team = [
+				teammate("b", { desk: desk("a", 999) }),
+				teammate("c", { desk: desk("gone", 40) }),
+				teammate("d", { desk: desk("a", 40) }),
+			];
+			const restarted = layoutWorld({
+				map: pods,
+				rooms,
+				teammates: team,
+				handoffs: [],
+				previous: storedDesks(team),
+			});
+			expect(team.map((t) => restarted.homes.get(t.id)?.x)).toEqual([
+				80, 120, 40,
+			]);
+			expect(changedDesks(restarted.homes, team).map((d) => d.id)).toEqual([
+				"b",
+				"c",
+			]);
+
+			const roomMoved = layoutWorld({
+				map: pods,
+				rooms: [{ ...(rooms[0] as Room), place: "b" }],
+				teammates: [teammate("d", { desk: desk("a", 40) })],
+				handoffs: [],
+				previous: storedDesks(team),
+			});
+			expect(roomMoved.homes.get("d")).toMatchObject({ zoneId: "b", x: 200 });
+		});
 	});
 
 	test("a room with a place sits there and the others fill the remaining areas", () => {

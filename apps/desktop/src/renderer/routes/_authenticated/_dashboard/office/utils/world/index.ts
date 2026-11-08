@@ -7,6 +7,8 @@ export {
 export {
 	CELL,
 	cellOf,
+	changedDesks,
+	type Desk,
 	emptyTeamZoneAt,
 	type Facing,
 	findPath,
@@ -19,6 +21,7 @@ export {
 	type Seat,
 	type SeatHint,
 	type SeatTarget,
+	storedDesks,
 	type WorldLayout,
 	type WorldMap,
 	type Zone,

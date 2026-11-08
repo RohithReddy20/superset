@@ -51,6 +51,78 @@ function office(leadId?: string) {
 	return o;
 }
 
+function officeWithDesign() {
+	const o = office();
+	o.upsertRoom({
+		id: "eng",
+		name: "engineering",
+		kind: "room",
+		members: ["you", "lead"],
+	});
+	o.upsertRoom({
+		id: "design",
+		name: "design",
+		kind: "room",
+		members: ["you", "bash", "scout"],
+	});
+	o.upsertRoom({
+		id: "planning",
+		name: "planning",
+		kind: "room",
+		members: ["you", "scout"],
+	});
+	o.upsertRoom({
+		id: "group-bash+scout",
+		name: "Bash, Scout",
+		kind: "dm",
+		members: ["you", "bash", "scout"],
+	});
+	o.upsertTeammate({
+		id: "bash",
+		name: "Bash",
+		kind: "ai",
+		role: "coder",
+		roomId: "design",
+	});
+	o.upsertTeammate({
+		id: "scout",
+		name: "Scout",
+		kind: "ai",
+		role: "reviewer",
+		roomId: "design",
+	});
+	return o;
+}
+
+describe("rooms", () => {
+	test("deleting a room moves who lived there to another room they are in, else the first room, and drops its messages", () => {
+		const o = officeWithDesign();
+		o.post({ authorId: "you", roomId: "design", text: "mockups" });
+		o.post({ authorId: "you", roomId: "eng", text: "build" });
+
+		expect(o.removeRoom("design")).toEqual([
+			{ teammateId: "bash", roomId: "eng" },
+			{ teammateId: "scout", roomId: "planning" },
+		]);
+		expect(o.room("design")).toBeUndefined();
+		expect(o.teammate("bash")?.roomId).toBe("eng");
+		expect(o.room("eng")?.members).toContain("bash");
+		expect(o.teammate("scout")?.roomId).toBe("planning");
+		expect(o.snapshot().messages.map((m) => m.text)).toEqual(["build"]);
+	});
+
+	test("a group chat, a room holding a task and the last room are not deleted", () => {
+		const o = officeWithDesign();
+		expect(() => o.removeRoom("group-bash+scout")).toThrow(/group chat/);
+		o.createTask({ title: "x", brief: "y", by: "you", roomId: "planning" });
+		expect(() => o.removeRoom("planning")).toThrow(/T-1 keeps its thread/);
+		o.removeRoom("design");
+		o.removeRoom("eng");
+		expect(() => o.removeRoom("planning")).toThrow(/last room/);
+		expect(o.room("planning")).toBeDefined();
+	});
+});
+
 describe("tasks", () => {
 	test("a task opens its own thread and the owner, verifier and lead each move it as allowed", () => {
 		const o = office("lead");

@@ -9,6 +9,13 @@ export interface Usage {
 	priced: boolean;
 }
 
+/** A seat on the office floor map: the floor picks it, the office keeps it across restarts. */
+export interface Desk {
+	zoneId: string;
+	x: number;
+	y: number;
+}
+
 export interface Teammate {
 	id: string;
 	name: string;
@@ -25,6 +32,7 @@ export interface Teammate {
 	budget: { dailyTurns: number; usedToday: number; day: string };
 	/** Spent on budget.day. */
 	usage?: Usage;
+	desk?: Desk;
 	acpSessionId?: string;
 }
 

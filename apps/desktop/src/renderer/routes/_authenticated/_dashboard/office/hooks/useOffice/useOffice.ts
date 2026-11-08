@@ -69,6 +69,24 @@ export function useOffice() {
 		onSuccess: refresh,
 	});
 
+	const deleteRoom = useMutation({
+		mutationFn: (input: { id: string }) => {
+			if (!client) throw new Error("No local host");
+			return client.office.deleteRoom.mutate(input);
+		},
+		onSuccess: refresh,
+	});
+
+	const setDesks = useMutation({
+		mutationFn: (input: {
+			desks: Array<{ id: string; zoneId: string; x: number; y: number }>;
+		}) => {
+			if (!client) throw new Error("No local host");
+			return client.office.setDesks.mutate(input);
+		},
+		onSuccess: refresh,
+	});
+
 	const openGroup = useMutation({
 		mutationFn: (input: { personId: string; memberIds: string[] }) => {
 			if (!client) throw new Error("No local host");
@@ -127,6 +145,8 @@ export function useOffice() {
 		setPaused,
 		hire,
 		addRoom,
+		deleteRoom,
+		setDesks,
 		moveTeammate,
 		openGroup,
 		createTask,

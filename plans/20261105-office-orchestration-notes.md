@@ -174,3 +174,45 @@ and the view follows the person instead of fitting the map.
   it still belongs to the teammate's room; newcomers take a free seat, the one nearest where
   they were dropped when the floor passes a `SeatHint`. Checked live: moving Ledger into Design
   and back left Scout and Bash in place, and Ledger returned to its own desk.
+
+## 2026-11-08: small fixes
+
+- **Moving keeps the other rooms.** `OfficeRuntime.moveTeammate` took the teammate out of its old
+  home room, so a round trip (design to planning and back) also dropped Scout and Bash from
+  planning. A move now only changes the home room and adds the new room when missing; every other
+  membership stays. Regression test in `officeRuntime.test.ts` (failed on the old code).
+- **Seats survive a restart.** Each teammate now has a `desk` (`zoneId`, `x`, `y`) in office state
+  (state.json), next to the rest of the office. The floor still owns the seat choice: after each
+  layout it sends the homes that differ from the stored desks (`office.setDesks`), and a floor
+  with no layout yet (a fresh window) uses the stored desks as `previous`. A desk whose area or
+  seat is gone from the map, or that is outside the room's area now, is dealt again as before.
+  Host state rather than renderer localStorage: the office state is the source of truth, the desk
+  goes away with the teammate, and localStorage is kept for small singleton UI state
+  (apps/desktop/AGENTS.md).
+- **Rooms can be deleted.** `Office.removeRoom` (harness) holds the rules, `OfficeRuntime.deleteRoom`
+  mirrors them into office.json, and `office.deleteRoom` exposes it. A trash button at the end of
+  the room tabs opens an in-app confirm (AlertDialog, no native dialog) that says how many
+  messages go and who moves. Choices:
+  - Whoever lived there moves to the first other room they are a member of, else to the first
+    room; they stay members of their other rooms.
+  - The room's messages and hand-offs are deleted with it, like deleting a channel.
+  - A room that holds a task's thread is not deleted (the task's sessions and notes post there),
+    even when the task is done; the dialog shows the reason. This keeps #engineering, which has T-1.
+  - The last room is not deleted, and the button is disabled when only one room is left.
+  - Group chats (`group-<ids>`) are not deleted: they have no tab or sign, nobody lives in them,
+    and `openGroup` would make the same room again on the next message to that group.
+  - The room's floor place is freed because the room is gone from config and state; the area
+    takes "New room here" drops again.
+- **Checked in the running app (CDP 9333, renderer 3005, office route):**
+  - Dragged Scout (home Design, also in planning and engineering) into planning and back. Its home
+    changed both times and every room kept the same members.
+  - Noted the seats, touched `officeRuntime.ts` so electron-vite restarted the main process and
+    the host service (new renderer page, host on a new port). Everyone sat at the same desk.
+    Scout was at a desk where the old dealing would not put it.
+  - Dropped Ledger on the empty desks under hhhhh and named the room "Scratch test". Posted one
+    message there. Tried to delete #engineering, which was refused with "T-1 keeps its thread in
+    engineering". Deleted Scratch test through the confirm: the room, its sign and its message
+    were gone, and Ledger moved to engineering. Ledger was then moved back to hhhhh with the
+    teammate card.
+  - No console errors. Afterwards office.json was the same as the backup, and state.json differed
+    only by the new desks.

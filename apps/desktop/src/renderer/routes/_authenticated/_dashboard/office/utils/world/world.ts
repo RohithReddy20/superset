@@ -41,6 +41,13 @@ export interface SeatTarget extends Seat {
 	zoneId: string;
 }
 
+/** A seat as the office stores it: its area and position, without the map's facing. */
+export interface Desk extends Point {
+	zoneId: string;
+}
+
+const SPAWN_ZONE = "spawn";
+
 export interface PlacedRoom {
 	id: string;
 	name: string;
@@ -81,8 +88,8 @@ export function layoutWorld({
 	rooms: Room[];
 	teammates: Teammate[];
 	handoffs: Handoff[];
-	/** The last layout's homes: everyone keeps their seat while it still fits their room. */
-	previous?: Map<string, SeatTarget>;
+	/** The last layout's homes, or the stored desks: everyone keeps their seat while it still fits their room. */
+	previous?: ReadonlyMap<string, Desk>;
 	hints?: Map<string, SeatHint>;
 }): WorldLayout {
 	const byId = new Map(teammates.map((t) => [t.id, t]));
@@ -130,13 +137,12 @@ export function layoutWorld({
 		}
 		return null;
 	};
-	const claim = (seat: SeatTarget): boolean => {
-		const seats = free.get(seat.zoneId);
+	const claim = (desk: Desk): SeatTarget | null => {
+		const seats = free.get(desk.zoneId);
 		const index =
-			seats?.findIndex((s) => s.x === seat.x && s.y === seat.y) ?? -1;
-		if (!seats || index < 0) return false;
-		seats.splice(index, 1);
-		return true;
+			seats?.findIndex((s) => s.x === desk.x && s.y === desk.y) ?? -1;
+		const [seat] = seats && index >= 0 ? seats.splice(index, 1) : [];
+		return seat ? { ...seat, zoneId: desk.zoneId } : null;
 	};
 
 	const homes = new Map<string, SeatTarget>();
@@ -145,8 +151,9 @@ export function layoutWorld({
 	for (const t of byStableOrder) {
 		const before = previous?.get(t.id);
 		const zone = zoneOfRoom.get(t.roomId);
-		if (before && (!zone || before.zoneId === zone.id) && claim(before))
-			homes.set(t.id, before);
+		if (!before || (zone && before.zoneId !== zone.id)) continue;
+		const seat = claim(before);
+		if (seat) homes.set(t.id, seat);
 	}
 	const nearOf = (t: Teammate) => {
 		const hint = hints?.get(t.id);
@@ -162,7 +169,10 @@ export function layoutWorld({
 	for (const t of byStableOrder) {
 		if (homes.has(t.id)) continue;
 		const seat = takeSeat(undefined, nearOf(t));
-		homes.set(t.id, seat ?? { ...map.spawn, facing: "down", zoneId: "spawn" });
+		homes.set(
+			t.id,
+			seat ?? { ...map.spawn, facing: "down", zoneId: SPAWN_ZONE },
+		);
 	}
 
 	const targets = new Map(homes);
@@ -209,6 +219,30 @@ export function layoutWorld({
 		homes,
 		targets,
 	};
+}
+
+/** The desks the office stored, the `previous` for a floor that has no layout yet. */
+export function storedDesks(teammates: Teammate[]): Map<string, Desk> {
+	const desks = new Map<string, Desk>();
+	for (const t of teammates) if (t.desk) desks.set(t.id, t.desk);
+	return desks;
+}
+
+/** Homes the office has not stored yet; a spawn point is not a desk. */
+export function changedDesks(
+	homes: ReadonlyMap<string, SeatTarget>,
+	teammates: Teammate[],
+): Array<Desk & { id: string }> {
+	const changed: Array<Desk & { id: string }> = [];
+	for (const t of teammates) {
+		const home = homes.get(t.id);
+		if (!home || home.zoneId === SPAWN_ZONE) continue;
+		const { desk } = t;
+		if (desk?.zoneId === home.zoneId && desk.x === home.x && desk.y === home.y)
+			continue;
+		changed.push({ id: t.id, zoneId: home.zoneId, x: home.x, y: home.y });
+	}
+	return changed;
 }
 
 function nearestIndex(seats: Seat[], near: Point): number {

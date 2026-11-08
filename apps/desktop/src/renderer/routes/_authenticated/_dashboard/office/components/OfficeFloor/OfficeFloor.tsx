@@ -3,10 +3,13 @@ import type { OfficeSnapshot } from "../../types";
 import { groupRoomFor } from "../../utils/groupRoomFor";
 import { roomIdFor } from "../../utils/roomIdFor";
 import {
+	changedDesks,
+	type Desk,
 	layoutWorld,
 	type Point,
 	type SeatHint,
 	type SeatTarget,
+	storedDesks,
 } from "../../utils/world";
 import { FloorControls } from "./components/FloorControls";
 import {
@@ -31,6 +34,8 @@ interface OfficeFloorProps {
 	onSelectTeammate: (id: string) => void;
 	onSelectRoom: (id: string) => void;
 	onMoveTeammates: (ids: string[], roomId: string) => Promise<void>;
+	/** Stores seats that changed, so a restart puts everyone back at the same desk. */
+	onSaveDesks: (desks: Array<Desk & { id: string }>) => void;
 	onCreateRoom: (input: {
 		id: string;
 		name: string;
@@ -53,6 +58,7 @@ export function OfficeFloor({
 	onSelectTeammate,
 	onSelectRoom,
 	onMoveTeammates,
+	onSaveDesks,
 	onCreateRoom,
 	onSay,
 	onOpenGroup,
@@ -77,12 +83,14 @@ export function OfficeFloor({
 		onSelectTeammate,
 		onSelectRoom,
 		onMoveTeammates,
+		onSaveDesks,
 		hintMoves,
 	});
 	handlers.current = {
 		onSelectTeammate,
 		onSelectRoom,
 		onMoveTeammates,
+		onSaveDesks,
 		hintMoves,
 	};
 
@@ -93,7 +101,7 @@ export function OfficeFloor({
 				rooms: state.rooms,
 				teammates: state.teammates,
 				handoffs: state.handoffs,
-				previous: previousHomes.current,
+				previous: previousHomes.current ?? storedDesks(state.teammates),
 				hints: seatHints.current,
 			}),
 		[state.rooms, state.teammates, state.handoffs],
@@ -104,6 +112,8 @@ export function OfficeFloor({
 		for (const [id, hint] of seatHints.current)
 			if (state.teammates.some((t) => t.id === id && t.roomId === hint.roomId))
 				seatHints.current.delete(id);
+		const changed = changedDesks(layout.homes, state.teammates);
+		if (changed.length > 0) handlers.current.onSaveDesks(changed);
 	}, [layout, state.teammates]);
 	const picked = useMemo(
 		() =>

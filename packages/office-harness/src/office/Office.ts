@@ -2,6 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { checkDelivery, DEFAULT_LIMITS, type Limits } from "../guards/guards";
 import type {
+	Desk,
 	Handoff,
 	InboxItem,
 	Message,
@@ -118,6 +119,39 @@ export class Office {
 		return existing ?? room;
 	}
 
+	/**
+	 * Deletes a room with its messages and hand-offs. Whoever lived there moves to another room
+	 * they are in, else to the first room. Returns those moves.
+	 */
+	removeRoom(id: string): { teammateId: string; roomId: string }[] {
+		const room = this.room(id);
+		if (!room) throw new Error(`No room ${id}`);
+		if (room.kind === "dm")
+			throw new Error(`${room.name} is a group chat, not a room`);
+		const others = this.state.rooms.filter(
+			(r) => r.kind === "room" && r.id !== id,
+		);
+		const first = others[0];
+		if (!first) throw new Error(`${room.name} is the last room`);
+		const task = this.state.tasks.find((t) => t.roomId === id);
+		if (task) throw new Error(`${task.id} keeps its thread in ${room.name}`);
+
+		const moves: { teammateId: string; roomId: string }[] = [];
+		for (const teammate of this.state.teammates) {
+			if (teammate.roomId !== id) continue;
+			const next = others.find((r) => r.members.includes(teammate.id)) ?? first;
+			if (!next.members.includes(teammate.id)) next.members.push(teammate.id);
+			teammate.roomId = next.id;
+			moves.push({ teammateId: teammate.id, roomId: next.id });
+			this.emit({ type: "teammate", teammate: structuredClone(teammate) });
+		}
+		this.state.rooms = this.state.rooms.filter((r) => r.id !== id);
+		this.state.messages = this.state.messages.filter((m) => m.roomId !== id);
+		this.state.handoffs = this.state.handoffs.filter((h) => h.roomId !== id);
+		this.save();
+		return moves;
+	}
+
 	teammate(id: string): Teammate | undefined {
 		return this.state.teammates.find((t) => t.id === id);
 	}
@@ -193,6 +227,18 @@ export class Office {
 		const teammate = this.teammate(id);
 		if (!teammate) return;
 		teammate.paused = paused;
+		this.emit({ type: "teammate", teammate: structuredClone(teammate) });
+	}
+
+	setDesk(id: string, desk: Desk): void {
+		const teammate = this.teammate(id);
+		const { zoneId, x, y } = desk;
+		const same =
+			teammate?.desk?.zoneId === zoneId &&
+			teammate.desk.x === x &&
+			teammate.desk.y === y;
+		if (!teammate || same) return;
+		teammate.desk = { zoneId, x, y };
 		this.emit({ type: "teammate", teammate: structuredClone(teammate) });
 	}
 

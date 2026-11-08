@@ -606,21 +606,45 @@ ${check.output.slice(-600)}`
 		this.applyConfig();
 	}
 
+	/** Changes the teammate's home room; it stays a member of every room it was in. */
 	moveTeammate(id: string, roomId: string): void {
 		const room = this.config.rooms.find((r) => r.id === roomId);
 		if (!room || room.kind === "dm") throw new Error(`no room ${roomId}`);
-		const spec =
-			this.config.seats.find((s) => s.id === id) ??
-			this.config.humans.find((h) => h.id === id);
+		const spec = this.homeSpec(id);
 		if (!spec) throw new Error(`no teammate ${id}`);
-		for (const other of this.config.rooms) {
-			if (other.id === spec.room)
-				other.members = other.members.filter((m) => m !== id);
-		}
 		spec.room = roomId;
 		if (!room.members.includes(id)) room.members.push(id);
 		this.saveConfig();
 		this.applyConfig();
+	}
+
+	/** Deletes the room, its messages and hand-offs; whoever lived there moves to another room. */
+	deleteRoom(roomId: string): void {
+		const moves = this.office.removeRoom(roomId);
+		for (const move of moves) {
+			const spec = this.homeSpec(move.teammateId);
+			if (spec) spec.room = move.roomId;
+			const room = this.config.rooms.find((r) => r.id === move.roomId);
+			if (room && !room.members.includes(move.teammateId))
+				room.members.push(move.teammateId);
+		}
+		const index = this.config.rooms.findIndex((r) => r.id === roomId);
+		if (index >= 0) this.config.rooms.splice(index, 1);
+		this.saveConfig();
+		this.applyConfig();
+	}
+
+	setDesks(
+		desks: Array<{ id: string; zoneId: string; x: number; y: number }>,
+	): void {
+		for (const { id, ...desk } of desks) this.office.setDesk(id, desk);
+	}
+
+	private homeSpec(id: string): { room: string } | undefined {
+		return (
+			this.config.seats.find((s) => s.id === id) ??
+			this.config.humans.find((h) => h.id === id)
+		);
 	}
 
 	private startSeat(spec: OfficeSeatConfig): void {

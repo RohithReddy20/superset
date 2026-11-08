@@ -97,6 +97,40 @@ export const officeRouter = router({
 			return { ok: true };
 		}),
 
+	deleteRoom: protectedProcedure
+		.input(z.object({ id: z.string() }))
+		.mutation(({ ctx, input }): { ok: true } => {
+			try {
+				officeOf(ctx.runtime).deleteRoom(input.id);
+			} catch (error) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: (error as Error).message,
+				});
+			}
+			return { ok: true };
+		}),
+
+	setDesks: protectedProcedure
+		.input(
+			z.object({
+				desks: z
+					.array(
+						z.object({
+							id: z.string(),
+							zoneId: z.string().max(40),
+							x: z.number(),
+							y: z.number(),
+						}),
+					)
+					.max(200),
+			}),
+		)
+		.mutation(({ ctx, input }): { ok: true } => {
+			officeOf(ctx.runtime).setDesks(input.desks);
+			return { ok: true };
+		}),
+
 	openGroup: protectedProcedure
 		.input(
 			z.object({

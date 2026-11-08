@@ -16,6 +16,14 @@ export interface OfficeTeammate {
 	budget: { dailyTurns: number; usedToday: number; day: string };
 	/** Spent on budget.day; costUsd counts only engines that report a price. */
 	usage?: OfficeUsage;
+	/** The floor's last seat for this teammate, so it sits at the same desk after a restart. */
+	desk?: OfficeDesk;
+}
+
+export interface OfficeDesk {
+	zoneId: string;
+	x: number;
+	y: number;
 }
 
 export interface OfficeUsage {
