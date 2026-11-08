@@ -117,6 +117,7 @@ export function createCityRooms({
 				name: row.name || row.branch,
 				projectName: projectNames().get(row.projectId) || "a project",
 				path: row.path,
+				branch: row.branch,
 			};
 		},
 		startAgent: async (workspaceId, agent, prompt) => {

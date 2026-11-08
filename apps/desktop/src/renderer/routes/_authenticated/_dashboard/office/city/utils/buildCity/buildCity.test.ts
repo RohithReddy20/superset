@@ -48,7 +48,7 @@ describe("buildCity", () => {
 		expect(city.map((p) => p.id)).toEqual(["p1"]);
 	});
 
-	test("puts each agent in its workspace with a status and a name that tells two apart", () => {
+	test("puts each agent in its workspace with a status and its city name, else its kind", () => {
 		const city = buildCity({
 			projects,
 			workspaces: [workspace("w1", "p1")],
@@ -57,13 +57,16 @@ describe("buildCity", () => {
 				binding("t1", "w1", "Start", 1),
 			],
 			seats: [],
+			names: [{ terminalId: "t2", name: "Ada", handle: "ada" }],
 			seenAt: {},
 			machineId: "me",
 		});
 		const agents = city[0]?.workspaces[0]?.agents;
-		expect(agents?.map((a) => [a.terminalId, a.name, a.status])).toEqual([
-			["t1", "Claude", "working"],
-			["t2", "Claude 2", "permission"],
+		expect(
+			agents?.map((a) => [a.terminalId, a.name, a.handle, a.status]),
+		).toEqual([
+			["t1", "Claude", "", "working"],
+			["t2", "Ada", "ada", "permission"],
 		]);
 	});
 

@@ -18,8 +18,12 @@ export interface CityAgent {
 	projectId: string;
 	workspaceName: string;
 	agentId: AgentIdentityId;
-	/** "Claude", or "Claude 2" when a workspace runs more than one. */
+	/** What CLI it is: "Claude", "Codex". */
+	kind: string;
+	/** Its name in the city, given when it first shows up; a person can rename it. */
 	name: string;
+	/** What agents write to talk to it, "@ada" without the "@"; empty until the city named it. */
+	handle: string;
 	status: AgentStatus;
 	startedAt: number;
 	lastEventAt: number;

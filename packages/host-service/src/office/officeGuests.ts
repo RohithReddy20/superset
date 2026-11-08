@@ -5,6 +5,8 @@ export interface OfficeGuestInfo {
 	terminalId: string;
 	workspaceId: string;
 	agentId: string;
+	/** Its name in the city, which it is called in the office too. */
+	name: string;
 	label: string;
 	workspaceName: string;
 	projectName: string;
@@ -80,12 +82,17 @@ export class OfficeGuests {
 		for (const info of list) {
 			if (!this.deps.office.room(info.roomId)) continue;
 			const guest = this.guests.get(info.terminalId);
-			if (guest && guest.info.roomId === info.roomId) continue;
+			if (
+				guest &&
+				guest.info.roomId === info.roomId &&
+				guest.info.name === info.name
+			)
+				continue;
 			changed = true;
 			const id = this.idOf(info.terminalId);
 			this.deps.office.upsertTeammate({
 				id,
-				name: this.deps.office.teammate(id)?.name ?? this.nameFor(info, id),
+				name: this.nameFor(info, id),
 				kind: "ai",
 				role: `${info.label} CLI, working in "${info.workspaceName}" (${info.projectName})`,
 				roomId: info.roomId,
@@ -192,9 +199,11 @@ export class OfficeGuests {
 			});
 	}
 
-	/** An office name that @mentions cleanly: the agent kind and its workspace, unique in the office. */
+	/** Its city name, made to @mention cleanly and numbered when an office teammate has it already. */
 	private nameFor(info: OfficeGuestInfo, id: string): string {
-		const base = `${slug(info.agentId) || "agent"}-${slug(info.workspaceName).slice(0, 16) || "cli"}`;
+		const base =
+			info.name.replace(/[^A-Za-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") ||
+			`${slug(info.agentId) || "agent"}-cli`;
 		let name = base;
 		for (let n = 2; ; n++) {
 			const taken = this.deps.office.teammateByName(name);

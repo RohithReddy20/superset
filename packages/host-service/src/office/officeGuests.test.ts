@@ -9,6 +9,7 @@ const guest: OfficeGuestInfo = {
 	terminalId: "abcdef12-0000",
 	workspaceId: "w1",
 	agentId: "claude",
+	name: "Ada",
 	label: "Claude",
 	workspaceName: "Check health",
 	projectName: "city-demo-api",
@@ -79,7 +80,7 @@ describe("OfficeGuests", () => {
 		guests.sync([guest]);
 		const id = guests.idOf(guest.terminalId);
 		expect(office.room("eng")?.members).toContain(id);
-		expect(office.teammate(id)?.name).toBe("claude-check-health");
+		expect(office.teammate(id)?.name).toBe("Ada");
 		expect(office.teammate(id)?.role).toContain('working in "Check health"');
 	});
 
@@ -89,13 +90,11 @@ describe("OfficeGuests", () => {
 		const { message } = office.post({
 			authorId: "me",
 			roomId: "eng",
-			text: "@claude-check-health which files are in your folder?",
+			text: "@Ada which files are in your folder?",
 		});
 		await Promise.resolve();
 		expect(sent).toHaveLength(1);
-		expect(sent[0]).toContain(
-			"You are @claude-check-health in the office room #engineering",
-		);
+		expect(sent[0]).toContain("You are @Ada in the office room #engineering");
 		expect(sent[0]).toContain("@Scout (researcher)");
 		expect(sent[0]).toContain("which files are in your folder?");
 		expect(sent[0]).toContain("Rohith (a person) mentioned you");
@@ -118,7 +117,7 @@ describe("OfficeGuests", () => {
 		const { message } = office.post({
 			authorId: "me",
 			roomId: "eng",
-			text: "@claude-check-health thanks",
+			text: "@Ada thanks",
 		});
 		await Promise.resolve();
 		await guests.turnEnded(guest.terminalId, "no reply");

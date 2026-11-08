@@ -64,10 +64,19 @@ export function useCity(): {
 				workspaces,
 				bindings: bindings.data ?? [],
 				seats: rooms.data?.seats ?? [],
+				names: rooms.data?.names ?? [],
 				seenAt,
 				machineId,
 			}),
-		[projects, workspaces, bindings.data, rooms.data?.seats, seenAt, machineId],
+		[
+			projects,
+			workspaces,
+			bindings.data,
+			rooms.data?.seats,
+			rooms.data?.names,
+			seenAt,
+			machineId,
+		],
 	);
 
 	return {

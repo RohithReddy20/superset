@@ -8,6 +8,7 @@ import type {
 } from "../../../../../../types";
 import { MEETING_ROOM } from "../../../../../../utils/buildingSnapshot";
 import { AgentDetails } from "./components/AgentDetails";
+import { AgentName } from "./components/AgentName";
 import { RoomDetails } from "./components/RoomDetails";
 
 export type BuildingSelection =
@@ -52,9 +53,13 @@ export function AgentPanel({
 	return (
 		<aside className="flex h-full w-[380px] shrink-0 flex-col border-l border-border bg-background">
 			<div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
-				<span className="truncate text-sm font-medium">
-					{agent?.name ?? roomName ?? "Gone"}
-				</span>
+				{agent ? (
+					<AgentName key={agent.terminalId} agent={agent} />
+				) : (
+					<span className="truncate text-sm font-medium">
+						{roomName ?? "Gone"}
+					</span>
+				)}
 				<Button
 					variant="ghost"
 					size="icon-sm"

@@ -13,6 +13,21 @@ export interface CityAgentInfo {
 	projectName: string;
 }
 
+/** A running agent with the name the city gave it, or the one a person chose. */
+export interface NamedAgent extends CityAgentInfo {
+	name: string;
+}
+
+/** An agent's name; kept a while after its agent stops, like a seat, and follows it after a restart. */
+export interface CityName {
+	terminalId: string;
+	workspaceId: string;
+	name: string;
+	/** Set once the agent was told this name; a rename clears it. */
+	told?: boolean;
+	missingSince?: number;
+}
+
 export interface CitySeat {
 	terminalId: string;
 	/** The agent's own workspace, to find the terminal it continues in after a restart. */
@@ -66,6 +81,7 @@ export interface CityHandover {
 
 interface CityState {
 	seats: CitySeat[];
+	names: CityName[];
 	rooms: Record<string, RoomState>;
 	handovers: CityHandover[];
 }
@@ -82,6 +98,8 @@ export interface CityRoomSnapshot {
 
 export interface CitySnapshot {
 	seats: CitySeat[];
+	/** Each running agent's name and the @handle it answers to. */
+	names: Array<{ terminalId: string; name: string; handle: string }>;
 	rooms: CityRoomSnapshot[];
 	maxRelays: number;
 	handovers: CityHandover[];
@@ -103,8 +121,9 @@ export interface CityRoomsDeps {
 		sync: (
 			guests: Array<
 				Pick<
-					CityAgentInfo,
+					NamedAgent,
 					| "terminalId"
+					| "name"
 					| "workspaceId"
 					| "agentId"
 					| "label"
@@ -121,6 +140,7 @@ export interface CityRoomsDeps {
 		name: string;
 		projectName: string;
 		path: string;
+		branch?: string | null;
 	} | null;
 	/** Starts an agent in a workspace with a first prompt; resolves to its terminal. */
 	startAgent?: (
@@ -145,6 +165,60 @@ export const SEAT_KEPT_MS = 24 * 60 * 60 * 1000;
 export const NO_REPLY = "no reply";
 export const HANDOVER_REQUEST = "HANDOVER REQUEST:";
 const HANDOVER_BRIEF = "HANDOVER BRIEF";
+export const MAX_NAME_CHARS = 24;
+/** Handles that mean everyone in a room, so no agent can be called that. */
+const RESERVED_HANDLES = new Set(["all", "everyone"]);
+/** Names given to agents in order, skipping any already in use. */
+export const AGENT_NAMES = [
+	"Ada",
+	"Milo",
+	"Iris",
+	"Otto",
+	"Nova",
+	"Leo",
+	"Mira",
+	"Felix",
+	"Luna",
+	"Hugo",
+	"Zara",
+	"Theo",
+	"Ruby",
+	"Arlo",
+	"Nina",
+	"Kai",
+	"Ivy",
+	"Omar",
+	"Lena",
+	"Jude",
+	"Cleo",
+	"Remy",
+	"Tess",
+	"Ezra",
+	"Maya",
+	"Finn",
+	"Sage",
+	"Rafa",
+	"Elsa",
+	"Nico",
+	"Wren",
+	"Juno",
+	"Pablo",
+	"Yuki",
+	"Ines",
+	"Bram",
+	"Lola",
+	"Sami",
+	"Vera",
+	"Tomas",
+	"Anya",
+	"Dex",
+	"Noor",
+	"Oren",
+	"Pia",
+	"Raj",
+	"Suki",
+	"Ulla",
+];
 const KEPT_MESSAGES = 100;
 const MAX_RELAY_CHARS = 4000;
 
@@ -194,6 +268,11 @@ export class CityRooms {
 		const live = new Set(agents.map((a) => a.terminalId));
 		return {
 			seats: this.state.seats.filter((s) => live.has(s.terminalId)),
+			names: agents.map((a) => ({
+				terminalId: a.terminalId,
+				name: a.name,
+				handle: handleOf(a),
+			})),
 			rooms,
 			maxRelays: MAX_RELAYS,
 			handovers: this.state.handovers,
@@ -229,8 +308,8 @@ export class CityRooms {
 			fromId: terminalId,
 			toIds: [],
 			text: home
-				? `${agent.label} came back to its own desk`
-				: `${agent.label} from ${agent.workspaceName} sat down here`,
+				? `${agent.name} came back to its own desk`
+				: `${agent.name} from ${agent.workspaceName} sat down here`,
 			kind: "system",
 		});
 		this.save();
@@ -289,7 +368,7 @@ export class CityRooms {
 		const handover: CityHandover = {
 			id: randomBytes(6).toString("hex"),
 			fromTerminalId: agent.terminalId,
-			fromLabel: agent.label,
+			fromLabel: agent.name,
 			fromWorkspaceName: agent.workspaceName,
 			requestedBy: "you",
 			status: "briefing",
@@ -349,7 +428,7 @@ export class CityRooms {
 
 	private async startBriefing(
 		handover: CityHandover,
-		agent: CityAgentInfo,
+		agent: NamedAgent,
 		input: { toWorkspaceId: string; agent?: string; note?: string },
 	): Promise<CityHandover> {
 		const target = this.deps.workspace?.(input.toWorkspaceId);
@@ -372,7 +451,7 @@ export class CityRooms {
 		this.post(this.room(keyOf(this.placeOf(agent))), {
 			fromId: agent.terminalId,
 			toIds: [],
-			text: `${agent.label} from ${agent.workspaceName} is writing a brief to hand its work to ${target.name} (${target.projectName})`,
+			text: `${agent.name} from ${agent.workspaceName} is writing a brief to hand its work to ${target.name} (${target.projectName})`,
 			kind: "system",
 		});
 		this.save();
@@ -395,7 +474,7 @@ export class CityRooms {
 
 	private async finishHandover(
 		handover: CityHandover,
-		agent: CityAgentInfo,
+		agent: NamedAgent,
 		reply: string,
 	): Promise<void> {
 		const target = handover.toWorkspaceId
@@ -416,23 +495,19 @@ export class CityRooms {
 		const place = this.placeOf(agent);
 		const placeName = this.nameOf(place.projectId, place.roomId) ?? "";
 		const kind = handover.agent ?? agent.agentId;
-		const agents = this.liveAgents();
-		const together = handlesFor([
-			...agents.filter((a) => {
-				const p = this.placeOf(a);
-				return p.projectId === place.projectId && p.roomId === place.roomId;
-			}),
-			{
-				...agent,
-				terminalId: "~new",
-				agentId: kind,
-				workspaceId: handover.toWorkspaceId,
-				workspaceName: target.name,
-			},
-		]);
-		const theirHandle = together.get(agent.terminalId) ?? agent.agentId;
+		const theirHandle =
+			this.handles(place.projectId, place.roomId, this.liveAgents()).get(
+				agent.terminalId,
+			) ?? handleOf(agent);
+		const newName = this.freeName();
 		const prompt = [
-			`[Paradev office] You take over work from ${agent.label}, who worked in "${agent.workspaceName}" (project ${agent.projectName}). You work in "${target.name}" (project ${target.projectName}, folder ${target.path}); stay in your own folder.`,
+			this.identity({
+				name: newName,
+				workspaceName: target.name,
+				projectName: target.projectName,
+				branch: target.branch,
+			}),
+			`You take over work from ${agent.name} (${agent.label}), who worked in "${agent.workspaceName}" (project ${agent.projectName}). You work in folder ${target.path}; stay in your own folder.`,
 			`Their brief:\n${handover.brief}`,
 			handover.note
 				? `From the person running the office: ${handover.note}`
@@ -443,6 +518,12 @@ export class CityRooms {
 			.join("\n\n");
 		try {
 			const { terminalId } = await start(handover.toWorkspaceId, kind, prompt);
+			this.state.names.push({
+				terminalId,
+				workspaceId: handover.toWorkspaceId,
+				name: newName,
+				told: true,
+			});
 			handover.newTerminalId = terminalId;
 			handover.status = "done";
 			const home =
@@ -459,7 +540,7 @@ export class CityRooms {
 			this.post(this.room(keyOf(place)), {
 				fromId: agent.terminalId,
 				toIds: [],
-				text: `${agent.label} handed its work to a new agent in ${target.name}, who sits here now`,
+				text: `${agent.name} handed its work to ${newName}, a new agent in ${target.name}, who sits here now`,
 				kind: "system",
 			});
 			this.save();
@@ -527,7 +608,7 @@ export class CityRooms {
 			this.state.handovers.push({
 				id: randomBytes(6).toString("hex"),
 				fromTerminalId: agent.terminalId,
-				fromLabel: agent.label,
+				fromLabel: agent.name,
 				fromWorkspaceName: agent.workspaceName,
 				requestedBy: "agent",
 				request: asked,
@@ -537,7 +618,7 @@ export class CityRooms {
 			this.post(this.room(keyOf(place)), {
 				fromId: agent.terminalId,
 				toIds: [],
-				text: `${agent.label} from ${agent.workspaceName} asks to hand its work over: ${asked}`,
+				text: `${agent.name} from ${agent.workspaceName} asks to hand its work over: ${asked}`,
 				kind: "system",
 			});
 			this.save();
@@ -583,7 +664,7 @@ export class CityRooms {
 			name,
 			handles,
 			agents.filter((a) => targets.includes(a.terminalId)),
-			`[from @${handle} in "${name}": ${agent.label} working in "${agent.workspaceName}", project ${agent.projectName}]\n${body}\n\n(Answer by starting a line with @${handle}. If you have nothing more for them, write only "${NO_REPLY}".)`,
+			`[from @${handle} in "${name}": ${agent.name}, a ${agent.label} agent working in "${agent.workspaceName}", project ${agent.projectName}]\n${body}\n\n(Answer by starting a line with @${handle}. If you have nothing more for them, write only "${NO_REPLY}".)`,
 		);
 	}
 
@@ -595,7 +676,7 @@ export class CityRooms {
 		place: { projectId: string; roomId: string },
 		roomName: string,
 		handles: Map<string, string>,
-		to: CityAgentInfo[],
+		to: NamedAgent[],
 		text: string,
 	): Promise<void> {
 		const key = keyOf(place);
@@ -612,7 +693,7 @@ export class CityRooms {
 							? `[Paradev office] Now in "${roomName}": ${this.roster(agent, handles, agents)}.`
 							: null;
 				this.told.set(agent.terminalId, { key, people });
-				return this.deps.send(agent, note ? `${note}\n\n${text}` : text);
+				return this.sendAs(agent, note ? `${note}\n\n${text}` : text);
 			}),
 		);
 		let failed = false;
@@ -635,10 +716,10 @@ export class CityRooms {
 	}
 
 	private intro(
-		agent: CityAgentInfo,
+		agent: NamedAgent,
 		roomName: string,
 		handles: Map<string, string>,
-		agents: CityAgentInfo[],
+		agents: NamedAgent[],
 	): string {
 		return [
 			`[Paradev office] You sit in "${roomName}" as @${handles.get(agent.terminalId)}, with ${this.roster(agent, handles, agents)}.`,
@@ -650,9 +731,9 @@ export class CityRooms {
 
 	/** The others in the room with their @handles and where they work. */
 	private roster(
-		agent: CityAgentInfo,
+		agent: NamedAgent,
 		handles: Map<string, string>,
-		agents: CityAgentInfo[],
+		agents: NamedAgent[],
 	): string {
 		const others = agents
 			.filter(
@@ -660,7 +741,7 @@ export class CityRooms {
 			)
 			.map(
 				(a) =>
-					`@${handles.get(a.terminalId)} (${a.label}, working in "${a.workspaceName}", project ${a.projectName})`,
+					`@${handles.get(a.terminalId)} (${a.name}, a ${a.label} agent working in "${a.workspaceName}", project ${a.projectName})`,
 			);
 		return others.length > 0 ? others.join(", ") : "nobody else";
 	}
@@ -674,11 +755,11 @@ export class CityRooms {
 			: { projectId: agent.projectId, roomId: agent.workspaceId };
 	}
 
-	/** Who is in a room and their @handles: the agent kind, with the workspace added where two clash. */
+	/** Who is in a room and their @handles, made from their names. */
 	private handles(
 		projectId: string,
 		roomId: string,
-		agents: CityAgentInfo[],
+		agents: NamedAgent[],
 	): Map<string, string> {
 		const here = agents.filter((a) => {
 			const place = this.placeOf(a);
@@ -688,42 +769,36 @@ export class CityRooms {
 	}
 
 	/**
-	 * The running agents. A seat follows its agent into the terminal it continued in after a
-	 * restart; a seat whose agent is gone is kept a while for that, then dropped.
+	 * The running agents, each with its name; a newcomer gets the first free one. A seat or a name
+	 * follows its agent into the terminal it continued in after a restart; one whose agent is gone is
+	 * kept a while for that, then dropped.
 	 */
-	private liveAgents(): CityAgentInfo[] {
+	private liveAgents(): NamedAgent[] {
 		const agents = this.deps.agents();
 		const live = new Set(agents.map((a) => a.terminalId));
-		let changed = false;
-		const seats = this.state.seats.flatMap((seat) => {
-			if (live.has(seat.terminalId)) {
-				if (seat.missingSince === undefined) return [seat];
+		const seats = this.follow(this.state.seats, live);
+		const names = this.follow(this.state.names, live);
+		let changed = seats.changed || names.changed;
+		this.state.seats = seats.list;
+		this.state.names = names.list;
+		const nameOf = new Map(this.state.names.map((n) => [n.terminalId, n.name]));
+		const named = agents.map((agent) => {
+			let name = nameOf.get(agent.terminalId);
+			if (!name) {
+				name = this.freeName();
+				this.state.names.push({
+					terminalId: agent.terminalId,
+					workspaceId: agent.workspaceId,
+					name,
+				});
+				nameOf.set(agent.terminalId, name);
 				changed = true;
-				const { missingSince: _gone, ...back } = seat;
-				return [back];
 			}
-			const next = seat.workspaceId
-				? this.deps.successorOf?.(seat.terminalId, seat.workspaceId)
-				: undefined;
-			if (next && live.has(next)) {
-				changed = true;
-				const { missingSince: _gone, ...moved } = seat;
-				return [{ ...moved, terminalId: next }];
-			}
-			if (seat.missingSince === undefined) {
-				changed = true;
-				return [{ ...seat, missingSince: this.now() }];
-			}
-			if (this.now() - seat.missingSince < SEAT_KEPT_MS) return [seat];
-			changed = true;
-			return [];
+			return { ...agent, name };
 		});
-		if (changed) {
-			this.state.seats = seats;
-			this.save();
-		}
+		if (changed) this.save();
 		if (this.deps.office) {
-			const byId = new Map(agents.map((a) => [a.terminalId, a]));
+			const byId = new Map(named.map((a) => [a.terminalId, a]));
 			this.deps.office.sync(
 				this.state.seats.flatMap((seat) => {
 					const agent = byId.get(seat.terminalId);
@@ -733,7 +808,173 @@ export class CityRooms {
 				}),
 			);
 		}
-		return agents;
+		return named;
+	}
+
+	/**
+	 * Moves entries whose agent continued in a new terminal, and drops those gone too long. An entry
+	 * moved onto a terminal replaces any other entry that terminal had.
+	 */
+	private follow<
+		T extends {
+			terminalId: string;
+			workspaceId?: string;
+			missingSince?: number;
+		},
+	>(list: T[], live: Set<string>): { list: T[]; changed: boolean } {
+		let changed = false;
+		const moved: T[] = [];
+		const stayed = list.flatMap((entry): T[] => {
+			if (live.has(entry.terminalId)) {
+				if (entry.missingSince === undefined) return [entry];
+				changed = true;
+				return [{ ...entry, missingSince: undefined }];
+			}
+			const successor = entry.workspaceId
+				? this.deps.successorOf?.(entry.terminalId, entry.workspaceId)
+				: undefined;
+			if (
+				successor &&
+				live.has(successor) &&
+				!moved.some((m) => m.terminalId === successor)
+			) {
+				changed = true;
+				moved.push({
+					...entry,
+					terminalId: successor,
+					missingSince: undefined,
+				});
+				return [];
+			}
+			if (entry.missingSince === undefined) {
+				changed = true;
+				return [{ ...entry, missingSince: this.now() }];
+			}
+			if (this.now() - entry.missingSince < SEAT_KEPT_MS) return [entry];
+			changed = true;
+			return [];
+		});
+		const takenOver = new Set(moved.map((m) => m.terminalId));
+		return {
+			list: [
+				...stayed.filter((entry) => !takenOver.has(entry.terminalId)),
+				...moved,
+			].map(withoutUndefined),
+			changed,
+		};
+	}
+
+	/** The first name of {@link AGENT_NAMES} no agent has, or one with a number. */
+	private freeName(): string {
+		const taken = new Set(this.state.names.map((n) => slug(n.name)));
+		for (let n = 1; ; n++)
+			for (const base of AGENT_NAMES) {
+				const name = n === 1 ? base : `${base} ${n}`;
+				if (!taken.has(slug(name))) return name;
+			}
+	}
+
+	/** Who an agent is, said before the first thing the city types into its terminal. */
+	private identity(who: {
+		name: string;
+		label?: string;
+		workspaceName: string;
+		projectName: string;
+		branch?: string | null;
+	}): string {
+		const what = who.label ? `, a ${who.label} agent` : "";
+		const branch = who.branch ? ` (branch ${who.branch})` : "";
+		return `[Paradev office] You are ${who.name} (@${slug(who.name)})${what} working in workspace "${who.workspaceName}"${branch} of project ${who.projectName}. When someone asks who you are, use this name.`;
+	}
+
+	/** Sends to an agent, led by who it is when it has not been told its current name. */
+	private async sendAs(agent: NamedAgent, text: string): Promise<void> {
+		const entry = this.state.names.find(
+			(n) => n.terminalId === agent.terminalId,
+		);
+		const intro = entry?.told
+			? null
+			: this.identity({
+					...agent,
+					branch: this.deps.workspace?.(agent.workspaceId)?.branch,
+				});
+		await this.deps.send(agent, intro ? `${intro}\n\n${text}` : text);
+		if (entry && !entry.told) {
+			entry.told = true;
+			this.save();
+		}
+	}
+
+	/** A person's direct message to one agent. */
+	async tell(terminalId: string, text: string): Promise<void> {
+		const agent = this.liveAgents().find((a) => a.terminalId === terminalId);
+		if (!agent) throw new Error("That agent is no longer running");
+		await this.sendAs(agent, text);
+	}
+
+	/**
+	 * Starts a CLI in a workspace under a new name. It is told who it is right away, with its first
+	 * task when there is one, else asked to say who it is.
+	 */
+	async start(input: {
+		workspaceId: string;
+		agent: string;
+		prompt: string;
+	}): Promise<{ terminalId: string; name: string }> {
+		const target = this.deps.workspace?.(input.workspaceId);
+		if (!target || !this.deps.startAgent)
+			throw new Error("That workspace does not exist on this machine");
+		this.liveAgents();
+		const name = this.freeName();
+		const task = input.prompt.trim();
+		const prompt = [
+			this.identity({ ...target, name, workspaceName: target.name }),
+			task ||
+				"Nothing to do yet. Reply with one short line saying who you are, then wait.",
+		].join("\n\n");
+		const { terminalId } = await this.deps.startAgent(
+			input.workspaceId,
+			input.agent,
+			prompt,
+		);
+		this.state.names = this.state.names.filter(
+			(n) => n.terminalId !== terminalId,
+		);
+		this.state.names.push({
+			terminalId,
+			workspaceId: input.workspaceId,
+			name,
+			told: true,
+		});
+		this.save();
+		return { terminalId, name };
+	}
+
+	/** Renames an agent; it is told its new name with the next message the city gives it. */
+	rename(terminalId: string, wanted: string): void {
+		const name = wanted.trim().replace(/\s+/g, " ");
+		if (!name || name.length > MAX_NAME_CHARS)
+			throw new Error(`A name is 1 to ${MAX_NAME_CHARS} characters`);
+		const handle = slug(name);
+		if (!handle) throw new Error("A name needs a letter or a digit");
+		if (RESERVED_HANDLES.has(handle))
+			throw new Error(`"${name}" is kept for talking to everyone`);
+		const agent = this.liveAgents().find((a) => a.terminalId === terminalId);
+		const entry = this.state.names.find((n) => n.terminalId === terminalId);
+		if (!agent || !entry) throw new Error("That agent is no longer running");
+		if (this.state.names.some((n) => n !== entry && slug(n.name) === handle))
+			throw new Error(`Another agent is already called ${name}`);
+		if (entry.name === name) return;
+		const before = entry.name;
+		entry.name = name;
+		entry.told = false;
+		this.post(this.room(keyOf(this.placeOf(agent))), {
+			fromId: terminalId,
+			toIds: [],
+			text: `${before} is now called ${name}`,
+			kind: "system",
+		});
+		this.save();
 	}
 
 	/** A room's name: an office room, or one of a project's rooms. */
@@ -769,21 +1010,21 @@ export class CityRooms {
 	}
 }
 
-export function handlesFor(agents: CityAgentInfo[]): Map<string, string> {
-	const base = (a: CityAgentInfo) => slug(a.agentId) || "agent";
-	const counts = new Map<string, number>();
-	for (const a of agents) counts.set(base(a), (counts.get(base(a)) ?? 0) + 1);
+/** An agent's @handle: its name in lower case, words joined by "-". */
+export function handleOf(agent: Pick<NamedAgent, "name" | "agentId">): string {
+	return slug(agent.name) || slug(agent.agentId) || "agent";
+}
+
+/** The @handles of agents sitting together; a clash, which renaming prevents, gets a number. */
+export function handlesFor(agents: NamedAgent[]): Map<string, string> {
 	const handles = new Map<string, string>();
 	const taken = new Set<string>();
 	const ordered = [...agents].sort((a, b) =>
 		a.terminalId.localeCompare(b.terminalId),
 	);
 	for (const a of ordered) {
-		let handle =
-			(counts.get(base(a)) ?? 0) > 1
-				? `${base(a)}-${slug(a.workspaceName).slice(0, 16) || "x"}`
-				: base(a);
-		for (let n = 2; taken.has(handle); n++) handle = `${handle}-${n}`;
+		let handle = handleOf(a);
+		for (let n = 2; taken.has(handle); n++) handle = `${handleOf(a)}-${n}`;
 		taken.add(handle);
 		handles.set(a.terminalId, handle);
 	}
@@ -832,6 +1073,12 @@ function slug(text: string): string {
 		.replace(/^-+|-+$/g, "");
 }
 
+function withoutUndefined<T extends object>(entry: T): T {
+	return Object.fromEntries(
+		Object.entries(entry).filter(([, value]) => value !== undefined),
+	) as T;
+}
+
 function keyOf(place: { projectId: string; roomId: string }): string {
 	return `${place.projectId}/${place.roomId}`;
 }
@@ -842,16 +1089,18 @@ function parseKey(key: string): { projectId: string; roomId: string } {
 }
 
 function load(path: string): CityState {
-	if (!existsSync(path)) return { seats: [], rooms: {}, handovers: [] };
+	if (!existsSync(path))
+		return { seats: [], names: [], rooms: {}, handovers: [] };
 	try {
 		const parsed = JSON.parse(readFileSync(path, "utf8")) as Partial<CityState>;
 		return {
 			seats: parsed.seats ?? [],
+			names: parsed.names ?? [],
 			rooms: parsed.rooms ?? {},
 			handovers: parsed.handovers ?? [],
 		};
 	} catch {
-		return { seats: [], rooms: {}, handovers: [] };
+		return { seats: [], names: [], rooms: {}, handovers: [] };
 	}
 }
 

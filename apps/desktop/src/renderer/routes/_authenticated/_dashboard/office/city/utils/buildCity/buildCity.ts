@@ -43,12 +43,19 @@ export interface SeatRow extends CityPlace {
 	terminalId: string;
 }
 
+export interface NameRow {
+	terminalId: string;
+	name: string;
+	handle: string;
+}
+
 /** This machine's projects that have a workspace here, each with its workspaces and running agents. */
 export function buildCity({
 	projects,
 	workspaces,
 	bindings,
 	seats,
+	names = [],
 	seenAt,
 	machineId,
 }: {
@@ -56,6 +63,7 @@ export function buildCity({
 	workspaces: WorkspaceRow[];
 	bindings: BindingRow[];
 	seats: SeatRow[];
+	names?: NameRow[];
 	seenAt: Record<string, number>;
 	machineId: string | null;
 }): CityProject[] {
@@ -64,6 +72,7 @@ export function buildCity({
 	);
 	const workspaceById = new Map(local.map((w) => [w.id, w]));
 	const seatOf = new Map(seats.map((s) => [s.terminalId, s]));
+	const nameOf = new Map(names.map((n) => [n.terminalId, n]));
 
 	const agentsOf = new Map<string, CityAgent[]>();
 	const ordered = [...bindings].sort((a, b) => a.startedAt - b.startedAt);
@@ -74,13 +83,16 @@ export function buildCity({
 		const label = AGENT_IDENTITY_LABELS[binding.agentId] ?? binding.agentId;
 		const same = list.filter((a) => a.agentId === binding.agentId).length;
 		const seat = seatOf.get(binding.terminalId);
+		const named = nameOf.get(binding.terminalId);
 		list.push({
 			terminalId: binding.terminalId,
 			workspaceId: binding.workspaceId,
 			projectId: workspace.projectId,
 			workspaceName: workspace.name,
 			agentId: binding.agentId,
-			name: same > 0 ? `${label} ${same + 1}` : label,
+			kind: label,
+			name: named?.name ?? (same > 0 ? `${label} ${same + 1}` : label),
+			handle: named?.handle ?? "",
 			status: deriveTerminalAgentStatus({
 				lastEventType: binding.lastEventType,
 				lastEventAt: binding.lastEventAt,

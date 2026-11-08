@@ -55,17 +55,13 @@ function setup(agents: CityAgentInfo[]) {
 }
 
 describe("handlesFor", () => {
-	test("names agents by kind, adding the workspace when two of a kind meet", () => {
+	test("makes handles from names, numbering a clash", () => {
 		const handles = handlesFor([
-			agent("t1", "api"),
-			agent("t2", "web"),
-			agent("t3", "web", "codex"),
+			{ ...agent("t1", "api"), name: "Ada" },
+			{ ...agent("t2", "web"), name: "Big Bo" },
+			{ ...agent("t3", "web", "codex"), name: "ada" },
 		]);
-		expect([...handles.values()].sort()).toEqual([
-			"claude-ws-api",
-			"claude-ws-web",
-			"codex",
-		]);
+		expect([...handles.values()]).toEqual(["ada", "big-bo", "ada-2"]);
 	});
 });
 
@@ -94,10 +90,7 @@ describe("CityRooms", () => {
 		const { rooms, sent } = setup([a, b]);
 		await rooms.seat("t2", "p1", "api");
 		const room = rooms.snapshot().rooms.find((r) => r.roomId === "api");
-		expect(room?.members.map((m) => m.handle).sort()).toEqual([
-			"claude",
-			"codex",
-		]);
+		expect(room?.members.map((m) => m.handle).sort()).toEqual(["ada", "milo"]);
 		expect(sent).toHaveLength(0);
 		await rooms.sendHome("t2");
 		expect(rooms.snapshot().seats).toEqual([]);
@@ -112,7 +105,10 @@ describe("CityRooms", () => {
 		await rooms.seat("t2", "p1", "api");
 		await rooms.say("p1", "api", "first");
 		const toCodex = sent.find((m) => m.to === "t2")?.text ?? "";
-		expect(toCodex).toContain("as @codex, with @claude");
+		expect(toCodex).toStartWith(
+			"[Paradev office] You are Milo (@milo), a Codex agent",
+		);
+		expect(toCodex).toContain("as @milo, with @ada");
 		expect(toCodex).toContain("are unchanged");
 		expect(toCodex).toEndWith("first");
 		await rooms.say("p1", "api", "second");
@@ -122,7 +118,7 @@ describe("CityRooms", () => {
 		await rooms.say("p1", "api", "third");
 		const update = sent.filter((m) => m.to === "t2").at(-1)?.text ?? "";
 		expect(update).toStartWith('[Paradev office] Now in "ws api"');
-		expect(update).toContain("@claude-ws-web");
+		expect(update).toContain("@iris");
 	});
 
 	test("passes an answer to the roommates it mentions, once", async () => {
@@ -130,12 +126,12 @@ describe("CityRooms", () => {
 			agent("t1", "api"),
 			agent("t2", "api", "codex"),
 		]);
-		replies.set("t1", "@codex what does README.md say?");
+		replies.set("t1", "@milo what does README.md say?");
 		await rooms.onAgentEvent({ terminalId: "t1", eventType: "Stop" });
 		await rooms.onAgentEvent({ terminalId: "t1", eventType: "Stop" });
 		expect(sent).toHaveLength(1);
 		expect(sent[0]?.to).toBe("t2");
-		expect(sent[0]?.text).toContain("[from @claude");
+		expect(sent[0]?.text).toContain("[from @ada in");
 		replies.set("t2", "It is empty, nothing to add.");
 		await rooms.onAgentEvent({ terminalId: "t2", eventType: "Stop" });
 		expect(sent).toHaveLength(1);
@@ -146,7 +142,7 @@ describe("CityRooms", () => {
 			agent("t1", "api"),
 			agent("t2", "api", "codex"),
 		]);
-		replies.set("t1", "@codex answered my question, thanks.\n\nno reply");
+		replies.set("t1", "@milo answered my question, thanks.\n\nno reply");
 		await rooms.onAgentEvent({ terminalId: "t1", eventType: "Stop" });
 		expect(sent).toHaveLength(0);
 		expect(saysNoReply("**No reply.**")).toBe(true);
@@ -159,7 +155,7 @@ describe("CityRooms", () => {
 			agent("t2", "api", "codex"),
 		]);
 		for (let i = 0; i < MAX_RELAYS + 2; i++) {
-			const [from, to] = i % 2 === 0 ? ["t1", "codex"] : ["t2", "claude"];
+			const [from, to] = i % 2 === 0 ? ["t1", "milo"] : ["t2", "ada"];
 			replies.set(from, `@${to} round ${i}`);
 			await rooms.onAgentEvent({ terminalId: from, eventType: "Stop" });
 		}
@@ -190,7 +186,7 @@ describe("CityRooms", () => {
 		});
 		await rooms.say("p1", "api", "hello");
 		const texts = rooms.snapshot().rooms[0]?.messages.map((m) => m.text);
-		expect(texts).toContain("Could not reach @codex: terminal is gone");
+		expect(texts).toContain("Could not reach @milo: terminal is gone");
 	});
 
 	test("a seat follows its agent into the terminal it continued in after a restart", async () => {
@@ -215,6 +211,10 @@ describe("CityRooms", () => {
 		expect(rooms.snapshot().seats.map((s) => [s.terminalId, s.roomId])).toEqual(
 			[["t2b", "api"]],
 		);
+		expect(rooms.snapshot().names.map((n) => [n.terminalId, n.name])).toEqual([
+			["t1", "Ada"],
+			["t2b", "Milo"],
+		]);
 		clock = SEAT_KEPT_MS * 2;
 		everyone.splice(1, 1);
 		rooms.snapshot();
@@ -233,6 +233,30 @@ describe("CityRooms", () => {
 		const { rooms } = setup([agent("t1", "api")]);
 		await expect(rooms.seat("t1", "p1", "nowhere")).rejects.toThrow(
 			"does not exist",
+		);
+	});
+});
+
+describe("names", () => {
+	test("a renamed agent answers to its new handle and is told its name once", async () => {
+		const { rooms, sent } = setup([agent("t1", "api"), agent("t2", "api")]);
+		rooms.rename("t1", "  Big   Bo ");
+		expect(rooms.snapshot().names.map((n) => n.handle)).toEqual([
+			"big-bo",
+			"milo",
+		]);
+		expect(() => rooms.rename("t2", "big bo")).toThrow("already called");
+		expect(() => rooms.rename("t2", "All")).toThrow("talking to everyone");
+		await rooms.tell("t1", "hi");
+		await rooms.tell("t1", "again");
+		expect(sent.map((m) => m.text)).toEqual([
+			'[Paradev office] You are Big Bo (@big-bo), a Claude agent working in workspace "ws api" of project p1. When someone asks who you are, use this name.\n\nhi',
+			"again",
+		]);
+		rooms.rename("t1", "Ada");
+		await rooms.tell("t1", "and now");
+		expect(sent.at(-1)?.text).toStartWith(
+			"[Paradev office] You are Ada (@ada)",
 		);
 	});
 });
@@ -317,7 +341,10 @@ describe("hand-over", () => {
 		expect(started[0]?.workspaceId).toBe("web");
 		expect(started[0]?.prompt).toContain("Done: server.js. Left: the client.");
 		expect(started[0]?.prompt).toContain("keep it small");
-		expect(started[0]?.prompt).toContain("@claude-ws-api");
+		expect(started[0]?.prompt).toStartWith(
+			'[Paradev office] You are Iris (@iris) working in workspace "Web app"',
+		);
+		expect(started[0]?.prompt).toContain("start a line with @ada");
 		const snapshot = rooms.snapshot();
 		expect(snapshot.handovers[0]).toMatchObject({
 			status: "done",
@@ -326,6 +353,9 @@ describe("hand-over", () => {
 		expect(snapshot.seats.map((s) => [s.terminalId, s.roomId])).toEqual([
 			["t9", "api"],
 		]);
+		expect(snapshot.names.find((n) => n.terminalId === "t9")?.name).toBe(
+			"Iris",
+		);
 		expect(sent.at(-1)?.to).toBe("t1");
 		expect(sent.at(-1)?.text).toContain("Stop working on it");
 	});
@@ -351,6 +381,26 @@ describe("hand-over", () => {
 		const again = rooms.snapshot().handovers.at(-1);
 		await rooms.approveHandover({ id: again?.id ?? "", toWorkspaceId: "web" });
 		expect(rooms.snapshot().handovers.at(-1)?.status).toBe("briefing");
+	});
+
+	test("starting a CLI names it and tells it who it is with its first task", async () => {
+		const { rooms, started } = handoverSetup();
+		expect(
+			await rooms.start({
+				workspaceId: "web",
+				agent: "claude",
+				prompt: "fix it",
+			}),
+		).toEqual({ terminalId: "t9", name: "Iris" });
+		expect(started[0]?.prompt).toStartWith(
+			'[Paradev office] You are Iris (@iris) working in workspace "Web app"',
+		);
+		expect(started[0]?.prompt).toEndWith("fix it");
+		expect(rooms.snapshot().names.map((n) => n.name)).toEqual([
+			"Ada",
+			"Milo",
+			"Iris",
+		]);
 	});
 
 	test("refuses the agent's own workspace and unknown ones", async () => {

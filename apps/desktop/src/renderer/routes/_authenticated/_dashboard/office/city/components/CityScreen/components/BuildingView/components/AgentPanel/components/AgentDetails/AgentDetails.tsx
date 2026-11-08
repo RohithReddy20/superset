@@ -32,9 +32,8 @@ export function AgentDetails({
 	handovers,
 	onSelectAgent,
 }: AgentDetailsProps) {
-	const workspace = projects
-		.find((p) => p.id === agent.projectId)
-		?.workspaces.find((w) => w.id === agent.workspaceId);
+	const project = projects.find((p) => p.id === agent.projectId);
+	const workspace = project?.workspaces.find((w) => w.id === agent.workspaceId);
 	const navigate = useNavigate();
 	const input = useAgentInput();
 	const [transcript] = useAgentTranscripts([agent]);
@@ -46,7 +45,17 @@ export function AgentDetails({
 				<AgentIcon agentId={agent.agentId} />
 				<div className="min-w-0 flex-1">
 					<div className="truncate text-[13px]">
-						works in <span className="font-medium">{agent.workspaceName}</span>
+						{agent.kind}
+						{agent.handle ? (
+							<span className="ml-1.5 font-mono text-[11px] text-muted-foreground">
+								@{agent.handle}
+							</span>
+						) : null}
+					</div>
+					<div className="truncate text-[12px] text-muted-foreground">
+						works in{" "}
+						<span className="text-foreground">{agent.workspaceName}</span>
+						{project ? ` · ${project.name}` : ""}
 					</div>
 					{workspace?.branch ? (
 						<div className="truncate font-mono text-[11px] text-muted-foreground">
@@ -75,7 +84,8 @@ export function AgentDetails({
 			<div className="flex flex-wrap items-center gap-2 text-[12px]">
 				<StatusBadge status={agent.status} />
 				<span className="text-muted-foreground">
-					last change {formatRelativeTime(agent.lastEventAt)}
+					started {formatRelativeTime(agent.startedAt)} · last change{" "}
+					{formatRelativeTime(agent.lastEventAt)}
 				</span>
 				{agent.subagents > 0 ? (
 					<span className="text-muted-foreground">

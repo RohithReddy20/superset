@@ -29,12 +29,11 @@ export function useAgentInput() {
 		});
 
 	return {
+		/** Through the city, so an agent not yet told its name hears it first. */
 		async send(agent: Target, text: string): Promise<void> {
-			await client().terminal.send.mutate({
+			await client().office.cityTell.mutate({
 				terminalId: agent.terminalId,
-				workspaceId: agent.workspaceId,
 				text,
-				submit: true,
 			});
 			void refresh(agent);
 		},

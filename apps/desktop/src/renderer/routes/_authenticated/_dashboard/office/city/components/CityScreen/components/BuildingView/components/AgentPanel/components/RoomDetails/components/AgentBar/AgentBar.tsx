@@ -84,7 +84,11 @@ export function AgentBar({ workspaceId, projectId, shown }: AgentBarProps) {
 			setTask("");
 			setStarting((list) => [
 				...list,
-				{ terminalId: result.sessionId, label, since: Date.now() },
+				{
+					terminalId: result.terminalId,
+					label: `${result.name} (${label})`,
+					since: Date.now(),
+				},
 			]);
 		} catch (cause) {
 			setError(cause instanceof Error ? cause.message : String(cause));

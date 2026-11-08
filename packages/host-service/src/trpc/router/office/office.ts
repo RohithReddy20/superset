@@ -127,6 +127,46 @@ export const officeRouter = router({
 			}),
 		),
 
+	cityStart: protectedProcedure
+		.input(
+			z.object({
+				workspaceId: z.string().min(1),
+				agent: z.string().min(1),
+				prompt: z.string().max(8000).default(""),
+			}),
+		)
+		.mutation(({ ctx, input }) =>
+			badRequest(() => cityOf(ctx.runtime).start(input)),
+		),
+
+	cityRename: protectedProcedure
+		.input(
+			z.object({
+				terminalId: z.string().min(1),
+				name: z.string().min(1).max(100),
+			}),
+		)
+		.mutation(({ ctx, input }) =>
+			badRequest(() => {
+				cityOf(ctx.runtime).rename(input.terminalId, input.name);
+				return { ok: true as const };
+			}),
+		),
+
+	cityTell: protectedProcedure
+		.input(
+			z.object({
+				terminalId: z.string().min(1),
+				text: z.string().min(1).max(8000),
+			}),
+		)
+		.mutation(({ ctx, input }) =>
+			badRequest(async () => {
+				await cityOf(ctx.runtime).tell(input.terminalId, input.text);
+				return { ok: true as const };
+			}),
+		),
+
 	cityResume: protectedProcedure.input(place).mutation(({ ctx, input }) => {
 		cityOf(ctx.runtime).resume(input.projectId, input.roomId);
 		return { ok: true as const };
