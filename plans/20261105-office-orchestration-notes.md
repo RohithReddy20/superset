@@ -216,3 +216,44 @@ and the view follows the person instead of fitting the map.
     teammate card.
   - No console errors. Afterwards office.json was the same as the backup, and state.json differed
     only by the new desks.
+
+## 2026-11-08: the city (step 1, watch)
+
+A new view at `/office/city` (the office header has a "city" button) shows the CLI agents that run
+in this machine's workspace terminals. It reads only what the app already tracks; nothing new runs
+on the host.
+
+- **Data.** `useCity` joins `useHostProjects`, `useHostWorkspaces` (only rows whose `hostId` is this
+  machine) and `terminalAgents.list` on the local host, polled every 1.5 s. Each binding's status is
+  `deriveTerminalAgentStatus` with the notification store's `terminalSeenAt`, the same rule as the
+  sidebar's agents chip. Pure join in `city/utils/buildCity`. Two agents of one kind in a workspace
+  are "Claude" and "Claude 2".
+- **City.** `CityScene` (Phaser) draws one building per project on a grid of lots, oldest project
+  first: one floor per workspace (up to 6, the rest are counted), one window per agent (up to 4 a
+  floor). Windows are lit by status: amber working, orange blinking needs you, green done, red
+  failed, dim blue idle, dark empty. Art is drawn in code with the tileset `Sprite`
+  (`scene/art.ts`); lots are sized to the tallest building. DOM signs over each roof give the name,
+  icon and counts. Click a building (or its sign) to enter; drag pans; wheel and buttons zoom.
+- **Building.** The office floor, reused: `buildingSnapshot` turns the project into an
+  `OfficeSnapshot` with a room per workspace and an `ai` teammate per agent (status as bubble line
+  and dot colour, agent icon from the preset icons). The scene payload and `FloorOverlay` take
+  `canCarry: false`, so nobody can be dragged to another workspace. The view opens on the whole
+  floor. Clicking a person opens a panel with its workspace, status, last change, helper count, the
+  tail of `terminal.transcript` (polled every 2 s) and "Open its terminal", which navigates to the
+  workspace with `terminalId` + `focusRequestId`. Clicking a room's sign lists that workspace's
+  agents and opens it. Long room names are truncated on signs.
+- **Checked in the running app (CDP 9333, renderer 3005).** Imported two scratch repos into the dev
+  app as projects (city-demo-api, city-demo-web) and created three workspaces with a Claude or Codex
+  agent each. The city showed two buildings with their counts; windows went yellow while Claude ran a
+  45 s shell command and green when turns ended; entering city-demo-api showed both workspaces as
+  rooms with the agents at desks; clicking Claude showed "Working" then "Done" and its transcript;
+  clicking a room's sign listed Codex; "Open its terminal" opened the Codex terminal in its
+  workspace. The office still loads and its teammates can still be dragged. No console errors.
+- **Found while testing.** A fresh CLI waiting at its own "trust this folder?" prompt shows as idle:
+  no lifecycle hook fires before the first turn. The city cannot tell it needs you; the panel's
+  transcript shows the prompt.
+- **Not checked live.** The blinking "needs you" window (the test agents ran with permissions
+  skipped), failed agents, more than 6 workspaces or 4 agents on a floor, and remote or cloud hosts
+  (not shown at all).
+- **Debt.** The city imports the office floor's scene, overlay and controls across folders; if it
+  stays, move them to a shared place. `AgentPanel.tsx` holds four small components.

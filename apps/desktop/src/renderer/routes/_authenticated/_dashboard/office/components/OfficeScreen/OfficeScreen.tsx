@@ -1,6 +1,13 @@
 import { cn } from "@superset/ui/utils";
+import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { LuListChecks, LuPlus, LuTrash2, LuUserPlus } from "react-icons/lu";
+import {
+	LuListChecks,
+	LuMap,
+	LuPlus,
+	LuTrash2,
+	LuUserPlus,
+} from "react-icons/lu";
 import { PageHeader } from "renderer/routes/_authenticated/_dashboard/components/PageHeader";
 import { useOffice } from "../../hooks/useOffice";
 import { AddRoomDialog } from "../AddRoomDialog";
@@ -29,6 +36,7 @@ export function OfficeScreen() {
 		updateTask,
 		hostReady,
 	} = useOffice();
+	const navigate = useNavigate();
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [roomId, setRoomId] = useState<string | null>(null);
 	const [showLog, setShowLog] = useState(false);
@@ -76,6 +84,12 @@ export function OfficeScreen() {
 				}
 				end={
 					<div className="flex items-center gap-1">
+						<HeaderButton
+							onClick={() => navigate({ to: "/office/city" })}
+							icon={<LuMap className="size-3.5" />}
+						>
+							city
+						</HeaderButton>
 						<HeaderButton
 							onClick={() => setCreatingTask(true)}
 							disabled={!data}

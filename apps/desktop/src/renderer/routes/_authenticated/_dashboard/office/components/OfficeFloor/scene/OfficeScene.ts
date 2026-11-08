@@ -36,6 +36,8 @@ export interface ScenePayload {
 	meId: string | null;
 	/** Teammates picked on the floor for a group move or message. */
 	picked: string[];
+	/** False keeps everyone at their desk: no carrying people into other rooms. */
+	canCarry?: boolean;
 }
 
 export interface ActorFrame {
@@ -353,6 +355,7 @@ export class OfficeScene extends Phaser.Scene {
 
 	/** Carrying started from outside the canvas, by a teammate's name tag; points are canvas pixels. */
 	beginCarry(id: string): void {
+		if (this.payload?.canCarry === false) return;
 		if (this.actors.get(id)?.ai && !this.carry) this.pickUp(id);
 	}
 
@@ -471,7 +474,7 @@ export class OfficeScene extends Phaser.Scene {
 			y: pointer.y,
 			world: { x: world.x, y: world.y },
 			actorId: hit?.id ?? null,
-			carry: !!hit?.ai,
+			carry: !!hit?.ai && this.payload?.canCarry !== false,
 			additive: !!(event?.shiftKey || event?.metaKey || event?.ctrlKey),
 			scrollX: camera.scrollX,
 			scrollY: camera.scrollY,

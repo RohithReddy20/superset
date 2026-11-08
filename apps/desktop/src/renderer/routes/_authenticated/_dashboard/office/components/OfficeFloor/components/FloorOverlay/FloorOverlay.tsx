@@ -29,6 +29,12 @@ interface FloorOverlayProps {
 	onCarryStart: (id: string) => void;
 	onCarryMove: (x: number, y: number) => void;
 	onCarryEnd: () => void;
+	/** False turns name tags into plain buttons that cannot be dragged. */
+	canCarry?: boolean;
+	/** A status dot colour per teammate, in place of the office's here/paused dot. */
+	dots?: ReadonlyMap<string, string>;
+	/** An icon per teammate, in place of its engine mark. */
+	icons?: ReadonlyMap<string, string>;
 }
 
 const PILL_GAP = 6;
@@ -55,6 +61,9 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 			onCarryStart,
 			onCarryMove,
 			onCarryEnd,
+			canCarry = true,
+			dots,
+			icons,
 		},
 		ref,
 	) {
@@ -185,11 +194,12 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 						<button
 							type="button"
 							onClick={() => onSelectRoom(room.id)}
-							className="pointer-events-auto -translate-x-1/2 rounded-md border border-border bg-popover/90 px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-foreground shadow-sm backdrop-blur hover:bg-fill-hover group-data-[compact=true]/floor:px-1.5 group-data-[compact=true]/floor:py-0.5 group-data-[compact=true]/floor:text-[9px]"
+							title={room.name}
+							className="pointer-events-auto flex max-w-[150px] -translate-x-1/2 rounded-md border border-border bg-popover/90 px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-foreground shadow-sm backdrop-blur hover:bg-fill-hover group-data-[compact=true]/floor:px-1.5 group-data-[compact=true]/floor:py-0.5 group-data-[compact=true]/floor:text-[9px]"
 						>
-							<span className="text-muted-foreground">[ </span>
-							{room.name}
-							<span className="text-muted-foreground"> ]</span>
+							<span className="shrink-0 text-muted-foreground">[&nbsp;</span>
+							<span className="min-w-0 truncate">{room.name}</span>
+							<span className="shrink-0 text-muted-foreground">&nbsp;]</span>
 						</button>
 					</div>
 				))}
@@ -217,7 +227,7 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 								<button
 									type="button"
 									onPointerDown={(event) => {
-										if (isMe || event.button !== 0) return;
+										if (isMe || !canCarry || event.button !== 0) return;
 										tagPress.current = {
 											id: t.id,
 											x: event.clientX,
@@ -259,7 +269,7 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 									}}
 									className={cn(
 										"pointer-events-auto flex touch-none items-center gap-1.5 rounded-full border py-0.5 pl-0.5 pr-2 text-[12px] font-medium shadow-md backdrop-blur transition-transform hover:scale-[1.03] group-data-[compact=true]/floor:gap-1 group-data-[compact=true]/floor:pr-1",
-										!isMe && "cursor-grab active:cursor-grabbing",
+										!isMe && canCarry && "cursor-grab active:cursor-grabbing",
 										isMe
 											? "border-foreground bg-foreground text-background"
 											: "border-border bg-popover/95 text-foreground",
@@ -277,10 +287,19 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 											draggable={false}
 										/>
 									)}
-									<EngineMark
-										engine={t.engine}
-										className="size-3 group-data-[compact=true]/floor:hidden"
-									/>
+									{icons?.get(t.id) ? (
+										<img
+											src={icons.get(t.id)}
+											alt=""
+											className="size-3 object-contain group-data-[compact=true]/floor:hidden"
+											draggable={false}
+										/>
+									) : (
+										<EngineMark
+											engine={t.engine}
+											className="size-3 group-data-[compact=true]/floor:hidden"
+										/>
+									)}
 									<span
 										className={cn(
 											isMe
@@ -293,11 +312,13 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 									<span
 										className="size-2 rounded-full"
 										style={{
-											background: away
-												? "transparent"
-												: t.paused
-													? "#f5b942"
-													: "#39d353",
+											background:
+												dots?.get(t.id) ??
+												(away
+													? "transparent"
+													: t.paused
+														? "#f5b942"
+														: "#39d353"),
 											boxShadow: away ? "0 0 0 1px currentColor" : undefined,
 										}}
 									/>
