@@ -21,7 +21,7 @@ const SUMMARY: Array<[AgentStatus, string]> = [
 
 export function CityScreen({ projectId }: CityScreenProps) {
 	const navigate = useNavigate();
-	const { projects, hostReady, ready } = useCity();
+	const { projects, rooms, maxRelays, hostReady, ready } = useCity();
 	const inside = projects.find((p) => p.id === projectId) ?? null;
 	const shown = inside ? [inside] : projects;
 	const agents = shown.flatMap((p) => p.workspaces.flatMap((w) => w.agents));
@@ -91,7 +91,13 @@ export function CityScreen({ projectId }: CityScreenProps) {
 				) : projectId && !inside ? (
 					<Empty text="This building is gone: the project has no workspaces on this machine." />
 				) : inside ? (
-					<BuildingView key={inside.id} project={inside} />
+					<BuildingView
+						key={inside.id}
+						project={inside}
+						projects={projects}
+						rooms={rooms}
+						maxRelays={maxRelays}
+					/>
 				) : projects.length === 0 ? (
 					<Empty text="No projects with a workspace on this machine yet." />
 				) : (

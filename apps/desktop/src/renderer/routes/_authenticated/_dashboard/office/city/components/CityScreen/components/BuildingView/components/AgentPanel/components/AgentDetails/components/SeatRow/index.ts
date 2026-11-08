@@ -1,0 +1,1 @@
+export { SeatRow } from "./SeatRow";

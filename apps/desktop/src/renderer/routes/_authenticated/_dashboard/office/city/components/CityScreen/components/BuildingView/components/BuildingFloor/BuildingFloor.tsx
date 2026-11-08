@@ -21,7 +21,7 @@ import {
 } from "../../../../../../../components/OfficeFloor/scene/pixel";
 import { layoutWorld, type SeatTarget } from "../../../../../../../utils/world";
 import { STATUS_COLORS } from "../../../../../../constants";
-import type { CityProject } from "../../../../../../types";
+import type { CityAgent, CityProject } from "../../../../../../types";
 import {
 	buildingSnapshot,
 	YOU_ID,
@@ -33,22 +33,28 @@ const AREAS = WORLD_MAP.zones.flatMap((zone) =>
 
 interface BuildingFloorProps {
 	project: CityProject;
+	/** Agents sitting in this building, its own and visitors. */
+	present: CityAgent[];
 	selectedId: string | null;
 	/** Agents picked for a group message. */
 	picked: string[];
 	onPick: (terminalIds: string[]) => void;
 	onSelectAgent: (terminalId: string) => void;
 	onSelectWorkspace: (workspaceId: string) => void;
+	/** Seats agents in a room of this building; rejects when the move is refused. */
+	onSeat: (terminalIds: string[], roomId: string) => Promise<void>;
 }
 
-/** The office floor with a room per workspace and a person per running agent; nobody can be moved. */
+/** The office floor with a room per workspace and a person per agent here. Seating someone never changes their workspace. */
 export function BuildingFloor({
 	project,
+	present,
 	selectedId,
 	picked,
 	onPick,
 	onSelectAgent,
 	onSelectWorkspace,
+	onSeat,
 }: BuildingFloorProps) {
 	const hostRef = useRef<HTMLDivElement>(null);
 	const overlayRef = useRef<FloorOverlayHandle>(null);
@@ -56,11 +62,14 @@ export function BuildingFloor({
 	const latest = useRef<ScenePayload | null>(null);
 	const previousHomes = useRef<Map<string, SeatTarget> | undefined>(undefined);
 	const [view, setView] = useState<SceneView | null>(null);
-	const handlers = useRef({ onSelectAgent, onSelectWorkspace, onPick });
-	handlers.current = { onSelectAgent, onSelectWorkspace, onPick };
+	const handlers = useRef({ onSelectAgent, onSelectWorkspace, onPick, onSeat });
+	handlers.current = { onSelectAgent, onSelectWorkspace, onPick, onSeat };
 	const dark = useIsDarkTheme();
 
-	const snapshot = useMemo(() => buildingSnapshot(project), [project]);
+	const snapshot = useMemo(
+		() => buildingSnapshot(project, present),
+		[project, present],
+	);
 	const layout = useMemo(
 		() =>
 			layoutWorld({
@@ -76,10 +85,7 @@ export function BuildingFloor({
 		previousHomes.current = layout.homes;
 	}, [layout]);
 
-	const agents = useMemo(
-		() => project.workspaces.flatMap((w) => w.agents),
-		[project],
-	);
+	const agents = present;
 	const dots = useMemo(
 		() => new Map(agents.map((a) => [a.terminalId, STATUS_COLORS[a.status]])),
 		[agents],
@@ -119,8 +125,12 @@ export function BuildingFloor({
 					onSelectRoom: (id) => handlers.current.onSelectWorkspace(id),
 					onPick: (ids) =>
 						handlers.current.onPick(ids.filter((id) => id !== YOU_ID)),
-					onMoveTeammates: () => {},
-					onDropOnEmptyArea: () => {},
+					onMoveTeammates: (ids, roomId) => {
+						handlers.current
+							.onSeat(ids, roomId)
+							.catch(() => sceneRef.current?.sendHome(ids));
+					},
+					onDropOnEmptyArea: (ids) => sceneRef.current?.sendHome(ids),
 					onFrame: (frame) => overlayRef.current?.setFrame(frame),
 					onView: setView,
 					onReady: (scene) => {
@@ -145,7 +155,8 @@ export function BuildingFloor({
 			selectedId,
 			meId: YOU_ID,
 			picked,
-			canCarry: false,
+			canCarry: true,
+			seatOnly: true,
 		};
 		sceneRef.current?.setState(latest.current);
 	}, [snapshot, layout, selectedId, picked]);
@@ -171,7 +182,7 @@ export function BuildingFloor({
 				selectedId={selectedId}
 				picked={picked}
 				meId={YOU_ID}
-				canCarry={false}
+				canCarry
 				dots={dots}
 				icons={icons}
 				onClickTeammate={(id, additive) => {
@@ -188,14 +199,14 @@ export function BuildingFloor({
 					}
 				}}
 				onSelectRoom={onSelectWorkspace}
-				onCarryStart={() => {}}
-				onCarryMove={() => {}}
-				onCarryEnd={() => {}}
+				onCarryStart={(id) => sceneRef.current?.beginCarry(id)}
+				onCarryMove={(x, y) => sceneRef.current?.carryToScreen(x, y)}
+				onCarryEnd={() => sceneRef.current?.endCarry()}
 			/>
 			<div className="pointer-events-none absolute bottom-3 left-1/2 max-w-[calc(100%-24px)] -translate-x-1/2 truncate rounded-full border border-border bg-background/90 px-3 py-1.5 text-[12px] text-muted-foreground shadow-sm backdrop-blur">
 				<span className="font-medium text-foreground">Click someone</span> to
-				talk to them · Shift-click or Shift-drag to message several · click a
-				room's sign for its workspace
+				talk · drag them into a room to sit with others (their workspace stays)
+				· click a room's sign for its talk
 			</div>
 			{view ? (
 				<FloorControls

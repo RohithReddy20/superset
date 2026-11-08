@@ -1,1 +1,1 @@
-export { useCity } from "./useCity";
+export { cityQueryKey, useCity } from "./useCity";

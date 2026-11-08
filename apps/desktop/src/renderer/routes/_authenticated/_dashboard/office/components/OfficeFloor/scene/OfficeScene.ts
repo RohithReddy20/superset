@@ -38,6 +38,8 @@ export interface ScenePayload {
 	picked: string[];
 	/** False keeps everyone at their desk: no carrying people into other rooms. */
 	canCarry?: boolean;
+	/** Carrying only seats people in existing rooms: no new rooms on empty desks. */
+	seatOnly?: boolean;
 }
 
 export interface ActorFrame {
@@ -593,7 +595,10 @@ export class OfficeScene extends Phaser.Scene {
 		});
 		const layout = this.payload?.layout;
 		const room = layout ? roomAt(layout, point) : null;
-		const empty = !room && layout ? emptyTeamZoneAt(layout, point) : null;
+		const empty =
+			!room && layout && !this.payload?.seatOnly
+				? emptyTeamZoneAt(layout, point)
+				: null;
 		carry.target = room
 			? { room, zone: room.zone }
 			: empty
@@ -741,7 +746,9 @@ export class OfficeScene extends Phaser.Scene {
 						x: target.zone.rect.x + target.zone.rect.w / 2,
 						y: target.zone.rect.y,
 					}),
-					label: target.room ? `Move to ${target.room.name}` : "New room here",
+					label: target.room
+						? `${this.payload?.seatOnly ? "Sit in" : "Move to"} ${target.room.name}`
+						: "New room here",
 				}
 			: null;
 		this.callbacks.onFrame({ actors, signs, labels, drop, zoom: camera.zoom });

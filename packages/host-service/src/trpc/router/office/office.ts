@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import type { CityRooms, CitySnapshot } from "../../../office/cityRooms";
 import type { OfficeRuntime } from "../../../office/officeRuntime";
 import type { OfficeSnapshot } from "../../../office/types";
 import { protectedProcedure, router } from "../../index";
@@ -15,7 +16,78 @@ function officeOf(runtime: { office?: () => OfficeRuntime }): OfficeRuntime {
 	return office;
 }
 
+function cityOf(runtime: { city?: () => CityRooms }): CityRooms {
+	const city = runtime.city?.();
+	if (!city) {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message: "The city is not available on this host.",
+		});
+	}
+	return city;
+}
+
+async function badRequest<T>(run: () => Promise<T> | T): Promise<T> {
+	try {
+		return await run();
+	} catch (error) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: (error as Error).message,
+		});
+	}
+}
+
+const place = z.object({
+	projectId: z.string().min(1),
+	roomId: z.string().min(1),
+});
+
 export const officeRouter = router({
+	cityState: protectedProcedure.query(
+		({ ctx }): CitySnapshot => cityOf(ctx.runtime).snapshot(),
+	),
+
+	citySeat: protectedProcedure
+		.input(place.extend({ terminalId: z.string().min(1) }))
+		.mutation(({ ctx, input }) =>
+			badRequest(async () => {
+				await cityOf(ctx.runtime).seat(
+					input.terminalId,
+					input.projectId,
+					input.roomId,
+				);
+				return { ok: true as const };
+			}),
+		),
+
+	cityHome: protectedProcedure
+		.input(z.object({ terminalId: z.string().min(1) }))
+		.mutation(({ ctx, input }) =>
+			badRequest(async () => {
+				await cityOf(ctx.runtime).sendHome(input.terminalId);
+				return { ok: true as const };
+			}),
+		),
+
+	citySay: protectedProcedure
+		.input(place.extend({ text: z.string().min(1).max(4000) }))
+		.mutation(({ ctx, input }) =>
+			badRequest(async () => {
+				await cityOf(ctx.runtime).say(
+					input.projectId,
+					input.roomId,
+					input.text,
+				);
+				return { ok: true as const };
+			}),
+		),
+
+	cityResume: protectedProcedure.input(place).mutation(({ ctx, input }) => {
+		cityOf(ctx.runtime).resume(input.projectId, input.roomId);
+		return { ok: true as const };
+	}),
+
 	state: protectedProcedure.query(({ ctx }): OfficeSnapshot => {
 		const office = officeOf(ctx.runtime);
 		void office.start();

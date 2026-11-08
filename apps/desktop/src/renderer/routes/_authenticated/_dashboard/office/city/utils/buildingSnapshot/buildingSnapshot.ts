@@ -3,22 +3,38 @@ import { STATUS_LINES } from "../../constants";
 import type { CityAgent, CityProject } from "../../types";
 
 export const YOU_ID = "you";
+/** Every building's shared room, in the office map's meeting room. */
+export const MEETING_ROOM = { id: "meeting", name: "Meeting room" };
 /** Not a room on the floor, so you start out in the lounge instead of at a workspace's desk. */
 const LOBBY = "lobby";
+const VISITOR_TAG_CHARS = 14;
 
 const NO_BUDGET = { dailyTurns: 0, usedToday: 0, day: "" };
 
-/** A building as the office floor draws it: a room per workspace, a person per running agent. */
-export function buildingSnapshot(project: CityProject): OfficeSnapshot {
-	const agents = project.workspaces.flatMap((w) => w.agents);
+/**
+ * A building as the office floor draws it: a room per workspace plus the meeting room, and a
+ * person per agent sitting in this building, its own or visiting. Visitors carry their workspace in
+ * their name.
+ */
+export function buildingSnapshot(
+	project: CityProject,
+	present: CityAgent[],
+): OfficeSnapshot {
+	const rooms = [
+		...project.workspaces.map((w) => ({ id: w.id, name: w.name })),
+		MEETING_ROOM,
+	];
 	return {
 		started: true,
-		teammates: [you(), ...agents.map(person)],
-		rooms: project.workspaces.map((w) => ({
-			id: w.id,
-			name: w.name,
+		teammates: [you(), ...present.map(person)],
+		rooms: rooms.map((room) => ({
+			id: room.id,
+			name: room.name,
 			kind: "room",
-			members: w.agents.map((a) => a.terminalId),
+			members: present
+				.filter((a) => a.place.roomId === room.id)
+				.map((a) => a.terminalId),
+			...(room.id === MEETING_ROOM.id ? { place: "meeting" } : {}),
 		})),
 		messages: [],
 		handoffs: [],
@@ -27,6 +43,21 @@ export function buildingSnapshot(project: CityProject): OfficeSnapshot {
 		project: null,
 		leadId: null,
 	};
+}
+
+/** Agents sitting in this building: its own that stayed, and visitors from anywhere in the city. */
+export function presentIn(
+	projectId: string,
+	everyone: CityAgent[],
+): CityAgent[] {
+	return everyone.filter((a) => a.place.projectId === projectId);
+}
+
+export function isVisiting(agent: CityAgent): boolean {
+	return (
+		agent.place.projectId !== agent.projectId ||
+		agent.place.roomId !== agent.workspaceId
+	);
 }
 
 function you(): Teammate {
@@ -46,12 +77,16 @@ function you(): Teammate {
 
 function person(agent: CityAgent): Teammate {
 	const line = STATUS_LINES[agent.status];
+	const from =
+		agent.workspaceName.length > VISITOR_TAG_CHARS
+			? `${agent.workspaceName.slice(0, VISITOR_TAG_CHARS - 1)}…`
+			: agent.workspaceName;
 	return {
 		id: agent.terminalId,
-		name: agent.name,
+		name: isVisiting(agent) ? `${agent.name} · ${from}` : agent.name,
 		kind: "ai",
 		role: agent.agentId,
-		roomId: agent.workspaceId,
+		roomId: agent.place.roomId,
 		...(agent.agentId === "claude" || agent.agentId === "codex"
 			? { engine: agent.agentId }
 			: {}),

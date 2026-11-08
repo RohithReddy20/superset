@@ -8,6 +8,7 @@ import {
 	SUPERSET_USER_ID_HEADER,
 } from "@superset/shared/host-routing";
 import { SANDBOX_PORTS } from "@superset/shared/sandbox-contract";
+import { createCityRooms } from "./office/createCityRooms";
 import { OfficeRuntime } from "./office/officeRuntime";
 
 /** One frame of a 1920x1200 display is ~9 MB; this is a stalled reader, not a burst. */
@@ -344,9 +345,17 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 		return officeRuntime;
 	};
 
+	const cityRooms = createCityRooms({
+		db,
+		eventBus,
+		terminalAgentStore,
+		statePath: join(resolveAppHomeDir(), "office", "city.json"),
+	});
+
 	const runtime = {
 		agentJobs,
 		office,
+		city: () => cityRooms,
 		filesystem,
 		pullRequests: pullRequestRuntime,
 		pageWatch,

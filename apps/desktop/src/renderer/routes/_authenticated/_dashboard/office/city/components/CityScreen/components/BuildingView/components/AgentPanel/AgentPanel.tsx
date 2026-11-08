@@ -1,15 +1,21 @@
 import { Button } from "@superset/ui/button";
 import { LuX } from "react-icons/lu";
-import type { CityProject } from "../../../../../../types";
+import type { CityAgent, CityProject, CityRoom } from "../../../../../../types";
+import { MEETING_ROOM } from "../../../../../../utils/buildingSnapshot";
 import { AgentDetails } from "./components/AgentDetails";
-import { WorkspaceDetails } from "./components/WorkspaceDetails";
+import { RoomDetails } from "./components/RoomDetails";
 
 export type BuildingSelection =
 	| { kind: "agent"; id: string }
-	| { kind: "workspace"; id: string };
+	| { kind: "room"; id: string };
 
 interface AgentPanelProps {
 	project: CityProject;
+	projects: CityProject[];
+	/** Every agent in the city, so a visitor can be found by its terminal. */
+	everyone: CityAgent[];
+	rooms: CityRoom[];
+	maxRelays: number;
 	selection: BuildingSelection;
 	onSelectAgent: (terminalId: string) => void;
 	onClose: () => void;
@@ -17,25 +23,30 @@ interface AgentPanelProps {
 
 export function AgentPanel({
 	project,
+	projects,
+	everyone,
+	rooms,
+	maxRelays,
 	selection,
 	onSelectAgent,
 	onClose,
 }: AgentPanelProps) {
 	const agent =
 		selection.kind === "agent"
-			? project.workspaces
-					.flatMap((w) => w.agents)
-					.find((a) => a.terminalId === selection.id)
+			? everyone.find((a) => a.terminalId === selection.id)
 			: undefined;
-	const workspace = project.workspaces.find((w) =>
-		agent ? w.id === agent.workspaceId : w.id === selection.id,
-	);
+	const roomName =
+		selection.kind === "room"
+			? selection.id === MEETING_ROOM.id
+				? MEETING_ROOM.name
+				: project.workspaces.find((w) => w.id === selection.id)?.name
+			: undefined;
 
 	return (
 		<aside className="flex h-full w-[380px] shrink-0 flex-col border-l border-border bg-background">
 			<div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
 				<span className="truncate text-sm font-medium">
-					{agent ? agent.name : (workspace?.name ?? "Gone")}
+					{agent?.name ?? roomName ?? "Gone"}
 				</span>
 				<Button
 					variant="ghost"
@@ -46,14 +57,27 @@ export function AgentPanel({
 					<LuX />
 				</Button>
 			</div>
-			{agent && workspace ? (
+			{agent ? (
 				<AgentDetails
 					key={agent.terminalId}
 					agent={agent}
-					workspace={workspace}
+					projects={projects}
 				/>
-			) : workspace && selection.kind === "workspace" ? (
-				<WorkspaceDetails workspace={workspace} onSelectAgent={onSelectAgent} />
+			) : selection.kind === "room" && roomName ? (
+				<RoomDetails
+					project={project}
+					roomId={selection.id}
+					room={rooms.find(
+						(r) => r.projectId === project.id && r.roomId === selection.id,
+					)}
+					people={everyone.filter(
+						(a) =>
+							a.place.projectId === project.id &&
+							a.place.roomId === selection.id,
+					)}
+					maxRelays={maxRelays}
+					onSelectAgent={onSelectAgent}
+				/>
 			) : (
 				<p className="p-3 text-sm text-muted-foreground">
 					This agent has left: its terminal closed.

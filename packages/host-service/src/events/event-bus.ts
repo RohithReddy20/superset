@@ -58,6 +58,9 @@ export type TerminalLifecycleEvent = DistributiveOmit<
 >;
 
 type TerminalLifecycleListener = (message: TerminalLifecycleEvent) => void;
+type AgentLifecycleListener = (
+	message: Omit<Extract<ServerMessage, { type: "agent:lifecycle" }>, "type">,
+) => void;
 
 function sendMessage(socket: WsSocket, message: ServerMessage): void {
 	if (socket.readyState !== 1) return;
@@ -117,6 +120,7 @@ export class EventBus {
 		new Set<WorkspaceChangedListener>();
 	private readonly terminalLifecycleListeners =
 		new Set<TerminalLifecycleListener>();
+	private readonly agentLifecycleListeners = new Set<AgentLifecycleListener>();
 	private readonly gitWatcher: GitWatcher;
 	private readonly filesystem: WorkspaceFilesystemManager;
 	private removeGitListener: (() => void) | null = null;
@@ -239,7 +243,22 @@ export class EventBus {
 	broadcastAgentLifecycle(
 		message: Omit<Extract<ServerMessage, { type: "agent:lifecycle" }>, "type">,
 	): void {
+		for (const listener of this.agentLifecycleListeners) {
+			try {
+				listener(message);
+			} catch (error) {
+				console.error("[event-bus] agent-lifecycle listener failed", {
+					error,
+				});
+			}
+		}
 		this.broadcast({ type: "agent:lifecycle", ...message });
+	}
+
+	/** In-process subscription to agent lifecycle events, for host-internal consumers. */
+	onAgentLifecycle(listener: AgentLifecycleListener): () => void {
+		this.agentLifecycleListeners.add(listener);
+		return () => this.agentLifecycleListeners.delete(listener);
 	}
 
 	/**

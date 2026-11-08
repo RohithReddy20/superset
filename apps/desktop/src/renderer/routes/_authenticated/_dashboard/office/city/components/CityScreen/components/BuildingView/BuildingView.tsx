@@ -1,28 +1,43 @@
 import { useMemo, useState } from "react";
-import type { CityProject } from "../../../../types";
+import { useCityActions } from "../../../../hooks/useCityActions";
+import type { CityProject, CityRoom } from "../../../../types";
+import { presentIn } from "../../../../utils/buildingSnapshot";
 import { AgentPanel, type BuildingSelection } from "./components/AgentPanel";
 import { BuildingFloor } from "./components/BuildingFloor";
 import { GroupBox } from "./components/GroupBox";
 
 interface BuildingViewProps {
 	project: CityProject;
+	projects: CityProject[];
+	rooms: CityRoom[];
+	maxRelays: number;
 }
 
-export function BuildingView({ project }: BuildingViewProps) {
+export function BuildingView({
+	project,
+	projects,
+	rooms,
+	maxRelays,
+}: BuildingViewProps) {
+	const actions = useCityActions();
 	const [selection, setSelection] = useState<BuildingSelection | null>(null);
 	const [picked, setPicked] = useState<string[]>([]);
 	const selectAgent = (id: string) => setSelection({ kind: "agent", id });
-	const agents = useMemo(
-		() => project.workspaces.flatMap((w) => w.agents),
-		[project],
+	const everyone = useMemo(
+		() => projects.flatMap((p) => p.workspaces.flatMap((w) => w.agents)),
+		[projects],
+	);
+	const present = useMemo(
+		() => presentIn(project.id, everyone),
+		[project.id, everyone],
 	);
 	const group = useMemo(
-		() => agents.filter((a) => picked.includes(a.terminalId)),
-		[agents, picked],
+		() => present.filter((a) => picked.includes(a.terminalId)),
+		[present, picked],
 	);
 	const workspaceNames = useMemo(
-		() => new Map(project.workspaces.map((w) => [w.id, w.name])),
-		[project],
+		() => new Map(everyone.map((a) => [a.workspaceId, a.workspaceName])),
+		[everyone],
 	);
 
 	return (
@@ -30,11 +45,16 @@ export function BuildingView({ project }: BuildingViewProps) {
 			<div className="relative min-w-0 flex-1 bg-muted">
 				<BuildingFloor
 					project={project}
+					present={present}
 					selectedId={selection?.kind === "agent" ? selection.id : null}
 					picked={picked}
 					onPick={setPicked}
 					onSelectAgent={selectAgent}
-					onSelectWorkspace={(id) => setSelection({ kind: "workspace", id })}
+					onSelectWorkspace={(id) => setSelection({ kind: "room", id })}
+					onSeat={async (ids, roomId) => {
+						for (const id of ids)
+							await actions.seat(id, { projectId: project.id, roomId });
+					}}
 				/>
 				{group.length > 1 ? (
 					<GroupBox
@@ -48,6 +68,10 @@ export function BuildingView({ project }: BuildingViewProps) {
 			{selection ? (
 				<AgentPanel
 					project={project}
+					projects={projects}
+					everyone={everyone}
+					rooms={rooms}
+					maxRelays={maxRelays}
 					selection={selection}
 					onSelectAgent={selectAgent}
 					onClose={() => setSelection(null)}

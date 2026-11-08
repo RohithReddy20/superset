@@ -6,14 +6,20 @@ import { getHostServiceClientByUrl } from "renderer/lib/host-service-client";
 import { useHostWorkspaces } from "renderer/routes/_authenticated/providers/HostWorkspacesProvider";
 import { useLocalHostService } from "renderer/routes/_authenticated/providers/LocalHostServiceProvider";
 import { useV2NotificationStore } from "renderer/stores/v2-notifications";
-import type { CityProject } from "../../types";
+import type { CityProject, CityRoom } from "../../types";
 import { buildCity } from "../../utils/buildCity";
 
 const POLL_MS = 1500;
 
-/** This machine's projects and workspaces with the agents running in them, kept live. */
+export function cityQueryKey(hostUrl: string | null) {
+	return ["city", "rooms", hostUrl] as const;
+}
+
+/** This machine's projects and workspaces, the agents running in them, and where they sit, kept live. */
 export function useCity(): {
 	projects: CityProject[];
+	rooms: CityRoom[];
+	maxRelays: number;
 	hostReady: boolean;
 	ready: boolean;
 } {
@@ -21,15 +27,25 @@ export function useCity(): {
 	const { workspaces, isReady: workspacesReady } = useHostWorkspaces();
 	const { projects, isReady: projectsReady } = useHostProjects();
 	const seenAt = useV2NotificationStore((state) => state.terminalSeenAt);
+	const client = activeHostUrl
+		? getHostServiceClientByUrl(activeHostUrl)
+		: null;
 
 	const bindings = useQuery({
 		queryKey: ["city", "agents", activeHostUrl],
-		enabled: !!activeHostUrl,
+		enabled: !!client,
 		queryFn: () => {
-			if (!activeHostUrl) throw new Error("No local host");
-			return getHostServiceClientByUrl(
-				activeHostUrl,
-			).terminalAgents.list.query();
+			if (!client) throw new Error("No local host");
+			return client.terminalAgents.list.query();
+		},
+		refetchInterval: POLL_MS,
+	});
+	const rooms = useQuery({
+		queryKey: cityQueryKey(activeHostUrl),
+		enabled: !!client,
+		queryFn: () => {
+			if (!client) throw new Error("No local host");
+			return client.office.cityState.query();
 		},
 		refetchInterval: POLL_MS,
 	});
@@ -46,14 +62,17 @@ export function useCity(): {
 				})),
 				workspaces,
 				bindings: bindings.data ?? [],
+				seats: rooms.data?.seats ?? [],
 				seenAt,
 				machineId,
 			}),
-		[projects, workspaces, bindings.data, seenAt, machineId],
+		[projects, workspaces, bindings.data, rooms.data?.seats, seenAt, machineId],
 	);
 
 	return {
 		projects: city,
+		rooms: rooms.data?.rooms ?? [],
+		maxRelays: rooms.data?.maxRelays ?? 0,
 		hostReady: !!activeHostUrl,
 		ready: workspacesReady && projectsReady && bindings.isSuccess,
 	};

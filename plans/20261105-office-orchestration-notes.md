@@ -278,3 +278,41 @@ on the host.
 - **Not yet.** Agents cannot message each other (step 3), the reply in the group box is the
   agent's last words, not matched to the message that was sent, and a CLI's own numbered prompts
   still need arrow keys rather than named answers.
+
+## 2026-11-08 evening: seating and room talk (hand-off plan part 1)
+
+The person's rule: an agent can sit anywhere in the city, but its workspace, folder, terminal and
+branch never change by sitting. Moving work to another workspace is a separate, explicit hand-over
+(part 2, not built).
+
+- **Host: `office/cityRooms.ts`, wired in `office/createCityRooms.ts`.** Seats
+  (`terminalId → projectId/roomId`, rooms being a workspace id or `meeting`) and each room's talk live
+  in `<app home>/office/city.json`. An agent with no seat sits in its own workspace's room. The event
+  bus gained `onAgentLifecycle` (in-process, like `onTerminalLifecycle`); on `Stop` the city reads the
+  agent's last answer (`transcriptSession`, harness record first), and when the agent shares a room
+  and @mentions a roommate (or @all), types the answer into each mentioned roommate's terminal
+  (`sendAgentMessage`) with who it is from and how to answer. Handles are the agent kind
+  (`@claude`), with the workspace added when two of a kind share a room
+  (`@claude-check-health`). A newcomer to a room with others gets a brief: who is there, their
+  handles, that its workspace has not changed, and to mention nobody when it has nothing to say.
+  After 8 passed messages without a person speaking the room pauses; a person's message to the room
+  or "Let them continue" resumes it. A message that cannot be typed into a terminal is noted in the
+  room ("Could not reach @x: …"). tRPC: `office.cityState`, `citySeat`, `cityHome`, `citySay`,
+  `cityResume`.
+- **Renderer.** Buildings show everyone sitting in them, visitors with "· their workspace" in the
+  name, plus a Meeting room (the map's meeting room). Dragging a person onto a room seats them
+  ("Sit in X"; empty desks do nothing, `seatOnly`). The agent panel shows where it sits, "Send home",
+  and a picker of every room in the city, which is how an agent visits another building. A room's
+  sign opens its panel: who is here with handles, the talk, the pause notice and a box to message
+  everyone there.
+- **Checked in the running app.** Dragged a Claude into the api building's meeting room and sent the
+  web project's Claude there with the picker; both sat there with handles. After a host restart two
+  fresh Claudes (api "Check health", web "Plan release") were seated there and the room was told to
+  have one ask the other which files are in its folder: the question and the answer were each typed
+  into the other's terminal and shown in the room. "Send home" put the visitor back at its desk. No
+  console errors.
+- **Found.** A host restart (here, from editing host-service) left an agent's terminal dead while
+  its binding still listed it as running; messages to it failed silently before the "Could not
+  reach" note. Agents resumed into a new terminal lose their seat (seats are keyed by terminal).
+  An answer that names a roommate only to talk about them ("@x answered: …") is still passed on;
+  the pause bounds it.

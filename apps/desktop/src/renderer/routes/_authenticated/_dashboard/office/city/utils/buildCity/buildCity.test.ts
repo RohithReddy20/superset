@@ -41,6 +41,7 @@ describe("buildCity", () => {
 				workspace("s1", null),
 			],
 			bindings: [],
+			seats: [],
 			seenAt: {},
 			machineId: "me",
 		});
@@ -55,6 +56,7 @@ describe("buildCity", () => {
 				binding("t2", "w1", "PermissionRequest", 2),
 				binding("t1", "w1", "Start", 1),
 			],
+			seats: [],
 			seenAt: {},
 			machineId: "me",
 		});
@@ -71,10 +73,25 @@ describe("buildCity", () => {
 				projects,
 				workspaces: [workspace("w1", "p1")],
 				bindings: [binding("t1", "w1", "Stop")],
+				seats: [],
 				seenAt,
 				machineId: "me",
 			})[0]?.workspaces[0]?.agents[0]?.status;
 		expect(run({})).toBe("review");
 		expect(run({ t1: 20 })).toBe("idle");
+	});
+
+	test("an agent sits where it was seated, its workspace unchanged", () => {
+		const city = buildCity({
+			projects,
+			workspaces: [workspace("w1", "p1"), workspace("w2", "p2")],
+			bindings: [binding("t1", "w1", "Start")],
+			seats: [{ terminalId: "t1", projectId: "p2", roomId: "meeting" }],
+			seenAt: {},
+			machineId: "me",
+		});
+		const agent = city[0]?.workspaces[0]?.agents[0];
+		expect(agent?.workspaceId).toBe("w1");
+		expect(agent?.place).toEqual({ projectId: "p2", roomId: "meeting" });
 	});
 });

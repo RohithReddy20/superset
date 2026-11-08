@@ -6,19 +6,23 @@ import { LuExternalLink } from "react-icons/lu";
 import { navigateToV2Workspace } from "renderer/routes/_authenticated/_dashboard/utils/workspace-navigation";
 import { useAgentInput } from "../../../../../../../../hooks/useAgentInput";
 import { useAgentTranscripts } from "../../../../../../../../hooks/useAgentTranscript";
-import type { CityAgent, CityWorkspace } from "../../../../../../../../types";
+import type { CityAgent, CityProject } from "../../../../../../../../types";
 import { AgentIcon } from "../../../AgentIcon";
 import { MessageBox } from "../../../MessageBox";
 import { StatusBadge } from "../../../StatusBadge";
 import { Conversation } from "./components/Conversation";
 import { KeyButtons } from "./components/KeyButtons";
+import { SeatRow } from "./components/SeatRow";
 
 interface AgentDetailsProps {
 	agent: CityAgent;
-	workspace: CityWorkspace;
+	projects: CityProject[];
 }
 
-export function AgentDetails({ agent, workspace }: AgentDetailsProps) {
+export function AgentDetails({ agent, projects }: AgentDetailsProps) {
+	const workspace = projects
+		.find((p) => p.id === agent.projectId)
+		?.workspaces.find((w) => w.id === agent.workspaceId);
 	const navigate = useNavigate();
 	const input = useAgentInput();
 	const [transcript] = useAgentTranscripts([agent]);
@@ -30,9 +34,9 @@ export function AgentDetails({ agent, workspace }: AgentDetailsProps) {
 				<AgentIcon agentId={agent.agentId} />
 				<div className="min-w-0 flex-1">
 					<div className="truncate text-[13px]">
-						in <span className="font-medium">{workspace.name}</span>
+						works in <span className="font-medium">{agent.workspaceName}</span>
 					</div>
-					{workspace.branch ? (
+					{workspace?.branch ? (
 						<div className="truncate font-mono text-[11px] text-muted-foreground">
 							{workspace.branch}
 						</div>
@@ -68,6 +72,7 @@ export function AgentDetails({ agent, workspace }: AgentDetailsProps) {
 					</span>
 				) : null}
 			</div>
+			<SeatRow agent={agent} projects={projects} />
 			<Conversation
 				agentName={agent.name}
 				transcript={transcript?.data}

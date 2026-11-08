@@ -6,6 +6,9 @@ function agent(id: string, status: CityAgent["status"], startedAt = 0) {
 	return {
 		terminalId: id,
 		workspaceId: "w",
+		projectId: "p",
+		workspaceName: "w",
+		place: { projectId: "p", roomId: "w" },
 		agentId: "claude",
 		name: "Claude",
 		status,
