@@ -1,0 +1,26 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentPanel/components/RoomDetails/components/AgentBar/AgentBar.tsx
+  s_8322a827a65284::t_3a9cd0c096aa65 1-129
+  s_8322a827a65284::t_fdc4a479f66159 130-159
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentPanel/components/RoomDetails/RoomDetails.tsx
+  s_8322a827a65284::t_f143def8647ba8 17,69-75
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentPanel/components/RoomDetails/components/AgentBar/index.ts
+  s_8322a827a65284::t_30740111bdb76e 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useCityActions/useCityActions.ts
+  s_8322a827a65284::t_8ad7eab0b463da 11,13,15,50-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d57e7d6e1076a0c106a1baadb5490ba790be76b7",
+  "prompts": {},
+  "sessions": {
+    "s_8322a827a65284": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "915e3ab3-2509-48d4-ac28-15e170582e47",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
