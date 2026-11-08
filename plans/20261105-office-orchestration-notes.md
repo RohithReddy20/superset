@@ -490,3 +490,7 @@ chip, reduced motion.
   introduction, and the bar went back to "Nothing needs you right now". Double-clicking the
   office floor left your avatar and the room signs where they were. The "?" list opened. The pulse
   animation only applies under `prefers-reduced-motion: no-preference`.
+- **Task item in the bar, checked live:** opened T-2 ("Add ok line to notes", Bash, checked by Scout)
+  from the Office. About two minutes later the City's bar showed "Checked, ready to close · T-2";
+  the chip opened the Office on its Tasks tab (`/office?tab=tasks`) with T-2 verified; "done" closed
+  it and the bar went back to "Nothing needs you right now". No console errors.
