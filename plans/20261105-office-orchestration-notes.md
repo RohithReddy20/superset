@@ -381,3 +381,29 @@ agent's own request.
 - **Open.** New agents are only started in existing workspaces (no "new workspace" option yet); the
   old agent is told to stop rather than closed; requests only reach agents that sat in a room (the
   note is part of the room introduction).
+
+## 2026-11-08 night: CLI agents in office rooms (part 3)
+
+- **How.** "Office" is one more place in the city (`projectId: "office"`, `roomId` an office room).
+  The city keeps the office's guests equal to the agents seated there (`OfficeRuntime.syncGuests`).
+  `OfficeGuests` makes each one an office teammate (`cli-<terminal>`, named
+  `<kind>-<workspace>`, e.g. `claude-office-guest`, role "Claude CLI, working in …") and a member of
+  its room (`applyRooms` adds guests to config rooms without writing them to office.json). Its inbox
+  types into its terminal: a first note (room, its @name, who is there, workspace unchanged), up to
+  four earlier thread messages, the message, and how to answer ("no reply" to stay quiet). When its
+  turn ends its answer is posted in that thread as its message, at the depth it was given, so the
+  office's own limits apply. It leaves the office (removed as a teammate, `Office.removeTeammate`)
+  when it sits elsewhere or stops running; leftovers from an earlier run are removed on the next
+  sync. The city's seat picker lists "Office, with its teammates".
+- **Built without restarting the running app.** Work happened in a separate worktree
+  (`office/part3-guests`), tested there (host 24 tests, typechecks of host-service, office-harness
+  and desktop), then fast-forwarded in one go: one restart.
+- **Checked live.** A fresh Claude CLI in city-demo-api was seated in the office's Design room from
+  its city panel; the office listed it as `claude-office-guest` with You, Scout and Bash. "@claude-
+  office-guest what does README.md in your folder say? … then ask @Scout for one idea" in Design: the
+  CLI read its README, answered in the thread and mentioned @Scout; Scout (the office's ACP
+  teammate) answered in the same thread with a suggestion. The office's Right now rail showed the
+  CLI with its Claude mark.
+- **Queued, not yet in the running app** (commit ac30d496dd on `office/part3-guests`): the guest is
+  set back to idle after answering, and a message from the office's person, who is named "You" in
+  this office, reads "The person running this office mentioned you" rather than "You mentioned you".
