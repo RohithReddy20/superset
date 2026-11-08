@@ -72,6 +72,8 @@ export interface CityRoomsDeps {
 
 export const MEETING_ROOM = "meeting";
 export const MAX_RELAYS = 8;
+/** What an agent writes to end its part in a room's talk; such an answer is never passed on. */
+export const NO_REPLY = "no reply";
 const KEPT_MESSAGES = 100;
 const MAX_RELAY_CHARS = 4000;
 
@@ -83,6 +85,8 @@ const MAX_RELAY_CHARS = 4000;
 export class CityRooms {
 	private state: CityState;
 	private readonly lastRelayed = new Map<string, string>();
+	/** What each agent was last told about its room: the room and who was in it. */
+	private readonly told = new Map<string, { key: string; people: string }>();
 	private readonly now: () => number;
 
 	constructor(private readonly deps: CityRoomsDeps) {
@@ -118,7 +122,7 @@ export class CityRooms {
 		return { seats: this.state.seats, rooms, maxRelays: MAX_RELAYS };
 	}
 
-	/** Seats an agent in a room; its own workspace's room sends it home. Tells it who is there. */
+	/** Seats an agent in a room; its own workspace's room sends it home. Nothing is typed into any terminal. */
 	async seat(
 		terminalId: string,
 		projectId: string,
@@ -150,9 +154,6 @@ export class CityRooms {
 			kind: "system",
 		});
 		this.save();
-		const handles = this.handles(projectId, roomId, this.liveAgents());
-		if (handles.size < 2) return;
-		await this.deps.send(agent, this.brief(agent, name, handles));
 	}
 
 	async sendHome(terminalId: string): Promise<void> {
@@ -179,12 +180,12 @@ export class CityRooms {
 			kind: "chat",
 		});
 		this.save();
-		const roster = this.roster(handles, agents);
 		await this.deliver(
-			room,
+			{ projectId, roomId },
+			name,
 			handles,
 			members,
-			`[from the person running this office, to everyone in "${name}"]\n${text}${roster ? `\n\n${roster}` : ""}`,
+			`[from the person running this office, to everyone in "${name}"]\n${text}`,
 		);
 	}
 
@@ -211,6 +212,7 @@ export class CityRooms {
 		if (settle > 0) await new Promise((r) => setTimeout(r, settle));
 		const reply = (await this.deps.lastReply(agent))?.trim();
 		if (!reply || this.lastRelayed.get(agent.terminalId) === reply) return;
+		if (saysNoReply(reply)) return;
 		const targets = mentioned(reply, handles, agent.terminalId);
 		if (targets.length === 0) return;
 		this.lastRelayed.set(agent.terminalId, reply);
@@ -246,24 +248,42 @@ export class CityRooms {
 			reply.length > MAX_RELAY_CHARS
 				? `${reply.slice(0, MAX_RELAY_CHARS)}…`
 				: reply;
-		const roster = this.roster(handles, agents);
 		await this.deliver(
-			room,
+			place,
+			name,
 			handles,
 			agents.filter((a) => targets.includes(a.terminalId)),
-			`[from @${handle} in "${name}": ${agent.label} working in "${agent.workspaceName}", project ${agent.projectName}]\n${body}\n\n(Answer by starting a line with @${handle}. Leave them unmentioned when nothing needs saying.)${roster ? `\n${roster}` : ""}`,
+			`[from @${handle} in "${name}": ${agent.label} working in "${agent.workspaceName}", project ${agent.projectName}]\n${body}\n\n(Answer by starting a line with @${handle}. If you have nothing more for them, write only "${NO_REPLY}".)`,
 		);
 	}
 
-	/** Types the text into each agent's terminal; a failed one is noted in the room. */
+	/**
+	 * Types the text into each agent's terminal, led by a note about the room when the agent has not
+	 * been told who sits there now. A failed delivery is noted in the room.
+	 */
 	private async deliver(
-		room: RoomState,
+		place: { projectId: string; roomId: string },
+		roomName: string,
 		handles: Map<string, string>,
 		to: CityAgentInfo[],
 		text: string,
 	): Promise<void> {
+		const key = keyOf(place);
+		const room = this.room(key);
+		const agents = this.liveAgents();
+		const people = [...handles.values()].sort().join(",");
 		const results = await Promise.allSettled(
-			to.map((agent) => this.deps.send(agent, text)),
+			to.map((agent) => {
+				const before = this.told.get(agent.terminalId);
+				const note =
+					before?.key !== key
+						? this.intro(agent, roomName, handles, agents)
+						: before.people !== people
+							? `[Paradev office] Now in "${roomName}": ${this.roster(agent, handles, agents)}.`
+							: null;
+				this.told.set(agent.terminalId, { key, people });
+				return this.deps.send(agent, note ? `${note}\n\n${text}` : text);
+			}),
 		);
 		let failed = false;
 		results.forEach((result, i) => {
@@ -284,12 +304,25 @@ export class CityRooms {
 		if (failed) this.save();
 	}
 
-	private brief(
+	private intro(
 		agent: CityAgentInfo,
 		roomName: string,
 		handles: Map<string, string>,
+		agents: CityAgentInfo[],
 	): string {
-		const agents = this.liveAgents();
+		return [
+			`[Paradev office] You sit in "${roomName}" as @${handles.get(agent.terminalId)}, with ${this.roster(agent, handles, agents)}.`,
+			"Your own workspace, folder and branch are unchanged; keep working there.",
+			`To talk to someone here, start a line with their @handle (@all for everyone). When you have nothing more for them, write only "${NO_REPLY}" and mention nobody.`,
+		].join("\n");
+	}
+
+	/** The others in the room with their @handles and where they work. */
+	private roster(
+		agent: CityAgentInfo,
+		handles: Map<string, string>,
+		agents: CityAgentInfo[],
+	): string {
 		const others = agents
 			.filter(
 				(a) => handles.has(a.terminalId) && a.terminalId !== agent.terminalId,
@@ -298,25 +331,7 @@ export class CityRooms {
 				(a) =>
 					`@${handles.get(a.terminalId)} (${a.label}, working in "${a.workspaceName}", project ${a.projectName})`,
 			);
-		return [
-			`[Paradev office] You now sit in "${roomName}" with ${others.join(", ")}. You are @${handles.get(agent.terminalId)} here.`,
-			"Your own workspace, folder and branch have not changed; keep working there.",
-			"To say something to one of them, start a line of your reply with their @handle; @all reaches everyone here. Their messages reach you starting with [from @handle].",
-			"Do not mention anyone when you have nothing for them. You do not need to answer this message.",
-		].join("\n");
-	}
-
-	private roster(
-		handles: Map<string, string>,
-		agents: CityAgentInfo[],
-	): string {
-		if (handles.size < 2) return "";
-		const people = agents
-			.filter((a) => handles.has(a.terminalId))
-			.map(
-				(a) => `@${handles.get(a.terminalId)} (${a.label}, ${a.workspaceName})`,
-			);
-		return `Here: ${people.join(", ")}.`;
+		return others.length > 0 ? others.join(", ") : "nobody else";
 	}
 
 	private placeOf(agent: CityAgentInfo): { projectId: string; roomId: string } {
@@ -395,6 +410,17 @@ export function handlesFor(agents: CityAgentInfo[]): Map<string, string> {
 		handles.set(a.terminalId, handle);
 	}
 	return handles;
+}
+
+export function saysNoReply(reply: string): boolean {
+	return reply.split("\n").some((line) =>
+		/^\(?no reply\)?[.!]?$/.test(
+			line
+				.trim()
+				.replace(/[*_`"]/g, "")
+				.toLowerCase(),
+		),
+	);
 }
 
 /** Roommates the reply @mentions (or all of them for @all), other than the speaker. */

@@ -316,3 +316,25 @@ branch never change by sitting. Moving work to another workspace is a separate, 
   reach" note. Agents resumed into a new terminal lose their seat (seats are keyed by terminal).
   An answer that names a roommate only to talk about them ("@x answered: …") is still passed on;
   the pause bounds it.
+
+## 2026-11-08 night: quieter room talk, and a real two-project job
+
+Reading both agents' records after the first room test showed waste: the separate welcome cost a
+turn ("Noted, nothing to send"), only the newcomer learned who was in the room, and a closing line
+that named the other agent ("@x answered: …") was passed on and cost it a turn too.
+
+- Seating types nothing into any terminal now. The first message an agent gets in a room is led by
+  a short note (room, its own @handle, who else is there and where they work, workspace unchanged,
+  how to talk, and to write only "no reply" when it has nothing more). Later messages carry a
+  "Now in …" line only when the people in the room changed.
+- An answer with a line that is just "no reply" is never passed on, even if it names someone.
+- Checked live with two fresh Claudes seated in the api building's meeting room ("Version endpoint"
+  in city-demo-api, "Version badge" in city-demo-web). One room message asked the first to write
+  and test a Node server on port 4517 (GET /version → {"version":"1.2.0"}) and hand over its URL,
+  shape and path; the second to write client.js `fetchVersion(url)`, test it against that server and
+  report back. In about 20 s: endpoint wrote and tested server.js and told badge; badge (which had
+  answered the first message with "no reply" while it waited) wrote client.js, ran it against the
+  server, stopped it and reported "It worked"; endpoint ended with "no reply", which was not passed
+  on. Two messages passed in all, four turns in all, no pause. Running client.js against server.js
+  outside the agents returned "1.2.0" and threw on a 404; each agent only added a file in its own
+  folder.
