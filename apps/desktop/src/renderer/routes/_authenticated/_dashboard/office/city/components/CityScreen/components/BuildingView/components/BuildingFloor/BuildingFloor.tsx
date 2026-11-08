@@ -26,6 +26,7 @@ import {
 	buildingSnapshot,
 	YOU_ID,
 } from "../../../../../../utils/buildingSnapshot";
+import { BUILDING_CONTROLS } from "./constants";
 
 const AREAS = WORLD_MAP.zones.flatMap((zone) =>
 	zone.label ? [{ id: zone.id, label: zone.label }] : [],
@@ -222,6 +223,7 @@ export function BuildingFloor({
 					onShowWholeOffice={() => sceneRef.current?.showWholeOffice()}
 					onShowEveryone={() => sceneRef.current?.showEveryone()}
 					wholeLabel="Whole floor"
+					help={BUILDING_CONTROLS}
 				/>
 			) : null}
 		</div>

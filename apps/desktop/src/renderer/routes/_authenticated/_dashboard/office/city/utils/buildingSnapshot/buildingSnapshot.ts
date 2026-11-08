@@ -1,5 +1,5 @@
 import type { OfficeSnapshot, Teammate } from "../../../types";
-import { STATUS_LINES } from "../../constants";
+import { askingLine, STATUS_LINES } from "../../constants";
 import type { CityAgent, CityProject } from "../../types";
 
 export const YOU_ID = "you";
@@ -76,7 +76,9 @@ function you(): Teammate {
 }
 
 function person(agent: CityAgent): Teammate {
-	const line = STATUS_LINES[agent.status];
+	const line = agent.asking
+		? askingLine(agent.asking)
+		: STATUS_LINES[agent.status];
 	const from =
 		agent.workspaceName.length > VISITOR_TAG_CHARS
 			? `${agent.workspaceName.slice(0, VISITOR_TAG_CHARS - 1)}…`

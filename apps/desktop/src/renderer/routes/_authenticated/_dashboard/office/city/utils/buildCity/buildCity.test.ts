@@ -98,3 +98,31 @@ describe("buildCity", () => {
 		expect(agent?.place).toEqual({ projectId: "p2", roomId: "meeting" });
 	});
 });
+
+describe("buildCity with a question on screen", () => {
+	test("an agent asking on its screen needs you, unless it failed", () => {
+		const city = buildCity({
+			projects,
+			workspaces: [workspace("w1", "p1")],
+			bindings: [
+				binding("fresh", "w1", "Attached"),
+				binding("broke", "w1", "Failed"),
+			],
+			seats: [],
+			asks: new Map([
+				["fresh", { question: "Trust this folder?", trust: true }],
+				["broke", { question: "Retry?", trust: false }],
+			]),
+			seenAt: {},
+			machineId: "me",
+		});
+		const [fresh, broke] = city[0]?.workspaces[0]?.agents ?? [];
+		expect(fresh?.status).toBe("permission");
+		expect(fresh?.asking).toEqual({
+			question: "Trust this folder?",
+			trust: true,
+		});
+		expect(broke?.status).toBe("failed");
+		expect(broke?.asking).toBeUndefined();
+	});
+});

@@ -1,3 +1,4 @@
+import { askingLine } from "../../city/constants";
 import type { CityAgent, CityHandover, CityProject } from "../../city/types";
 import { OFFICE_PLACE } from "../../city/types";
 import type { Task } from "../../types";
@@ -17,6 +18,8 @@ export type NeedsYouTarget =
 export interface NeedsYouItem {
 	id: string;
 	reason: NeedsYouReason;
+	/** Says more than the reason does, e.g. "Asks to trust this folder". */
+	note?: string;
 	title: string;
 	where: string;
 	since: number;
@@ -58,6 +61,7 @@ export function needsYou({
 		items.push({
 			id: `agent:${agent.terminalId}`,
 			reason: agent.status as NeedsYouReason,
+			...(agent.asking ? { note: askingLine(agent.asking) } : {}),
 			title: agent.name,
 			where: whereOf(agent, projectName),
 			since: agent.lastEventAt,

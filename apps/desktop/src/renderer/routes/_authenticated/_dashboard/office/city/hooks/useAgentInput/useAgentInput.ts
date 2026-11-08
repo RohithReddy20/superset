@@ -15,6 +15,9 @@ export const KEYS = {
 
 export type Key = keyof typeof KEYS;
 
+/** Between keys of one answer, so a TUI reads each as its own key press. */
+const KEY_GAP_MS = 60;
+
 /** Types into agents' terminals: a message submitted as a prompt, or a single key for a question on screen. */
 export function useAgentInput() {
 	const { activeHostUrl } = useLocalHostService();
@@ -35,6 +38,18 @@ export function useAgentInput() {
 				terminalId: agent.terminalId,
 				text,
 			});
+			void refresh(agent);
+		},
+		/** Several keys in order, e.g. arrows to an option and Enter. */
+		async pressAll(agent: Target, keys: Key[]): Promise<void> {
+			for (const [i, key] of keys.entries()) {
+				if (i > 0) await new Promise((r) => setTimeout(r, KEY_GAP_MS));
+				await client().terminal.writeInput.mutate({
+					terminalId: agent.terminalId,
+					workspaceId: agent.workspaceId,
+					data: KEYS[key],
+				});
+			}
 			void refresh(agent);
 		},
 		async press(agent: Target, key: Key): Promise<void> {

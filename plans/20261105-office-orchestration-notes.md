@@ -465,6 +465,28 @@ opened Bolt's panel; the Office showed the breadcrumb, new buttons and grey stat
 errors. Not checked live: the tasks chip (no blocked or checked task existed), a "Needs your OK"
 chip, reduced motion.
 
-Still open from the review: walking your own avatar by double-click, the hidden gestures (drag pans
-the floor, drag on a person carries them), and a fresh CLI at "trust this folder?" still shows as
-idle (host side, no hook fires).
+## 2026-11-08: questions on an agent's screen, and simpler controls
+
+- **"Trust this folder?" and other on-screen questions.** No hook fires while a CLI waits at its own
+  menu, so the city reads the screen (`terminal.snapshot`, the host's headless emulator, already
+  there) of agents that have not started a turn (`Attached`) or are mid-turn (`Start`), every 2.5 s
+  (`city/hooks/useAgentScreens`). `city/utils/screenAsk` finds a menu at the bottom of the screen: a
+  block of option lines with one under the cursor (`❯` or `›`), either numbered or above a menu
+  footer ("Enter to confirm", "enter continue", "esc skip"). An agent with one counts as "Needs
+  your OK" with the question as its line ("Asks to trust this folder"), in its bubble and in the
+  "Needs you" bar. Samples came from the real CLIs: Claude's trust menu is not numbered and its
+  cursor starts on "No, exit", so pressing Enter blind would quit.
+- **Named answers.** The agent panel shows "<name> asks: <question>" with one button per option; a
+  click sends the arrow presses from the cursor to that option, then Enter (`keysToChoose`, 60 ms
+  between keys). The raw ↑ ↓ Enter Esc keys stay below for anything not recognised.
+- **Controls.** Double-click on the floor no longer walks you (the first click already opens the
+  room, so the two fought); the arrow keys still walk. A "?" button on the floor controls lists
+  every control of that floor. A building re-frames on its agents when one arrives or leaves,
+  unless you moved the view.
+- **Checked in the running app:** started Codex from the Rotate logs room in city-demo-ops. Its
+  screen showed Codex's "Trust this folder?" menu; within seconds the bar showed "Asks to trust
+  this folder · Milo", the chip opened Milo with "Milo asks: Trust this folder?" and the buttons
+  "Trust and continue" and "Quit". "Trust and continue" started Codex, which answered its
+  introduction, and the bar went back to "Nothing needs you right now". Double-clicking the
+  office floor left your avatar and the room signs where they were. The "?" list opened. The pulse
+  animation only applies under `prefers-reduced-motion: no-preference`.

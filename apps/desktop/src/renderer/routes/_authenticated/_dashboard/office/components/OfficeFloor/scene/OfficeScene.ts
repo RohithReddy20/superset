@@ -149,8 +149,6 @@ const WHEEL_STEP = 80;
 const FOLLOW_LERP = 0.2;
 /** Pixels the pointer travels while held before a press becomes a drag. */
 const DRAG_START = 5;
-const DOUBLE_CLICK_MS = 350;
-const DOUBLE_CLICK_SLOP = 8;
 const RETURN_MS = 400;
 const PICK_COLOR = 0x5ec8ff;
 const CARRY_GAP = 26;
@@ -167,13 +165,13 @@ export class OfficeScene extends Phaser.Scene {
 	private chosenZoom: number | null = null;
 	private overview = false;
 	private everyone = false;
+	private framedPeople = "";
 	private panned = false;
 	private followed: Actor | null = null;
 	private wheel = 0;
 	private press: Press | null = null;
 	private carry: Carry | null = null;
 	private band: { from: Point; to: Point } | null = null;
-	private lastClick = { time: 0, x: 0, y: 0 };
 	private floorMarks!: Phaser.GameObjects.Graphics;
 	private bandMarks!: Phaser.GameObjects.Graphics;
 	private readonly areaLabels = WORLD.map.zones.flatMap((zone) =>
@@ -210,12 +208,8 @@ export class OfficeScene extends Phaser.Scene {
 		this.input.on("pointermove", (pointer: Phaser.Input.Pointer) =>
 			this.onDrag(pointer),
 		);
-		this.input.on("pointerup", (pointer: Phaser.Input.Pointer) =>
-			this.onRelease(pointer),
-		);
-		this.input.on("pointerupoutside", (pointer: Phaser.Input.Pointer) =>
-			this.onRelease(pointer),
-		);
+		this.input.on("pointerup", () => this.onRelease());
+		this.input.on("pointerupoutside", () => this.onRelease());
 		this.input.on(
 			"wheel",
 			(_p: unknown, _over: unknown, _dx: number, dy: number) => {
@@ -319,7 +313,10 @@ export class OfficeScene extends Phaser.Scene {
 	setState(payload: ScenePayload): void {
 		this.payload = payload;
 		this.syncActors(payload);
-		if (this.me() !== this.followed) this.frameCamera();
+		const people = this.peopleKey();
+		const newPeople = this.everyone && people !== this.framedPeople;
+		if (this.me() !== this.followed || (newPeople && !this.panned))
+			this.frameCamera();
 	}
 
 	update(_time: number, delta: number): void {
@@ -475,7 +472,16 @@ export class OfficeScene extends Phaser.Scene {
 		});
 	}
 
+	private peopleKey(): string {
+		return [...this.actors.values()]
+			.filter((a) => a.ai)
+			.map((a) => a.id)
+			.sort()
+			.join();
+	}
+
 	private peopleBox(): { x: number; y: number; w: number; h: number } | null {
+		this.framedPeople = this.peopleKey();
 		const points = [...this.actors.values()]
 			.filter((a) => a.ai)
 			.map((a) => a.seat ?? a.position);
@@ -565,7 +571,7 @@ export class OfficeScene extends Phaser.Scene {
 			);
 	}
 
-	private onRelease(pointer: Phaser.Input.Pointer): void {
+	private onRelease(): void {
 		const press = this.press;
 		this.press = null;
 		if (!press) return;
@@ -577,16 +583,6 @@ export class OfficeScene extends Phaser.Scene {
 		}
 		if (press.actorId) {
 			this.clickTeammate(press.actorId, press.additive);
-			return;
-		}
-		const now = this.time.now;
-		const last = this.lastClick;
-		const double =
-			now - last.time < DOUBLE_CLICK_MS &&
-			Math.hypot(pointer.x - last.x, pointer.y - last.y) < DOUBLE_CLICK_SLOP;
-		this.lastClick = { time: double ? 0 : now, x: pointer.x, y: pointer.y };
-		if (double) {
-			this.walkTo(press.world);
 			return;
 		}
 		if (!press.additive && this.payload?.picked.length)
@@ -973,20 +969,6 @@ export class OfficeScene extends Phaser.Scene {
 			else this.play(me, "idle", facing);
 			return;
 		}
-	}
-
-	private walkTo(point: Point): void {
-		const layout = this.payload?.layout;
-		const me = this.me();
-		if (!layout || !me) return;
-		const seat = this.seatNear(point, SEAT_CLICK);
-		const target = seat ? { x: seat.x, y: seat.y } : point;
-		if (!seat && !isWalkable(layout, target)) return;
-		const path = findPath(layout, me.position, target);
-		if (path.length === 0) return;
-		me.manual = true;
-		me.path = path;
-		this.resumeFollow();
 	}
 }
 

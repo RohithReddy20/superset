@@ -30,6 +30,8 @@ export interface CityAgent {
 	subagents: number;
 	/** Where it sits; its workspace's room unless it was seated elsewhere. Its workspace never changes. */
 	place: CityPlace;
+	/** A question it shows on its screen, such as "trust this folder?", which no hook reports. */
+	asking?: { question: string; trust: boolean };
 }
 
 export interface CityWorkspace {

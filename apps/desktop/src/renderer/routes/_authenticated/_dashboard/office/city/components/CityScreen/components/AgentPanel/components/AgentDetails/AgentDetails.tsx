@@ -18,6 +18,7 @@ import { StatusBadge } from "../../../StatusBadge";
 import { Conversation } from "./components/Conversation";
 import { HandoverBox } from "./components/HandoverBox";
 import { KeyButtons } from "./components/KeyButtons";
+import { ScreenQuestion } from "./components/ScreenQuestion";
 import { SeatRow } from "./components/SeatRow";
 
 interface AgentDetailsProps {
@@ -107,6 +108,7 @@ export function AgentDetails({
 				handovers={handovers}
 				onSelectAgent={onSelectAgent}
 			/>
+			<ScreenQuestion agent={agent} />
 			<Conversation
 				agentName={agent.name}
 				transcript={transcript?.data}

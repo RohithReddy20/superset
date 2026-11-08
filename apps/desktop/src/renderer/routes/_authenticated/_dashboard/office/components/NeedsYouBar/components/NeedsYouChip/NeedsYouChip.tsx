@@ -56,11 +56,12 @@ export function NeedsYouChip({
 }) {
 	const reason = REASONS[item.reason];
 	const Icon = reason.icon;
+	const label = item.note ?? reason.label;
 	return (
 		<button
 			type="button"
 			onClick={onOpen}
-			title={`${item.title}: ${reason.label} (${item.where})`}
+			title={`${item.title}: ${label} (${item.where})`}
 			className="flex h-7 max-w-[440px] items-center gap-1.5 rounded-full border border-border bg-popover pl-1 pr-2.5 text-[12px] hover:bg-fill-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 		>
 			<span
@@ -75,7 +76,7 @@ export function NeedsYouChip({
 						item.reason === "permission" && "motion-safe:animate-pulse",
 					)}
 				/>
-				{reason.label}
+				<span className="max-w-[220px] truncate">{label}</span>
 			</span>
 			<span className="shrink-0 font-medium text-foreground">{item.title}</span>
 			<span className="min-w-0 truncate text-muted-foreground">

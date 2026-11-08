@@ -19,6 +19,7 @@ import {
 } from "./components/FloorOverlay";
 import { GroupChat } from "./components/GroupChat";
 import { NewRoomPrompt } from "./components/NewRoomPrompt";
+import { OFFICE_CONTROLS } from "./constants";
 import type { OfficeScene, ScenePayload, SceneView } from "./scene";
 import { WORLD_MAP } from "./scene/assets";
 import { lookFor, lookKey, renderFace } from "./scene/pixel";
@@ -274,6 +275,7 @@ export function OfficeFloor({
 					onZoomOut={() => sceneRef.current?.zoomOut()}
 					onFollowMe={() => sceneRef.current?.followMe()}
 					onShowWholeOffice={() => sceneRef.current?.showWholeOffice()}
+					help={OFFICE_CONTROLS}
 				/>
 			) : null}
 		</div>

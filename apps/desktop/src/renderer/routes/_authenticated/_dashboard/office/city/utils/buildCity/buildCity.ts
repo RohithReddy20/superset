@@ -56,6 +56,7 @@ export function buildCity({
 	bindings,
 	seats,
 	names = [],
+	asks = new Map(),
 	seenAt,
 	machineId,
 }: {
@@ -64,6 +65,8 @@ export function buildCity({
 	bindings: BindingRow[];
 	seats: SeatRow[];
 	names?: NameRow[];
+	/** Questions read off agents' screens, by terminal. */
+	asks?: ReadonlyMap<string, { question: string; trust: boolean }>;
 	seenAt: Record<string, number>;
 	machineId: string | null;
 }): CityProject[] {
@@ -84,6 +87,12 @@ export function buildCity({
 		const same = list.filter((a) => a.agentId === binding.agentId).length;
 		const seat = seatOf.get(binding.terminalId);
 		const named = nameOf.get(binding.terminalId);
+		const status = deriveTerminalAgentStatus({
+			lastEventType: binding.lastEventType,
+			lastEventAt: binding.lastEventAt,
+			lastSeenAt: seenAt[binding.terminalId],
+		});
+		const ask = status === "failed" ? undefined : asks.get(binding.terminalId);
 		list.push({
 			terminalId: binding.terminalId,
 			workspaceId: binding.workspaceId,
@@ -93,11 +102,8 @@ export function buildCity({
 			kind: label,
 			name: named?.name ?? (same > 0 ? `${label} ${same + 1}` : label),
 			handle: named?.handle ?? "",
-			status: deriveTerminalAgentStatus({
-				lastEventType: binding.lastEventType,
-				lastEventAt: binding.lastEventAt,
-				lastSeenAt: seenAt[binding.terminalId],
-			}),
+			status: ask ? "permission" : status,
+			...(ask ? { asking: { question: ask.question, trust: ask.trust } } : {}),
 			startedAt: binding.startedAt,
 			lastEventAt: binding.lastEventAt,
 			subagents: binding.subagents?.length ?? 0,

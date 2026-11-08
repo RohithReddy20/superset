@@ -8,6 +8,7 @@ import { useLocalHostService } from "renderer/routes/_authenticated/providers/Lo
 import { useV2NotificationStore } from "renderer/stores/v2-notifications";
 import type { CityHandover, CityProject, CityRoom } from "../../types";
 import { buildCity } from "../../utils/buildCity";
+import { useAgentScreens } from "../useAgentScreens";
 
 const POLL_MS = 1500;
 
@@ -51,6 +52,17 @@ export function useCity(): {
 		refetchInterval: POLL_MS,
 	});
 
+	const watched = useMemo(
+		() =>
+			(bindings.data ?? []).filter(
+				(b) =>
+					!b.chatSessionId &&
+					(b.lastEventType === "Attached" || b.lastEventType === "Start"),
+			),
+		[bindings.data],
+	);
+	const asks = useAgentScreens(watched);
+
 	const city = useMemo(
 		() =>
 			buildCity({
@@ -65,6 +77,7 @@ export function useCity(): {
 				bindings: bindings.data ?? [],
 				seats: rooms.data?.seats ?? [],
 				names: rooms.data?.names ?? [],
+				asks,
 				seenAt,
 				machineId,
 			}),
@@ -74,6 +87,7 @@ export function useCity(): {
 			bindings.data,
 			rooms.data?.seats,
 			rooms.data?.names,
+			asks,
 			seenAt,
 			machineId,
 		],

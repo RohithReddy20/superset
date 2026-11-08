@@ -17,6 +17,15 @@ export const STATUS_LINES: Record<AgentStatus, string> = {
 	failed: "Stopped with an error",
 };
 
+/** What an agent asking on its screen says, shortened for a bubble or a chip. */
+export function askingLine(asking: {
+	question: string;
+	trust: boolean;
+}): string {
+	if (asking.trust) return "Asks to trust this folder";
+	return asking.question ? `Asks: ${asking.question}` : "Asks you something";
+}
+
 export const STATUS_LABELS: Record<AgentStatus, string> = {
 	idle: "Idle",
 	working: "Working",
