@@ -407,3 +407,23 @@ agent's own request.
 - **Queued, not yet in the running app** (commit ac30d496dd on `office/part3-guests`): the guest is
   set back to idle after answering, and a message from the office's person, who is named "You" in
   this office, reads "The person running this office mentioned you" rather than "You mentioned you".
+
+## Starting agents from the city, names, identity (2026-11-08)
+
+- A workspace room's panel shows the CLIs of that workspace's own agent bar: the
+  `v2TerminalPresets` rows matched to the project, pinned to the bar and linked to an enabled
+  agent config (every enabled config when none is). A click calls `office.cityStart`, which runs
+  the agent through the same `runAgentInWorkspace` as the bar, with an optional first task.
+- Names: `CityRooms` keeps `names` in `city.json` next to seats. A running agent with no name
+  gets the first free one of `AGENT_NAMES` (Ada, Milo, Iris, ...). A name follows its agent to a
+  successor terminal and is kept 24 h after it stops, the same as a seat (`follow()`). The @handle
+  is the name in lower case (`handleOf`), so it is the same in every room; renames that clash, or
+  that use "all"/"everyone", are refused. Office guests take the city name too.
+- Identity: the first thing the city types into an agent (room message, direct message through
+  `office.cityTell`, a hand-over prompt, a city start) begins with "You are <name> (@handle), a
+  <kind> agent working in workspace ... of project ...". A rename clears `told`, so the next
+  message says the new name. An agent started from the city with no task is asked to say who it is.
+- Checked live: started Claude from a room (named Milo, said "I'm Milo (@milo) ..."), renamed it to
+  Bolt (a clash with Ada was refused), asked "who are you?", it answered as Bolt.
+- Gaps: agents started outside the city learn their name only when the city first talks to them;
+  a terminal opened from the city shows as a workspace tab only after "Terminal" is clicked.
