@@ -118,7 +118,7 @@ export function useDashboardNavigation() {
 		openPlugins: () => navigate({ to: "/plugins" }),
 
 		isOfficeOpen: !!matchRoute({ to: "/office", fuzzy: true }),
-		openOffice: () => navigate({ to: "/office" }),
+		openOffice: () => navigate({ to: "/office/city" }),
 
 		// Reopens whichever Usage section (token / machine resources) was
 		// visited last.

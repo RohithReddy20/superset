@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useCityActions } from "../../../../hooks/useCityActions";
 import type { CityHandover, CityProject, CityRoom } from "../../../../types";
 import { presentIn } from "../../../../utils/buildingSnapshot";
-import { AgentPanel, type BuildingSelection } from "./components/AgentPanel";
+import { AgentPanel, type BuildingSelection } from "../AgentPanel";
 import { BuildingFloor } from "./components/BuildingFloor";
 import { GroupBox } from "./components/GroupBox";
 
@@ -12,6 +12,9 @@ interface BuildingViewProps {
 	rooms: CityRoom[];
 	handovers: CityHandover[];
 	maxRelays: number;
+	/** An agent to open as soon as it shows up; `onFocused` is called once it is. */
+	focusAgentId: string | null;
+	onFocused: () => void;
 }
 
 export function BuildingView({
@@ -20,6 +23,8 @@ export function BuildingView({
 	rooms,
 	handovers,
 	maxRelays,
+	focusAgentId,
+	onFocused,
 }: BuildingViewProps) {
 	const actions = useCityActions();
 	const [selection, setSelection] = useState<BuildingSelection | null>(null);
@@ -37,6 +42,15 @@ export function BuildingView({
 		() => present.filter((a) => picked.includes(a.terminalId)),
 		[present, picked],
 	);
+	const onFocusedRef = useRef(onFocused);
+	onFocusedRef.current = onFocused;
+	const focusFound = everyone.some((a) => a.terminalId === focusAgentId);
+	useEffect(() => {
+		if (!focusAgentId || !focusFound) return;
+		setSelection({ kind: "agent", id: focusAgentId });
+		setPicked([focusAgentId]);
+		onFocusedRef.current();
+	}, [focusAgentId, focusFound]);
 	const workspaceNames = useMemo(
 		() => new Map(everyone.map((a) => [a.workspaceId, a.workspaceName])),
 		[everyone],

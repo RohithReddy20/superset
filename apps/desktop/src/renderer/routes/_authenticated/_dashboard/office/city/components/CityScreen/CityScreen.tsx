@@ -1,15 +1,27 @@
 import { cn } from "@superset/ui/utils";
 import { useNavigate } from "@tanstack/react-router";
-import { LuBuilding2, LuChevronRight } from "react-icons/lu";
+import { useMemo, useState } from "react";
+import { LuChevronRight, LuList, LuMap } from "react-icons/lu";
 import { PageHeader } from "renderer/routes/_authenticated/_dashboard/components/PageHeader";
+import { NeedsYouBar } from "../../../components/NeedsYouBar";
+import { useOffice } from "../../../hooks/useOffice";
 import { STATUS_COLORS } from "../../constants";
 import { useCity } from "../../hooks/useCity";
-import type { AgentStatus } from "../../types";
+import { type AgentStatus, OFFICE_PLACE } from "../../types";
+import { officeBuilding } from "../../utils/officeBuilding";
+import { AgentList } from "./components/AgentList";
+import { AgentPanel } from "./components/AgentPanel";
 import { BuildingView } from "./components/BuildingView";
 import { CityMap } from "./components/CityMap";
+import { EmptyState } from "./components/EmptyState";
+
+export type CityViewMode = "map" | "list";
 
 interface CityScreenProps {
 	projectId: string | null;
+	/** An agent to open, e.g. from the "Needs you" bar. */
+	agentId: string | null;
+	view: CityViewMode;
 }
 
 const SUMMARY: Array<[AgentStatus, string]> = [
@@ -19,16 +31,36 @@ const SUMMARY: Array<[AgentStatus, string]> = [
 	["failed", "failed"],
 ];
 
-export function CityScreen({ projectId }: CityScreenProps) {
+export function CityScreen({ projectId, agentId, view }: CityScreenProps) {
 	const navigate = useNavigate();
 	const { projects, rooms, handovers, maxRelays, hostReady, ready } = useCity();
-	const waiting = handovers.filter((h) => h.status === "asked").length;
+	const { state: office } = useOffice();
+	const [listSelected, setListSelected] = useState<string | null>(null);
 	const inside = projects.find((p) => p.id === projectId) ?? null;
 	const shown = inside ? [inside] : projects;
 	const agents = shown.flatMap((p) => p.workspaces.flatMap((w) => w.agents));
+	const everyone = useMemo(
+		() => projects.flatMap((p) => p.workspaces.flatMap((w) => w.agents)),
+		[projects],
+	);
+	const buildings = useMemo(
+		() => (office.data ? [officeBuilding(office.data), ...projects] : projects),
+		[office.data, projects],
+	);
+	const listAgent = everyone.find((a) => a.terminalId === listSelected);
+	const listProject = projects.find((p) => p.id === listAgent?.projectId);
 
-	const enter = (id: string | null) =>
-		navigate({ to: "/office/city", search: id ? { project: id } : {} });
+	const go = (search: { project?: string; agent?: string; view?: "list" }) =>
+		navigate({ to: "/office/city", search });
+	const enter = (id: string | null) => {
+		if (id === OFFICE_PLACE) navigate({ to: "/office" });
+		else go({ ...(id ? { project: id } : {}) });
+	};
+	const setView = (next: CityViewMode) =>
+		go({
+			...(projectId ? { project: projectId } : {}),
+			...(next === "list" ? { view: "list" } : {}),
+		});
 
 	return (
 		<div className="flex h-full w-full flex-1 flex-col overflow-hidden">
@@ -53,10 +85,10 @@ export function CityScreen({ projectId }: CityScreenProps) {
 								<span className="truncate font-medium">{inside.name}</span>
 							</>
 						) : null}
-						<span className="ml-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+						<span className="ml-2 flex items-center gap-2 text-[12px] text-muted-foreground">
 							{inside
 								? plural(inside.workspaces.length, "workspace")
-								: plural(projects.length, "building")}{" "}
+								: plural(buildings.length, "building")}{" "}
 							· {plural(agents.length, "agent")}
 							{SUMMARY.map(([status, label]) => {
 								const count = agents.filter((a) => a.status === status).length;
@@ -70,32 +102,73 @@ export function CityScreen({ projectId }: CityScreenProps) {
 									</span>
 								) : null;
 							})}
-							{waiting > 0 ? (
-								<span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-amber-600 dark:text-amber-400">
-									{waiting} hand-over request{waiting === 1 ? "" : "s"}
-								</span>
-							) : null}
 						</span>
 					</div>
 				}
 				end={
-					<button
-						type="button"
-						onClick={() => navigate({ to: "/office" })}
-						className="flex items-center gap-1.5 rounded-md px-2 py-1 font-mono text-[11px] text-muted-foreground hover:bg-fill-hover hover:text-foreground"
+					<fieldset
+						aria-label="Show as"
+						className="flex items-center rounded-md border border-border p-0.5"
 					>
-						<LuBuilding2 className="size-3.5" />
-						office
-					</button>
+						{(
+							[
+								["map", "Map", LuMap],
+								["list", "List", LuList],
+							] as const
+						).map(([mode, label, Icon]) => (
+							<button
+								key={mode}
+								type="button"
+								aria-pressed={view === mode}
+								onClick={() => setView(mode)}
+								className={cn(
+									"flex items-center gap-1.5 rounded px-2 py-0.5 text-[12px]",
+									view === mode
+										? "bg-fill-selected text-foreground"
+										: "text-muted-foreground hover:text-foreground",
+								)}
+							>
+								<Icon className="size-3.5" />
+								{label}
+							</button>
+						))}
+					</fieldset>
 				}
 			/>
+			<NeedsYouBar />
 			<div className="relative min-h-0 flex-1">
 				{!hostReady ? (
-					<Empty text="Waiting for the local host…" />
+					<EmptyState text="Waiting for the local host…" />
 				) : !ready && projects.length === 0 ? (
-					<Empty text="Building the city…" />
+					<EmptyState text="Building the city…" />
 				) : projectId && !inside ? (
-					<Empty text="This building is gone: the project has no workspaces on this machine." />
+					<EmptyState text="This building is gone: the project has no workspaces on this machine." />
+				) : view === "list" ? (
+					<div className="flex h-full w-full">
+						<div className="min-w-0 flex-1">
+							<AgentList
+								projects={shown}
+								allProjects={projects}
+								office={inside ? null : (office.data ?? null)}
+								selectedId={listAgent ? listSelected : null}
+								onSelect={setListSelected}
+								onOpenOffice={() => navigate({ to: "/office" })}
+							/>
+						</div>
+						{listAgent && listProject ? (
+							<AgentPanel
+								project={listProject}
+								projects={projects}
+								everyone={everyone}
+								rooms={rooms}
+								handovers={handovers}
+								maxRelays={maxRelays}
+								selection={{ kind: "agent", id: listAgent.terminalId }}
+								onSelectAgent={setListSelected}
+								onClose={() => setListSelected(null)}
+							/>
+						) : null}
+					</div>
 				) : inside ? (
 					<BuildingView
 						key={inside.id}
@@ -104,11 +177,13 @@ export function CityScreen({ projectId }: CityScreenProps) {
 						rooms={rooms}
 						handovers={handovers}
 						maxRelays={maxRelays}
+						focusAgentId={agentId}
+						onFocused={() => go({ project: inside.id })}
 					/>
-				) : projects.length === 0 ? (
-					<Empty text="No projects with a workspace on this machine yet." />
+				) : buildings.length === 0 ? (
+					<EmptyState text="No projects with a workspace on this machine yet." />
 				) : (
-					<CityMap projects={projects} onEnter={enter} />
+					<CityMap projects={buildings} onEnter={enter} />
 				)}
 			</div>
 		</div>
@@ -117,12 +192,4 @@ export function CityScreen({ projectId }: CityScreenProps) {
 
 function plural(count: number, noun: string): string {
 	return `${count} ${noun}${count === 1 ? "" : "s"}`;
-}
-
-function Empty({ text }: { text: string }) {
-	return (
-		<div className="flex h-full items-center justify-center p-6 text-sm text-muted-foreground">
-			{text}
-		</div>
-	);
 }

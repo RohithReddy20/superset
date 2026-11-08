@@ -242,11 +242,11 @@ export function OfficeFloor({
 					onClose={() => setPickedIds([])}
 				/>
 			) : (
-				<div className="pointer-events-none absolute bottom-3 left-1/2 max-w-[calc(100%-24px)] -translate-x-1/2 truncate rounded-full border border-border bg-background/90 px-3 py-1.5 text-[12px] text-muted-foreground shadow-sm backdrop-blur">
-					<span className="font-medium text-foreground">Double-click</span> to
-					walk · drag to look around · click teammates (Shift for more) to chat
-					with them · drag them onto a room to move them
-				</div>
+				<p className="pointer-events-none absolute bottom-3 left-1/2 w-max max-w-[calc(100%-24px)] -translate-x-1/2 rounded-2xl border border-border bg-background/90 px-3 py-1.5 text-center text-[12px] text-muted-foreground shadow-sm backdrop-blur">
+					<span className="font-medium text-foreground">Click a teammate</span>{" "}
+					to chat (Shift for several) · drag them onto a room to move them ·
+					drag the floor to look around
+				</p>
 			)}
 			{newRoom ? (
 				<NewRoomPrompt

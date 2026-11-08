@@ -20,7 +20,7 @@ import {
 	renderFace,
 } from "../../../../../../../components/OfficeFloor/scene/pixel";
 import { layoutWorld, type SeatTarget } from "../../../../../../../utils/world";
-import { STATUS_COLORS } from "../../../../../../constants";
+import { STATUS_COLORS, STATUS_LABELS } from "../../../../../../constants";
 import type { CityAgent, CityProject } from "../../../../../../types";
 import {
 	buildingSnapshot,
@@ -90,6 +90,10 @@ export function BuildingFloor({
 		() => new Map(agents.map((a) => [a.terminalId, STATUS_COLORS[a.status]])),
 		[agents],
 	);
+	const statusLabels = useMemo(
+		() => new Map(agents.map((a) => [a.terminalId, STATUS_LABELS[a.status]])),
+		[agents],
+	);
 	const icons = useMemo(() => {
 		const map = new Map<string, string>();
 		for (const a of agents) {
@@ -136,7 +140,7 @@ export function BuildingFloor({
 					onReady: (scene) => {
 						sceneRef.current = scene;
 						if (latest.current) scene.setState(latest.current);
-						scene.showWholeOffice();
+						scene.showEveryone();
 					},
 				});
 			},
@@ -185,6 +189,7 @@ export function BuildingFloor({
 				canCarry
 				dots={dots}
 				icons={icons}
+				statusLabels={statusLabels}
 				onClickTeammate={(id, additive) => {
 					if (id === YOU_ID) return;
 					if (additive)
@@ -203,11 +208,11 @@ export function BuildingFloor({
 				onCarryMove={(x, y) => sceneRef.current?.carryToScreen(x, y)}
 				onCarryEnd={() => sceneRef.current?.endCarry()}
 			/>
-			<div className="pointer-events-none absolute bottom-3 left-1/2 max-w-[calc(100%-24px)] -translate-x-1/2 truncate rounded-full border border-border bg-background/90 px-3 py-1.5 text-[12px] text-muted-foreground shadow-sm backdrop-blur">
+			<p className="pointer-events-none absolute bottom-3 left-1/2 w-max max-w-[calc(100%-24px)] -translate-x-1/2 rounded-2xl border border-border bg-background/90 px-3 py-1.5 text-center text-[12px] text-muted-foreground shadow-sm backdrop-blur">
 				<span className="font-medium text-foreground">Click someone</span> to
-				talk · drag them into a room to sit with others (their workspace stays)
-				· click a room's sign for its talk
-			</div>
+				talk · drag them into a room to sit together (their work stays put) ·
+				click a room's sign for its talk
+			</p>
 			{view ? (
 				<FloorControls
 					view={view}
@@ -215,6 +220,8 @@ export function BuildingFloor({
 					onZoomOut={() => sceneRef.current?.zoomOut()}
 					onFollowMe={() => sceneRef.current?.followMe()}
 					onShowWholeOffice={() => sceneRef.current?.showWholeOffice()}
+					onShowEveryone={() => sceneRef.current?.showEveryone()}
+					wholeLabel="Whole floor"
 				/>
 			) : null}
 		</div>

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { LuCornerDownRight, LuX } from "react-icons/lu";
 import type { Message, Room, Teammate } from "../../types";
 import { EngineMark } from "../EngineMark";
+import { LongText } from "../LongText";
 import { ENGINE_COLORS } from "../OfficeFloor/constants";
 
 interface RoomFeedProps {
@@ -71,10 +72,7 @@ export function RoomFeed({
 		const color = ENGINE_COLORS[author?.engine ?? "human"];
 		const replies = inThread ? [] : repliesOf(m.id);
 		return (
-			<div
-				key={m.id}
-				className={cn("flex gap-2.5", m.kind === "system" && "opacity-80")}
-			>
+			<div key={m.id} className="flex gap-2.5">
 				<span
 					className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border font-mono text-[10px]"
 					style={{ borderColor: color, color }}
@@ -90,19 +88,23 @@ export function RoomFeed({
 						<span className="text-[13px] font-medium text-foreground">
 							{author?.name ?? m.authorId}
 						</span>
-						<span className="font-mono text-[10px] text-muted-foreground">
+						{m.kind === "system" ? (
+							<span className="rounded bg-muted px-1 text-[10px] text-muted-foreground">
+								status
+							</span>
+						) : null}
+						<span className="text-[11px] text-muted-foreground">
 							{timeOf(m.ts)}
 							{m.depth > 0 ? ` · hop ${m.depth}` : ""}
 						</span>
 					</div>
-					<p
+					<LongText
+						text={m.text}
 						className={cn(
-							"whitespace-pre-wrap text-[13px] leading-snug text-foreground",
-							m.kind === "system" && "italic text-destructive",
+							"text-[13px] leading-snug",
+							m.kind === "system" ? "text-muted-foreground" : "text-foreground",
 						)}
-					>
-						{m.text}
-					</p>
+					/>
 					{!inThread ? (
 						<button
 							type="button"

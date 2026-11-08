@@ -69,6 +69,8 @@ export interface SceneFrame {
 export interface SceneView {
 	/** The camera is on you; false while it shows the whole office or was dragged away. */
 	following: boolean;
+	/** The camera frames the AI teammates on the floor. */
+	everyone: boolean;
 	canFollow: boolean;
 	canZoomIn: boolean;
 	canZoomOut: boolean;
@@ -138,6 +140,9 @@ const SEATED_DEPTH_LIFT = 8;
 const SEAT_SNAP = 12;
 const SEAT_CLICK = 24;
 const ZOOMS = [1, 1.5, 2, 2.5, 3];
+/** Floor around the people when the view frames everyone, so their room shows too. */
+const EVERYONE_MARGIN_TILES = 5;
+const EVERYONE_MAX_ZOOM = 2;
 /** Rows of tiles the starting zoom aims to show, so people stay readable in any pane size. */
 const VIEW_ROWS = 18;
 const WHEEL_STEP = 80;
@@ -161,6 +166,7 @@ export class OfficeScene extends Phaser.Scene {
 	private keys: Record<Facing, Phaser.Input.Keyboard.Key[]> | null = null;
 	private chosenZoom: number | null = null;
 	private overview = false;
+	private everyone = false;
 	private panned = false;
 	private followed: Actor | null = null;
 	private wheel = 0;
@@ -323,6 +329,7 @@ export class OfficeScene extends Phaser.Scene {
 	}
 
 	zoomIn(): void {
+		this.everyone = false;
 		if (this.overview) {
 			this.overview = false;
 			this.panned = false;
@@ -334,6 +341,10 @@ export class OfficeScene extends Phaser.Scene {
 	}
 
 	zoomOut(): void {
+		if (this.everyone) {
+			this.showWholeOffice();
+			return;
+		}
 		const zoom = this.followZoom();
 		const smaller = ZOOMS.filter((z) => z < zoom).at(-1);
 		if (smaller === undefined) {
@@ -344,12 +355,22 @@ export class OfficeScene extends Phaser.Scene {
 	}
 
 	followMe(): void {
+		this.everyone = false;
 		this.overview = false;
 		this.panned = false;
 		this.frameCamera();
 	}
 
 	showWholeOffice(): void {
+		this.everyone = false;
+		this.overview = true;
+		this.panned = false;
+		this.frameCamera();
+	}
+
+	/** Frames every AI teammate on the floor, close enough to read them; the whole office when nobody is here. */
+	showEveryone(): void {
+		this.everyone = true;
 		this.overview = true;
 		this.panned = false;
 		this.frameCamera();
@@ -406,9 +427,19 @@ export class OfficeScene extends Phaser.Scene {
 			x: camera.worldView.centerX,
 			y: camera.worldView.centerY,
 		};
-		const zoom = overview
-			? Math.min(view.width / w, view.height / h)
-			: this.followZoom();
+		const whole = Math.min(view.width / w, view.height / h);
+		const people = overview && this.everyone ? this.peopleBox() : null;
+		const zoom = people
+			? Math.min(
+					EVERYONE_MAX_ZOOM,
+					Math.max(
+						whole,
+						Math.min(view.width / people.w, view.height / people.h),
+					),
+				)
+			: overview
+				? whole
+				: this.followZoom();
 		camera.resetFX();
 		camera.setZoom(zoom);
 		const seenW = view.width / zoom;
@@ -424,6 +455,8 @@ export class OfficeScene extends Phaser.Scene {
 		else {
 			camera.stopFollow();
 			if (this.panned) camera.centerOn(center.x, center.y);
+			else if (people)
+				camera.centerOn(people.x + people.w / 2, people.y + people.h / 2);
 			else camera.centerOn(w / 2, h / 2);
 		}
 		this.followed = me;
@@ -435,10 +468,29 @@ export class OfficeScene extends Phaser.Scene {
 		const overview = this.overview || !me;
 		this.callbacks.onView({
 			following: !overview && !this.panned,
+			everyone: this.everyone && !this.panned,
 			canFollow: !!me,
 			canZoomIn: overview || this.followZoom() < (ZOOMS.at(-1) as number),
-			canZoomOut: !overview,
+			canZoomOut: !overview || this.everyone,
 		});
+	}
+
+	private peopleBox(): { x: number; y: number; w: number; h: number } | null {
+		const points = [...this.actors.values()]
+			.filter((a) => a.ai)
+			.map((a) => a.seat ?? a.position);
+		if (points.length === 0) return null;
+		const margin = EVERYONE_MARGIN_TILES * TILE;
+		const xs = points.map((p) => p.x);
+		const ys = points.map((p) => p.y);
+		const x = Math.min(...xs) - margin;
+		const y = Math.min(...ys) - margin;
+		return {
+			x,
+			y,
+			w: Math.max(...xs) + margin - x,
+			h: Math.max(...ys) + margin - y,
+		};
 	}
 
 	/** Brings a dragged-away view back to you, then follows again. */

@@ -50,6 +50,20 @@ export interface CityProject {
 	workspaces: CityWorkspace[];
 }
 
+/** What the city map draws as a building: a project, or the office with a floor per room. */
+export interface CityBuildingSource {
+	id: string;
+	name: string;
+	color: string | null;
+	iconUrl: string | null;
+	createdAt: number;
+	workspaces: Array<{
+		id: string;
+		createdAt: number;
+		agents: Array<Pick<CityAgent, "status" | "startedAt">>;
+	}>;
+}
+
 export type CityRoomsSnapshot =
 	inferRouterOutputs<AppRouter>["office"]["cityState"];
 export type CityRoom = CityRoomsSnapshot["rooms"][number];

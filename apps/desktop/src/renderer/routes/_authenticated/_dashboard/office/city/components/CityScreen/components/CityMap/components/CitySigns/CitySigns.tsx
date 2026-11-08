@@ -1,7 +1,12 @@
 import { cn } from "@superset/ui/utils";
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import { LuBuilding2 } from "react-icons/lu";
 import { STATUS_COLORS } from "../../../../../../constants";
-import type { AgentStatus, CityProject } from "../../../../../../types";
+import {
+	type AgentStatus,
+	type CityBuildingSource,
+	OFFICE_PLACE,
+} from "../../../../../../types";
 import type { CityFrame } from "../../scene";
 
 export interface CitySignsHandle {
@@ -9,7 +14,7 @@ export interface CitySignsHandle {
 }
 
 interface CitySignsProps {
-	projects: CityProject[];
+	projects: CityBuildingSource[];
 	onEnter: (id: string) => void;
 }
 
@@ -88,6 +93,8 @@ export const CitySigns = forwardRef<CitySignsHandle, CitySignsProps>(
 											className="size-4 rounded-sm object-cover group-data-[compact=true]/city:size-3"
 											draggable={false}
 										/>
+									) : project.id === OFFICE_PLACE ? (
+										<LuBuilding2 className="size-4 text-muted-foreground group-data-[compact=true]/city:size-3" />
 									) : (
 										<span className="flex size-4 items-center justify-center rounded-sm bg-muted text-[9px] uppercase text-muted-foreground group-data-[compact=true]/city:size-3">
 											{project.name.slice(0, 1)}
@@ -95,7 +102,7 @@ export const CitySigns = forwardRef<CitySignsHandle, CitySignsProps>(
 									)}
 									{project.name}
 								</span>
-								<span className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground group-data-[compact=true]/city:hidden">
+								<span className="flex items-center gap-2 text-[11px] text-muted-foreground group-data-[compact=true]/city:hidden">
 									{busy.length === 0 ? (
 										<span>
 											{agents.length === 0
@@ -108,7 +115,8 @@ export const CitySigns = forwardRef<CitySignsHandle, CitySignsProps>(
 												<span
 													className={cn(
 														"size-1.5 rounded-full",
-														status === "permission" && "animate-pulse",
+														status === "permission" &&
+															"motion-safe:animate-pulse",
 													)}
 													style={{ background: STATUS_COLORS[status] }}
 												/>

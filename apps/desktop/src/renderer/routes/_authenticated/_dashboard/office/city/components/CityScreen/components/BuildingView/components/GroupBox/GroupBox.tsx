@@ -4,9 +4,9 @@ import { useAgentInput } from "../../../../../../hooks/useAgentInput";
 import { useAgentTranscripts } from "../../../../../../hooks/useAgentTranscript";
 import type { CityAgent } from "../../../../../../types";
 import { lastReply } from "../../../../../../utils/parseTurns";
-import { AgentIcon } from "../AgentIcon";
-import { MessageBox } from "../MessageBox";
-import { StatusBadge } from "../StatusBadge";
+import { AgentIcon } from "../../../AgentIcon";
+import { MessageBox } from "../../../MessageBox";
+import { StatusBadge } from "../../../StatusBadge";
 
 interface GroupBoxProps {
 	agents: CityAgent[];

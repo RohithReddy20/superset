@@ -1,10 +1,11 @@
 import { cn } from "@superset/ui/utils";
 import { useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
+	LuChevronRight,
 	LuListChecks,
-	LuMap,
 	LuPlus,
+	LuScrollText,
 	LuTrash2,
 	LuUserPlus,
 } from "react-icons/lu";
@@ -14,13 +15,19 @@ import { AddRoomDialog } from "../AddRoomDialog";
 import { CreateTaskDialog } from "../CreateTaskDialog";
 import { DeleteRoomDialog } from "../DeleteRoomDialog";
 import { HireDialog } from "../HireDialog";
+import { NeedsYouBar } from "../NeedsYouBar";
 import { OfficeFloor } from "../OfficeFloor";
 import { RightNowRail } from "../RightNowRail";
 import { RoomFeed } from "../RoomFeed";
 import { TaskBoard } from "../TaskBoard";
 import { TeammateCard } from "../TeammateCard";
 
-export function OfficeScreen() {
+interface OfficeScreenProps {
+	/** A side tab to open, e.g. tasks from the "Needs you" bar. */
+	tab: "tasks" | null;
+}
+
+export function OfficeScreen({ tab }: OfficeScreenProps) {
 	const {
 		state,
 		say,
@@ -44,7 +51,10 @@ export function OfficeScreen() {
 	const [deletingRoom, setDeletingRoom] = useState(false);
 	const [hiring, setHiring] = useState(false);
 	const [creatingTask, setCreatingTask] = useState(false);
-	const [showTasks, setShowTasks] = useState(false);
+	const [showTasks, setShowTasks] = useState(tab === "tasks");
+	useEffect(() => {
+		if (tab === "tasks") setShowTasks(true);
+	}, [tab]);
 	const [openThreadId, setOpenThreadId] = useState<string | null>(null);
 
 	const data = state.data;
@@ -64,10 +74,18 @@ export function OfficeScreen() {
 		<div className="flex h-full w-full flex-1 flex-col overflow-hidden">
 			<PageHeader
 				start={
-					<div className="flex items-center gap-3">
-						<span className="text-sm font-medium text-foreground">Office</span>
+					<div className="flex min-w-0 items-center gap-1.5 text-sm">
+						<button
+							type="button"
+							onClick={() => navigate({ to: "/office/city" })}
+							className="font-medium text-muted-foreground hover:text-foreground"
+						>
+							City
+						</button>
+						<LuChevronRight className="size-3.5 text-muted-foreground" />
+						<span className="font-medium text-foreground">Office</span>
 						{data ? (
-							<span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+							<span className="ml-2 text-[12px] text-muted-foreground">
 								{data.teammates.filter((t) => t.presence !== "away").length}{" "}
 								here ·{" "}
 								{data.handoffs.filter((h) => h.status === "working").length}{" "}
@@ -85,41 +103,37 @@ export function OfficeScreen() {
 				end={
 					<div className="flex items-center gap-1">
 						<HeaderButton
-							onClick={() => navigate({ to: "/office/city" })}
-							icon={<LuMap className="size-3.5" />}
-						>
-							city
-						</HeaderButton>
-						<HeaderButton
 							onClick={() => setCreatingTask(true)}
 							disabled={!data}
 							icon={<LuPlus className="size-3.5" />}
 						>
-							task
+							New task
 						</HeaderButton>
 						<HeaderButton
 							onClick={() => setHiring(true)}
 							disabled={!data}
 							icon={<LuUserPlus className="size-3.5" />}
 						>
-							hire
+							Add teammate
 						</HeaderButton>
 						<HeaderButton
 							onClick={() => setAddingRoom(true)}
 							disabled={!data}
 							icon={<LuPlus className="size-3.5" />}
 						>
-							room
+							New room
 						</HeaderButton>
 						<HeaderButton
 							active={showLog}
 							onClick={() => setShowLog((v) => !v)}
+							icon={<LuScrollText className="size-3.5" />}
 						>
-							seat log
+							Log
 						</HeaderButton>
 					</div>
 				}
 			/>
+			<NeedsYouBar />
 			<div className="flex min-h-0 flex-1">
 				<div className="relative min-w-0 flex-1 bg-muted">
 					{!hostReady ? (
@@ -169,9 +183,9 @@ export function OfficeScreen() {
 				</div>
 				<aside className="flex w-[380px] shrink-0 flex-col border-l border-border bg-background">
 					<div className="border-b border-border px-3 py-3">
-						<div className="mb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+						<h2 className="mb-2 text-[12px] font-medium text-muted-foreground">
 							Right now
-						</div>
+						</h2>
 						{data ? (
 							<RightNowRail
 								teammates={data.teammates}
@@ -205,14 +219,14 @@ export function OfficeScreen() {
 										type="button"
 										onClick={() => setShowTasks(true)}
 										className={cn(
-											"flex shrink-0 items-center gap-1 rounded-md px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] transition-colors",
+											"flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[12px] transition-colors",
 											showTasks
 												? "bg-fill-selected text-foreground"
 												: "text-muted-foreground hover:bg-fill-hover",
 										)}
 									>
 										<LuListChecks className="size-3" />
-										tasks
+										Tasks
 										{data.tasks.some(
 											(t) => t.status === "verified" || t.status === "blocked",
 										) ? (
@@ -228,7 +242,7 @@ export function OfficeScreen() {
 												setRoomId(r.id);
 											}}
 											className={cn(
-												"shrink-0 rounded-md px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] transition-colors",
+												"shrink-0 rounded-md px-2 py-1 text-[12px] transition-colors",
 												!showTasks && r.id === activeRoom.id
 													? "bg-fill-selected text-foreground"
 													: "text-muted-foreground hover:bg-fill-hover",
@@ -420,7 +434,7 @@ function HeaderButton({
 			onClick={onClick}
 			disabled={disabled}
 			className={cn(
-				"flex items-center gap-1 rounded-md px-2 py-1 font-mono text-[10px] uppercase tracking-[0.1em] transition-colors disabled:opacity-50",
+				"flex items-center gap-1.5 rounded-md px-2 py-1 text-[12px] transition-colors disabled:opacity-50",
 				active
 					? "bg-fill-selected text-foreground"
 					: "text-muted-foreground hover:bg-fill-hover",

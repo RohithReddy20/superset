@@ -1,14 +1,15 @@
 import { Button } from "@superset/ui/button";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LuMap, LuMinus, LuPlus } from "react-icons/lu";
-import type { CityProject } from "../../../../types";
+import type { CityBuildingSource } from "../../../../types";
 import { layoutCity } from "../../../../utils/cityLayout";
 import { CitySigns, type CitySignsHandle } from "./components/CitySigns";
 import type { CityScene, CityView } from "./scene";
 import { wallColorFor } from "./scene/art";
 
 interface CityMapProps {
-	projects: CityProject[];
+	/** Projects, and the office. */
+	projects: CityBuildingSource[];
 	onEnter: (projectId: string) => void;
 }
 
@@ -98,10 +99,10 @@ export function CityMap({ projects, onEnter }: CityMapProps) {
 					</Button>
 				</div>
 			) : null}
-			<div className="pointer-events-none absolute bottom-3 left-1/2 max-w-[calc(100%-24px)] -translate-x-1/2 truncate rounded-full border border-border bg-background/90 px-3 py-1.5 text-[12px] text-muted-foreground shadow-sm backdrop-blur">
+			<p className="pointer-events-none absolute bottom-3 left-1/2 w-max max-w-[calc(100%-24px)] -translate-x-1/2 rounded-2xl border border-border bg-background/90 px-3 py-1.5 text-center text-[12px] text-muted-foreground shadow-sm backdrop-blur">
 				<span className="font-medium text-foreground">Click a building</span> to
 				go inside · drag to look around · a lit window is an agent at work
-			</div>
+			</p>
 		</div>
 	);
 }

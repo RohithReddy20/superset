@@ -63,6 +63,9 @@ export class CityScene extends Phaser.Scene {
 	private press: Press | null = null;
 	private zoom: number | null = null;
 	private wheel = 0;
+	private readonly still = window.matchMedia(
+		"(prefers-reduced-motion: reduce)",
+	).matches;
 
 	constructor(private readonly callbacks: CityCallbacks) {
 		super("city");
@@ -188,7 +191,7 @@ export class CityScene extends Phaser.Scene {
 	private drawLights(time: number): void {
 		const lights = this.windowLights;
 		lights.clear();
-		const blink = 0.55 + 0.45 * Math.sin(time / 180);
+		const blink = this.still ? 1 : 0.55 + 0.45 * Math.sin(time / 180);
 		for (const building of this.layout?.buildings ?? [])
 			for (const w of building.windows) {
 				if (!w.status) continue;

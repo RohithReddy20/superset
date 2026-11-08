@@ -1,4 +1,4 @@
-import type { AgentStatus, CityProject } from "../../types";
+import type { AgentStatus, CityBuildingSource } from "../../types";
 
 export interface Rect {
 	x: number;
@@ -46,7 +46,7 @@ export const WINDOWS_PER_FLOOR = 4;
 export const WINDOW = { w: 12, h: 12, gap: 4, inset: 10 };
 
 /** Places one building per project on a grid of lots, roads between them, oldest project first. */
-export function layoutCity(projects: CityProject[]): CityLayout {
+export function layoutCity(projects: CityBuildingSource[]): CityLayout {
 	const ordered = [...projects].sort(
 		(a, b) => a.createdAt - b.createdAt || a.id.localeCompare(b.id),
 	);
@@ -80,7 +80,7 @@ export function layoutCity(projects: CityProject[]): CityLayout {
 	return { w, h, buildings, roads };
 }
 
-function placeBuilding(project: CityProject, lot: Rect): CityBuilding {
+function placeBuilding(project: CityBuildingSource, lot: Rect): CityBuilding {
 	const workspaces = [...project.workspaces].sort(
 		(a, b) => a.createdAt - b.createdAt || a.id.localeCompare(b.id),
 	);

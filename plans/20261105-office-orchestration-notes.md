@@ -427,3 +427,44 @@ agent's own request.
   Bolt (a clash with Ada was refused), asked "who are you?", it answered as Bolt.
 - Gaps: agents started outside the city learn their name only when the city first talks to them;
   a terminal opened from the city shows as a workspace tab only after "Terminal" is clicked.
+
+## 2026-11-08: UI/UX pass (renderer only, no host changes)
+
+From a design review of the city and the office. What changed:
+
+- **"Needs you" bar** under the header of the City and the Office (`components/NeedsYouBar`,
+  `utils/needsYou`). One row of chips, most urgent first: an agent waiting for an OK, a failed
+  agent, a hand-over request, a blocked task, a checked task waiting to be closed, an agent that
+  finished. A chip opens the agent in its building (`?project=…&agent=…`) or the office's Tasks tab
+  (`/office?tab=tasks`). "Nothing needs you right now" when empty, so the layout does not jump.
+- **Opening a finished agent marks it seen** (`markTerminalSeen` with the binding's
+  `lastEventAt`), the same as focusing its pane in the workspace.
+- **Map / List switch** (`?view=list`). The list groups agents by building, needs-you first, with
+  where each works, where it sits when visiting, status and last change; a row opens the same agent
+  panel. The office's AI teammates are listed first and open the office.
+- **The office is a building in the city**, first on the map, a floor per chat room and a window
+  per AI teammate (`city/utils/officeBuilding`). The sidebar's Office item opens the City; the
+  office header is a "City › Office" breadcrumb.
+- **Buildings open on the people** (`OfficeScene.showEveryone`, zoom capped at 2), not the whole
+  floor where agents were tiny faces. The control toggles "Everyone" / "Whole floor".
+- **Readability.** Office status notes are grey with a "status" tag, not red italics. Long messages
+  fold after six lines with "Show more" (`components/LongText`). Header counts, buttons, tabs and
+  room signs use normal sentence-case text instead of small uppercase monospace. Room signs drop the
+  `[ ]` brackets for a chat icon, so a chat room differs from a plain area label.
+- **Room panel.** "Open workspace" is at the top; "Start an agent here" is folded unless the
+  workspace has no agent; the message box is disabled with a reason when nobody sits there.
+- **Accessibility.** Pulsing and the city's blinking windows stop under "reduce motion"; name tags
+  read out their status; hint bars wrap instead of being cut off.
+- Shared pieces of the agent panel (`AgentPanel`, `AgentIcon`, `StatusBadge`, `MessageBox`) moved
+  from `BuildingView/components` to `CityScreen/components`, since the list uses them too.
+
+Checked in the running app (CDP 9333, renderer 3005): the City shows the Office building and the bar;
+the "Done, take a look" chip opened Bolt in city-demo-api framed at a readable size and the item
+cleared; a room sign opened the new room panel; the list showed the office teammates and Bolt and
+opened Bolt's panel; the Office showed the breadcrumb, new buttons and grey status notes. No console
+errors. Not checked live: the tasks chip (no blocked or checked task existed), a "Needs your OK"
+chip, reduced motion.
+
+Still open from the review: walking your own avatar by double-click, the hidden gestures (drag pans
+the floor, drag on a person carries them), and a fresh CLI at "trust this folder?" still shows as
+idle (host side, no hook fires).

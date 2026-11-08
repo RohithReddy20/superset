@@ -1,5 +1,6 @@
 import { cn } from "@superset/ui/utils";
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import { LuMessageSquare } from "react-icons/lu";
 import type { Teammate } from "../../../../types";
 import type { PlacedRoom } from "../../../../utils/world";
 import { EngineMark } from "../../../EngineMark";
@@ -35,6 +36,8 @@ interface FloorOverlayProps {
 	dots?: ReadonlyMap<string, string>;
 	/** An icon per teammate, in place of its engine mark. */
 	icons?: ReadonlyMap<string, string>;
+	/** What each teammate's dot means, read out with its name. */
+	statusLabels?: ReadonlyMap<string, string>;
 }
 
 const PILL_GAP = 6;
@@ -64,6 +67,7 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 			canCarry = true,
 			dots,
 			icons,
+			statusLabels,
 		},
 		ref,
 	) {
@@ -194,12 +198,11 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 						<button
 							type="button"
 							onClick={() => onSelectRoom(room.id)}
-							title={room.name}
-							className="pointer-events-auto flex max-w-[150px] -translate-x-1/2 rounded-md border border-border bg-popover/90 px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-foreground shadow-sm backdrop-blur hover:bg-fill-hover group-data-[compact=true]/floor:px-1.5 group-data-[compact=true]/floor:py-0.5 group-data-[compact=true]/floor:text-[9px]"
+							title={`${room.name}: open its talk`}
+							className="pointer-events-auto flex max-w-[160px] -translate-x-1/2 items-center gap-1.5 rounded-md border border-border bg-popover/90 px-2 py-1 text-[12px] font-medium text-foreground shadow-sm backdrop-blur hover:bg-fill-hover group-data-[compact=true]/floor:gap-1 group-data-[compact=true]/floor:px-1.5 group-data-[compact=true]/floor:py-0.5 group-data-[compact=true]/floor:text-[10px]"
 						>
-							<span className="shrink-0 text-muted-foreground">[&nbsp;</span>
+							<LuMessageSquare className="size-3 shrink-0 text-muted-foreground group-data-[compact=true]/floor:size-2.5" />
 							<span className="min-w-0 truncate">{room.name}</span>
-							<span className="shrink-0 text-muted-foreground">&nbsp;]</span>
 						</button>
 					</div>
 				))}
@@ -258,6 +261,11 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 										if (tagPress.current?.carrying) onCarryEnd();
 										tagPress.current = null;
 									}}
+									aria-label={
+										statusLabels?.get(t.id)
+											? `${isMe ? "You" : t.name}, ${statusLabels.get(t.id)}`
+											: undefined
+									}
 									onClick={(event) => {
 										const carried = tagPress.current?.carrying;
 										tagPress.current = null;
