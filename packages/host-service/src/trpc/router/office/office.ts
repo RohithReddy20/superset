@@ -83,6 +83,50 @@ export const officeRouter = router({
 			}),
 		),
 
+	cityHandOver: protectedProcedure
+		.input(
+			z.object({
+				terminalId: z.string().min(1),
+				toWorkspaceId: z.string().min(1),
+				agent: z.string().min(1).optional(),
+				note: z.string().max(2000).optional(),
+			}),
+		)
+		.mutation(({ ctx, input }) =>
+			badRequest(() => cityOf(ctx.runtime).handOver(input)),
+		),
+
+	cityHandoverApprove: protectedProcedure
+		.input(
+			z.object({
+				id: z.string().min(1),
+				toWorkspaceId: z.string().min(1),
+				agent: z.string().min(1).optional(),
+				note: z.string().max(2000).optional(),
+			}),
+		)
+		.mutation(({ ctx, input }) =>
+			badRequest(() => cityOf(ctx.runtime).approveHandover(input)),
+		),
+
+	cityHandoverDecline: protectedProcedure
+		.input(z.object({ id: z.string().min(1) }))
+		.mutation(({ ctx, input }) =>
+			badRequest(async () => {
+				await cityOf(ctx.runtime).declineHandover(input.id);
+				return { ok: true as const };
+			}),
+		),
+
+	cityHandoverCancel: protectedProcedure
+		.input(z.object({ id: z.string().min(1) }))
+		.mutation(({ ctx, input }) =>
+			badRequest(() => {
+				cityOf(ctx.runtime).cancelHandover(input.id);
+				return { ok: true as const };
+			}),
+		),
+
 	cityResume: protectedProcedure.input(place).mutation(({ ctx, input }) => {
 		cityOf(ctx.runtime).resume(input.projectId, input.roomId);
 		return { ok: true as const };

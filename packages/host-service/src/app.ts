@@ -10,6 +10,7 @@ import {
 import { SANDBOX_PORTS } from "@superset/shared/sandbox-contract";
 import { createCityRooms } from "./office/createCityRooms";
 import { OfficeRuntime } from "./office/officeRuntime";
+import { runAgentInWorkspace } from "./trpc/router/agents";
 
 /** One frame of a 1920x1200 display is ~9 MB; this is a stalled reader, not a burst. */
 const MAX_DISPLAY_BUFFER_BYTES = 32 * 1024 * 1024;
@@ -350,6 +351,7 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 		eventBus,
 		terminalAgentStore,
 		statePath: join(resolveAppHomeDir(), "office", "city.json"),
+		runAgent: (input) => runAgentInWorkspace(chatAgentContext, input),
 	});
 
 	const runtime = {

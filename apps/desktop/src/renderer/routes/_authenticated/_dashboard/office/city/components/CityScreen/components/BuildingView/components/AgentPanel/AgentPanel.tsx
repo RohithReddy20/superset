@@ -1,6 +1,11 @@
 import { Button } from "@superset/ui/button";
 import { LuX } from "react-icons/lu";
-import type { CityAgent, CityProject, CityRoom } from "../../../../../../types";
+import type {
+	CityAgent,
+	CityHandover,
+	CityProject,
+	CityRoom,
+} from "../../../../../../types";
 import { MEETING_ROOM } from "../../../../../../utils/buildingSnapshot";
 import { AgentDetails } from "./components/AgentDetails";
 import { RoomDetails } from "./components/RoomDetails";
@@ -15,6 +20,7 @@ interface AgentPanelProps {
 	/** Every agent in the city, so a visitor can be found by its terminal. */
 	everyone: CityAgent[];
 	rooms: CityRoom[];
+	handovers: CityHandover[];
 	maxRelays: number;
 	selection: BuildingSelection;
 	onSelectAgent: (terminalId: string) => void;
@@ -26,6 +32,7 @@ export function AgentPanel({
 	projects,
 	everyone,
 	rooms,
+	handovers,
 	maxRelays,
 	selection,
 	onSelectAgent,
@@ -62,6 +69,8 @@ export function AgentPanel({
 					key={agent.terminalId}
 					agent={agent}
 					projects={projects}
+					handovers={handovers}
+					onSelectAgent={onSelectAgent}
 				/>
 			) : selection.kind === "room" && roomName ? (
 				<RoomDetails

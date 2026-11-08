@@ -23,11 +23,18 @@ export function createCityRooms({
 	eventBus,
 	terminalAgentStore,
 	statePath,
+	runAgent,
 }: {
 	db: HostDb;
 	eventBus: EventBus;
 	terminalAgentStore: TerminalAgentStore;
 	statePath: string;
+	/** Starts an agent in a workspace, the same way the app does. */
+	runAgent: (input: {
+		workspaceId: string;
+		agent: string;
+		prompt: string;
+	}) => Promise<{ sessionId: string }>;
 }): CityRooms {
 	mkdirSync(dirname(statePath), { recursive: true });
 	const workspaceRows = () =>
@@ -37,6 +44,7 @@ export function createCityRooms({
 				projectId: workspaces.projectId,
 				name: workspaces.name,
 				branch: workspaces.branch,
+				path: workspaces.worktreePath,
 			})
 			.from(workspaces)
 			.where(isNull(workspaces.archivedAt))
@@ -95,6 +103,20 @@ export function createCityRooms({
 				terminalAgentStore,
 			});
 			if ("error" in result) throw new Error(result.error);
+		},
+		workspace: (workspaceId) => {
+			const row = workspaceRows().find((w) => w.id === workspaceId);
+			if (!row?.projectId) return null;
+			return {
+				projectId: row.projectId,
+				name: row.name || row.branch,
+				projectName: projectNames().get(row.projectId) || "a project",
+				path: row.path,
+			};
+		},
+		startAgent: async (workspaceId, agent, prompt) => {
+			const result = await runAgent({ workspaceId, agent, prompt });
+			return { terminalId: result.sessionId };
 		},
 		lastReply: async (agent) => {
 			const result = await transcriptSession({

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useCityActions } from "../../../../hooks/useCityActions";
-import type { CityProject, CityRoom } from "../../../../types";
+import type { CityHandover, CityProject, CityRoom } from "../../../../types";
 import { presentIn } from "../../../../utils/buildingSnapshot";
 import { AgentPanel, type BuildingSelection } from "./components/AgentPanel";
 import { BuildingFloor } from "./components/BuildingFloor";
@@ -10,6 +10,7 @@ interface BuildingViewProps {
 	project: CityProject;
 	projects: CityProject[];
 	rooms: CityRoom[];
+	handovers: CityHandover[];
 	maxRelays: number;
 }
 
@@ -17,6 +18,7 @@ export function BuildingView({
 	project,
 	projects,
 	rooms,
+	handovers,
 	maxRelays,
 }: BuildingViewProps) {
 	const actions = useCityActions();
@@ -71,6 +73,7 @@ export function BuildingView({
 					projects={projects}
 					everyone={everyone}
 					rooms={rooms}
+					handovers={handovers}
 					maxRelays={maxRelays}
 					selection={selection}
 					onSelectAgent={selectAgent}

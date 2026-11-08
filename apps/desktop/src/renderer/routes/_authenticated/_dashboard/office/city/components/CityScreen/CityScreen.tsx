@@ -21,7 +21,8 @@ const SUMMARY: Array<[AgentStatus, string]> = [
 
 export function CityScreen({ projectId }: CityScreenProps) {
 	const navigate = useNavigate();
-	const { projects, rooms, maxRelays, hostReady, ready } = useCity();
+	const { projects, rooms, handovers, maxRelays, hostReady, ready } = useCity();
+	const waiting = handovers.filter((h) => h.status === "asked").length;
 	const inside = projects.find((p) => p.id === projectId) ?? null;
 	const shown = inside ? [inside] : projects;
 	const agents = shown.flatMap((p) => p.workspaces.flatMap((w) => w.agents));
@@ -69,6 +70,11 @@ export function CityScreen({ projectId }: CityScreenProps) {
 									</span>
 								) : null;
 							})}
+							{waiting > 0 ? (
+								<span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-amber-600 dark:text-amber-400">
+									{waiting} hand-over request{waiting === 1 ? "" : "s"}
+								</span>
+							) : null}
 						</span>
 					</div>
 				}
@@ -96,6 +102,7 @@ export function CityScreen({ projectId }: CityScreenProps) {
 						project={inside}
 						projects={projects}
 						rooms={rooms}
+						handovers={handovers}
 						maxRelays={maxRelays}
 					/>
 				) : projects.length === 0 ? (

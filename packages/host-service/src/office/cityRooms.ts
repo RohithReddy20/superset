@@ -40,9 +40,34 @@ interface RoomState {
 	messages: CityRoomMessage[];
 }
 
+/**
+ * Work moving to another workspace: the agent writes a brief, a new agent starts in the target
+ * workspace with it and sits where the first one sits. An agent's own request waits for a person.
+ */
+export interface CityHandover {
+	id: string;
+	fromTerminalId: string;
+	fromLabel: string;
+	fromWorkspaceName: string;
+	requestedBy: "you" | "agent";
+	/** What the agent asked for, in its words; set for an agent's request. */
+	request?: string;
+	toWorkspaceId?: string;
+	toWorkspaceName?: string;
+	/** The agent kind to start there, "claude" or "codex". */
+	agent?: string;
+	note?: string;
+	status: "asked" | "briefing" | "starting" | "done" | "failed" | "declined";
+	brief?: string;
+	newTerminalId?: string;
+	error?: string;
+	createdAt: number;
+}
+
 interface CityState {
 	seats: CitySeat[];
 	rooms: Record<string, RoomState>;
+	handovers: CityHandover[];
 }
 
 export interface CityRoomSnapshot {
@@ -59,6 +84,7 @@ export interface CitySnapshot {
 	seats: CitySeat[];
 	rooms: CityRoomSnapshot[];
 	maxRelays: number;
+	handovers: CityHandover[];
 }
 
 export interface CityRoomsDeps {
@@ -69,6 +95,19 @@ export interface CityRoomsDeps {
 	send: (agent: CityAgentInfo, text: string) => Promise<void>;
 	/** The agent's last answer, read when its turn ends. */
 	lastReply: (agent: CityAgentInfo) => Promise<string | null>;
+	/** A workspace on this host, or null when there is none with that id. */
+	workspace?: (workspaceId: string) => {
+		projectId: string;
+		name: string;
+		projectName: string;
+		path: string;
+	} | null;
+	/** Starts an agent in a workspace with a first prompt; resolves to its terminal. */
+	startAgent?: (
+		workspaceId: string,
+		agent: string,
+		prompt: string,
+	) => Promise<{ terminalId: string }>;
 	/** The terminal an agent continued in after its terminal was restarted, if any. */
 	successorOf?: (terminalId: string, workspaceId: string) => string | undefined;
 	now?: () => number;
@@ -82,6 +121,8 @@ export const MAX_RELAYS = 8;
 export const SEAT_KEPT_MS = 24 * 60 * 60 * 1000;
 /** What an agent writes to end its part in a room's talk; such an answer is never passed on. */
 export const NO_REPLY = "no reply";
+export const HANDOVER_REQUEST = "HANDOVER REQUEST:";
+const HANDOVER_BRIEF = "HANDOVER BRIEF";
 const KEPT_MESSAGES = 100;
 const MAX_RELAY_CHARS = 4000;
 
@@ -132,6 +173,7 @@ export class CityRooms {
 			seats: this.state.seats.filter((s) => live.has(s.terminalId)),
 			rooms,
 			maxRelays: MAX_RELAYS,
+			handovers: this.state.handovers,
 		};
 	}
 
@@ -203,6 +245,213 @@ export class CityRooms {
 		);
 	}
 
+	/** You hand an agent's work to another workspace: it is asked for a brief first. */
+	async handOver(input: {
+		terminalId: string;
+		toWorkspaceId: string;
+		agent?: string;
+		note?: string;
+	}): Promise<CityHandover> {
+		const agent = this.liveAgents().find(
+			(a) => a.terminalId === input.terminalId,
+		);
+		if (!agent) throw new Error("That agent is no longer running");
+		const busy = this.state.handovers.find(
+			(h) =>
+				h.fromTerminalId === agent.terminalId &&
+				(h.status === "briefing" || h.status === "starting"),
+		);
+		if (busy) throw new Error("That agent is already handing its work over");
+		const handover: CityHandover = {
+			id: randomBytes(6).toString("hex"),
+			fromTerminalId: agent.terminalId,
+			fromLabel: agent.label,
+			fromWorkspaceName: agent.workspaceName,
+			requestedBy: "you",
+			status: "briefing",
+			createdAt: this.now(),
+		};
+		this.state.handovers.push(handover);
+		return this.startBriefing(handover, agent, input);
+	}
+
+	/** You approve an agent's own request, choosing where its work goes. */
+	async approveHandover(input: {
+		id: string;
+		toWorkspaceId: string;
+		agent?: string;
+		note?: string;
+	}): Promise<CityHandover> {
+		const handover = this.state.handovers.find((h) => h.id === input.id);
+		if (!handover || handover.status !== "asked")
+			throw new Error("That request is not waiting for an answer");
+		const agent = this.liveAgents().find(
+			(a) => a.terminalId === handover.fromTerminalId,
+		);
+		if (!agent) throw new Error("That agent is no longer running");
+		handover.status = "briefing";
+		return this.startBriefing(handover, agent, input);
+	}
+
+	async declineHandover(id: string): Promise<void> {
+		const handover = this.state.handovers.find((h) => h.id === id);
+		if (!handover || handover.status !== "asked")
+			throw new Error("That request is not waiting for an answer");
+		handover.status = "declined";
+		this.save();
+		const agent = this.liveAgents().find(
+			(a) => a.terminalId === handover.fromTerminalId,
+		);
+		if (agent)
+			await this.deps
+				.send(
+					agent,
+					`[Paradev office] Your hand-over request was declined; keep working where you are. Reply only "${NO_REPLY}".`,
+				)
+				.catch(() => {});
+	}
+
+	/** Gives up on a hand-over still waiting for its brief. */
+	cancelHandover(id: string): void {
+		const handover = this.state.handovers.find((h) => h.id === id);
+		if (!handover || handover.status !== "briefing")
+			throw new Error(
+				"Only a hand-over waiting for its brief can be cancelled",
+			);
+		handover.status = "failed";
+		handover.error = "Cancelled";
+		this.save();
+	}
+
+	private async startBriefing(
+		handover: CityHandover,
+		agent: CityAgentInfo,
+		input: { toWorkspaceId: string; agent?: string; note?: string },
+	): Promise<CityHandover> {
+		const target = this.deps.workspace?.(input.toWorkspaceId);
+		if (!target || !this.deps.startAgent) {
+			handover.status = "failed";
+			handover.error = "That workspace does not exist on this machine";
+			this.save();
+			throw new Error(handover.error);
+		}
+		if (input.toWorkspaceId === agent.workspaceId) {
+			handover.status = "failed";
+			handover.error = "Pick a different workspace from the agent's own";
+			this.save();
+			throw new Error(handover.error);
+		}
+		handover.toWorkspaceId = input.toWorkspaceId;
+		handover.toWorkspaceName = target.name;
+		handover.agent = input.agent ?? agent.agentId;
+		if (input.note) handover.note = input.note;
+		this.post(this.room(keyOf(this.placeOf(agent))), {
+			fromId: agent.terminalId,
+			toIds: [],
+			text: `${agent.label} from ${agent.workspaceName} is writing a brief to hand its work to ${target.name} (${target.projectName})`,
+			kind: "system",
+		});
+		this.save();
+		try {
+			await this.deps.send(
+				agent,
+				[
+					`[Paradev office] Your work is being handed over to a new agent in "${target.name}" (project ${target.projectName}, folder ${target.path}).`,
+					"Write a hand-over brief for it: what you were asked to do, what is done, what is left, the files and decisions that matter, and anything it must not redo.",
+					`Start your reply with the line "${HANDOVER_BRIEF}" and mention nobody. After this, stop working on that task.`,
+				].join("\n"),
+			);
+		} catch (error) {
+			handover.status = "failed";
+			handover.error = error instanceof Error ? error.message : String(error);
+			this.save();
+		}
+		return handover;
+	}
+
+	private async finishHandover(
+		handover: CityHandover,
+		agent: CityAgentInfo,
+		reply: string,
+	): Promise<void> {
+		const target = handover.toWorkspaceId
+			? this.deps.workspace?.(handover.toWorkspaceId)
+			: null;
+		const start = this.deps.startAgent;
+		if (!target || !start || !handover.toWorkspaceId) {
+			handover.status = "failed";
+			handover.error = "The target workspace is gone";
+			this.save();
+			return;
+		}
+		handover.brief = reply
+			.replace(new RegExp(`^${HANDOVER_BRIEF}\\s*`, "i"), "")
+			.trim();
+		handover.status = "starting";
+		this.save();
+		const place = this.placeOf(agent);
+		const placeName = this.deps.roomName(place.projectId, place.roomId) ?? "";
+		const kind = handover.agent ?? agent.agentId;
+		const agents = this.liveAgents();
+		const together = handlesFor([
+			...agents.filter((a) => {
+				const p = this.placeOf(a);
+				return p.projectId === place.projectId && p.roomId === place.roomId;
+			}),
+			{
+				...agent,
+				terminalId: "~new",
+				agentId: kind,
+				workspaceId: handover.toWorkspaceId,
+				workspaceName: target.name,
+			},
+		]);
+		const theirHandle = together.get(agent.terminalId) ?? agent.agentId;
+		const prompt = [
+			`[Paradev office] You take over work from ${agent.label}, who worked in "${agent.workspaceName}" (project ${agent.projectName}). You work in "${target.name}" (project ${target.projectName}, folder ${target.path}); stay in your own folder.`,
+			`Their brief:\n${handover.brief}`,
+			handover.note
+				? `From the person running the office: ${handover.note}`
+				: "",
+			`You sit with them in "${placeName}". To ask them something, start a line with @${theirHandle}.`,
+		]
+			.filter(Boolean)
+			.join("\n\n");
+		try {
+			const { terminalId } = await start(handover.toWorkspaceId, kind, prompt);
+			handover.newTerminalId = terminalId;
+			handover.status = "done";
+			const home =
+				target.projectId === place.projectId &&
+				handover.toWorkspaceId === place.roomId;
+			if (!home)
+				this.state.seats.push({
+					terminalId,
+					workspaceId: handover.toWorkspaceId,
+					projectId: place.projectId,
+					roomId: place.roomId,
+					since: this.now(),
+				});
+			this.post(this.room(keyOf(place)), {
+				fromId: agent.terminalId,
+				toIds: [],
+				text: `${agent.label} handed its work to a new agent in ${target.name}, who sits here now`,
+				kind: "system",
+			});
+			this.save();
+			await this.deps
+				.send(
+					agent,
+					`[Paradev office] Your work now continues in "${target.name}" (project ${target.projectName}) with a new agent sitting next to you. Stop working on it; answer its questions if it asks. Reply only "${NO_REPLY}".`,
+				)
+				.catch(() => {});
+		} catch (error) {
+			handover.status = "failed";
+			handover.error = error instanceof Error ? error.message : String(error);
+			this.save();
+		}
+	}
+
 	resume(projectId: string, roomId: string): void {
 		const room = this.room(keyOf({ projectId, roomId }));
 		room.relayed = 0;
@@ -221,12 +470,49 @@ export class CityRooms {
 		if (!agent) return;
 		const place = this.placeOf(agent);
 		const handles = this.handles(place.projectId, place.roomId, agents);
-		if (handles.size < 2) return;
+		const briefing = this.state.handovers.find(
+			(h) => h.fromTerminalId === agent.terminalId && h.status === "briefing",
+		);
+		if (handles.size < 2 && !briefing) return;
 		const settle = this.deps.settleMs ?? 1000;
 		if (settle > 0) await new Promise((r) => setTimeout(r, settle));
 		const reply = (await this.deps.lastReply(agent))?.trim();
 		if (!reply || this.lastRelayed.get(agent.terminalId) === reply) return;
-		if (saysNoReply(reply)) return;
+		if (briefing) {
+			this.lastRelayed.set(agent.terminalId, reply);
+			await this.finishHandover(briefing, agent, reply);
+			return;
+		}
+		const asked = handoverRequest(reply);
+		if (
+			asked &&
+			!this.state.handovers.some(
+				(h) =>
+					h.fromTerminalId === agent.terminalId &&
+					(h.status === "asked" ||
+						h.status === "briefing" ||
+						h.status === "starting"),
+			)
+		) {
+			this.state.handovers.push({
+				id: randomBytes(6).toString("hex"),
+				fromTerminalId: agent.terminalId,
+				fromLabel: agent.label,
+				fromWorkspaceName: agent.workspaceName,
+				requestedBy: "agent",
+				request: asked,
+				status: "asked",
+				createdAt: this.now(),
+			});
+			this.post(this.room(keyOf(place)), {
+				fromId: agent.terminalId,
+				toIds: [],
+				text: `${agent.label} from ${agent.workspaceName} asks to hand its work over: ${asked}`,
+				kind: "system",
+			});
+			this.save();
+		}
+		if (handles.size < 2 || saysNoReply(reply)) return;
 		const targets = mentioned(reply, handles, agent.terminalId);
 		if (targets.length === 0) return;
 		this.lastRelayed.set(agent.terminalId, reply);
@@ -328,6 +614,7 @@ export class CityRooms {
 			`[Paradev office] You sit in "${roomName}" as @${handles.get(agent.terminalId)}, with ${this.roster(agent, handles, agents)}.`,
 			"Your own workspace, folder and branch are unchanged; keep working there.",
 			`To talk to someone here, start a line with their @handle (@all for everyone). When you have nothing more for them, write only "${NO_REPLY}" and mention nobody.`,
+			`If your work belongs in another workspace or project, write a line "${HANDOVER_REQUEST} <where> - <why>"; the person running the office decides.`,
 		].join("\n");
 	}
 
@@ -453,6 +740,16 @@ export function handlesFor(agents: CityAgentInfo[]): Map<string, string> {
 	return handles;
 }
 
+/** What an agent asked for in a "HANDOVER REQUEST:" line, if it wrote one. */
+export function handoverRequest(reply: string): string | null {
+	for (const line of reply.split("\n")) {
+		const clean = line.trim().replace(/^[*_`]+|[*_`]+$/g, "");
+		if (clean.toUpperCase().startsWith(HANDOVER_REQUEST))
+			return clean.slice(HANDOVER_REQUEST.length).trim() || null;
+	}
+	return null;
+}
+
 export function saysNoReply(reply: string): boolean {
 	return reply.split("\n").some((line) =>
 		/^\(?no reply\)?[.!]?$/.test(
@@ -495,12 +792,16 @@ function parseKey(key: string): { projectId: string; roomId: string } {
 }
 
 function load(path: string): CityState {
-	if (!existsSync(path)) return { seats: [], rooms: {} };
+	if (!existsSync(path)) return { seats: [], rooms: {}, handovers: [] };
 	try {
 		const parsed = JSON.parse(readFileSync(path, "utf8")) as Partial<CityState>;
-		return { seats: parsed.seats ?? [], rooms: parsed.rooms ?? {} };
+		return {
+			seats: parsed.seats ?? [],
+			rooms: parsed.rooms ?? {},
+			handovers: parsed.handovers ?? [],
+		};
 	} catch {
-		return { seats: [], rooms: {} };
+		return { seats: [], rooms: {}, handovers: [] };
 	}
 }
 

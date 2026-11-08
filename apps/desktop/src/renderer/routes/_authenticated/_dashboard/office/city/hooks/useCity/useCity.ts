@@ -6,7 +6,7 @@ import { getHostServiceClientByUrl } from "renderer/lib/host-service-client";
 import { useHostWorkspaces } from "renderer/routes/_authenticated/providers/HostWorkspacesProvider";
 import { useLocalHostService } from "renderer/routes/_authenticated/providers/LocalHostServiceProvider";
 import { useV2NotificationStore } from "renderer/stores/v2-notifications";
-import type { CityProject, CityRoom } from "../../types";
+import type { CityHandover, CityProject, CityRoom } from "../../types";
 import { buildCity } from "../../utils/buildCity";
 
 const POLL_MS = 1500;
@@ -19,6 +19,7 @@ export function cityQueryKey(hostUrl: string | null) {
 export function useCity(): {
 	projects: CityProject[];
 	rooms: CityRoom[];
+	handovers: CityHandover[];
 	maxRelays: number;
 	hostReady: boolean;
 	ready: boolean;
@@ -72,6 +73,7 @@ export function useCity(): {
 	return {
 		projects: city,
 		rooms: rooms.data?.rooms ?? [],
+		handovers: rooms.data?.handovers ?? [],
 		maxRelays: rooms.data?.maxRelays ?? 0,
 		hostReady: !!activeHostUrl,
 		ready: workspacesReady && projectsReady && bindings.isSuccess,

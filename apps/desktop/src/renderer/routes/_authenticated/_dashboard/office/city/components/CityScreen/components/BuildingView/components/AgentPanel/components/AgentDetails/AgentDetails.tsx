@@ -6,20 +6,32 @@ import { LuExternalLink } from "react-icons/lu";
 import { navigateToV2Workspace } from "renderer/routes/_authenticated/_dashboard/utils/workspace-navigation";
 import { useAgentInput } from "../../../../../../../../hooks/useAgentInput";
 import { useAgentTranscripts } from "../../../../../../../../hooks/useAgentTranscript";
-import type { CityAgent, CityProject } from "../../../../../../../../types";
+import type {
+	CityAgent,
+	CityHandover,
+	CityProject,
+} from "../../../../../../../../types";
 import { AgentIcon } from "../../../AgentIcon";
 import { MessageBox } from "../../../MessageBox";
 import { StatusBadge } from "../../../StatusBadge";
 import { Conversation } from "./components/Conversation";
+import { HandoverBox } from "./components/HandoverBox";
 import { KeyButtons } from "./components/KeyButtons";
 import { SeatRow } from "./components/SeatRow";
 
 interface AgentDetailsProps {
 	agent: CityAgent;
 	projects: CityProject[];
+	handovers: CityHandover[];
+	onSelectAgent: (terminalId: string) => void;
 }
 
-export function AgentDetails({ agent, projects }: AgentDetailsProps) {
+export function AgentDetails({
+	agent,
+	projects,
+	handovers,
+	onSelectAgent,
+}: AgentDetailsProps) {
 	const workspace = projects
 		.find((p) => p.id === agent.projectId)
 		?.workspaces.find((w) => w.id === agent.workspaceId);
@@ -73,6 +85,12 @@ export function AgentDetails({ agent, projects }: AgentDetailsProps) {
 				) : null}
 			</div>
 			<SeatRow agent={agent} projects={projects} />
+			<HandoverBox
+				agent={agent}
+				projects={projects}
+				handovers={handovers}
+				onSelectAgent={onSelectAgent}
+			/>
 			<Conversation
 				agentName={agent.name}
 				transcript={transcript?.data}

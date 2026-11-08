@@ -249,3 +249,116 @@ describe("lastAnswer", () => {
 		expect(lastAnswer("a\nb\n", "stream")).toBe("a\nb");
 	});
 });
+
+describe("hand-over", () => {
+	function handoverSetup() {
+		const a = agent("t1", "api");
+		const b = agent("t2", "api", "codex");
+		const everyone = [a, b];
+		const sent: Array<{ to: string; text: string }> = [];
+		const started: Array<{
+			workspaceId: string;
+			agent: string;
+			prompt: string;
+		}> = [];
+		const replies = new Map<string, string>();
+		const rooms = new CityRooms({
+			statePath: join(mkdtempSync(join(tmpdir(), "city-")), "city.json"),
+			agents: () => everyone,
+			roomName: (_p, roomId) => (roomId === "api" ? "ws api" : null),
+			send: async (to, text) => {
+				sent.push({ to: to.terminalId, text });
+			},
+			lastReply: async (x) => replies.get(x.terminalId) ?? null,
+			workspace: (id) =>
+				id === "web"
+					? {
+							projectId: "p2",
+							name: "Web app",
+							projectName: "web",
+							path: "/w/web",
+						}
+					: id === "api"
+						? {
+								projectId: "p1",
+								name: "ws api",
+								projectName: "p1",
+								path: "/w/api",
+							}
+						: null,
+			startAgent: async (workspaceId, kind, prompt) => {
+				started.push({ workspaceId, agent: kind, prompt });
+				everyone.push({
+					...agent("t9", "web", kind, "p2"),
+					workspaceName: "Web app",
+				});
+				return { terminalId: "t9" };
+			},
+			settleMs: 0,
+		});
+		return { rooms, sent, started, replies };
+	}
+
+	test("asks for a brief, starts the new agent with it, and seats it beside the old one", async () => {
+		const { rooms, sent, started, replies } = handoverSetup();
+		await rooms.handOver({
+			terminalId: "t1",
+			toWorkspaceId: "web",
+			note: "keep it small",
+		});
+		expect(sent.at(-1)?.to).toBe("t1");
+		expect(sent.at(-1)?.text).toContain(
+			'Start your reply with the line "HANDOVER BRIEF"',
+		);
+		replies.set("t1", "HANDOVER BRIEF\nDone: server.js. Left: the client.");
+		await rooms.onAgentEvent({ terminalId: "t1", eventType: "Stop" });
+		expect(started).toHaveLength(1);
+		expect(started[0]?.workspaceId).toBe("web");
+		expect(started[0]?.prompt).toContain("Done: server.js. Left: the client.");
+		expect(started[0]?.prompt).toContain("keep it small");
+		expect(started[0]?.prompt).toContain("@claude-ws-api");
+		const snapshot = rooms.snapshot();
+		expect(snapshot.handovers[0]).toMatchObject({
+			status: "done",
+			newTerminalId: "t9",
+		});
+		expect(snapshot.seats.map((s) => [s.terminalId, s.roomId])).toEqual([
+			["t9", "api"],
+		]);
+		expect(sent.at(-1)?.to).toBe("t1");
+		expect(sent.at(-1)?.text).toContain("Stop working on it");
+	});
+
+	test("an agent's own request waits for a person, who approves or declines it", async () => {
+		const { rooms, sent, started, replies } = handoverSetup();
+		replies.set(
+			"t1",
+			"This belongs in the web project.\nHANDOVER REQUEST: web - the client lives there",
+		);
+		await rooms.onAgentEvent({ terminalId: "t1", eventType: "Stop" });
+		const [request] = rooms.snapshot().handovers;
+		expect(request).toMatchObject({
+			status: "asked",
+			request: "web - the client lives there",
+		});
+		expect(started).toHaveLength(0);
+		await rooms.declineHandover(request?.id ?? "");
+		expect(rooms.snapshot().handovers[0]?.status).toBe("declined");
+		expect(sent.at(-1)?.text).toContain("declined");
+		replies.set("t1", "HANDOVER REQUEST: web - again");
+		await rooms.onAgentEvent({ terminalId: "t1", eventType: "Stop" });
+		const again = rooms.snapshot().handovers.at(-1);
+		await rooms.approveHandover({ id: again?.id ?? "", toWorkspaceId: "web" });
+		expect(rooms.snapshot().handovers.at(-1)?.status).toBe("briefing");
+	});
+
+	test("refuses the agent's own workspace and unknown ones", async () => {
+		const { rooms } = handoverSetup();
+		await expect(
+			rooms.handOver({ terminalId: "t1", toWorkspaceId: "api" }),
+		).rejects.toThrow("different workspace");
+		await expect(
+			rooms.handOver({ terminalId: "t2", toWorkspaceId: "nope" }),
+		).rejects.toThrow("does not exist");
+	});
+});

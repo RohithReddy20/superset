@@ -348,3 +348,36 @@ that named the other agent ("@x answered: …") was passed on and cost it a turn
 - **Still open.** Agents whose terminal died while their binding was not ended (two from earlier
   tests, after a host restart) still list as running; messages to them are noted as "Could not
   reach" in the room.
+
+## 2026-11-08 night: hand-over to another workspace (part 2)
+
+Seating never moves work; a hand-over does, and only when the person starts it or approves an
+agent's own request.
+
+- **Host (`CityRooms`).** `handOver` (you) or `approveHandover` (an agent's request) types a brief
+  request into the agent's terminal: write what was asked, what is done, what is left, the files
+  and decisions that matter, starting with "HANDOVER BRIEF". On that agent's next `Stop` the brief
+  is read, a new agent is started in the target workspace (`runAgentInWorkspace`, the app's own
+  launch path) with the brief, the person's note and the old agent's exact @handle, seated where
+  the old one sits, and the old one is told to stop and answer questions. An agent writing a line
+  "HANDOVER REQUEST: <where> - <why>" (the room note tells agents they can) creates a request that
+  waits for the person; declining tells the agent to carry on. A hand-over waiting for its brief can
+  be cancelled. tRPC: `office.cityHandOver`, `cityHandoverApprove`, `cityHandoverDecline`,
+  `cityHandoverCancel`; `cityState` carries `handovers`.
+- **Renderer.** The agent panel has "Hand its work to another workspace…" (target workspace, new
+  agent kind, note), shows the hand-over's state (writing its brief, starting, done with "Show the
+  new agent", failed), "Took over from …" on the new agent, and Approve/Decline with a workspace
+  pick for an agent's request. The city header counts waiting requests.
+- **Checked live** (no app restarts; agents started through the host, the app driven over CDP):
+  - You: a Claude in city-demo-api "Release notes" had written three repo facts; handed over from its
+    panel to city-demo-web "Plan release" with a note. Its brief was thorough (task, done, where the
+    file is, what is open, what matters for the new workspace); the new Claude started there with it,
+    wrote the facts into city-demo-web/notes.txt, stayed in its folder; the old one answered the stop
+    message with "no reply"; the new one sat next to it with both handles in the room.
+  - Agent: told in the room to commit server.js in city-demo-api, the web Claude refused to leave its
+    folder and wrote a HANDOVER REQUEST. The header showed "1 hand-over request"; approving it from
+    its panel to api "Version endpoint" produced a brief and a new Claude there, which committed only
+    server.js ("Add version server") and reported back by @handle.
+- **Open.** New agents are only started in existing workspaces (no "new workspace" option yet); the
+  old agent is told to stop rather than closed; requests only reach agents that sat in a room (the
+  note is part of the room introduction).

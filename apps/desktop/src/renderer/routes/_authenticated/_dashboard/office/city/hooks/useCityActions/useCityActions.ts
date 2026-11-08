@@ -30,5 +30,21 @@ export function useCityActions() {
 		say: (place: CityPlace, text: string) =>
 			then(client().citySay.mutate({ ...place, text })),
 		resume: (place: CityPlace) => then(client().cityResume.mutate(place)),
+		handOver: (input: {
+			terminalId: string;
+			toWorkspaceId: string;
+			agent?: string;
+			note?: string;
+		}) => then(client().cityHandOver.mutate(input)),
+		approveHandover: (input: {
+			id: string;
+			toWorkspaceId: string;
+			agent?: string;
+			note?: string;
+		}) => then(client().cityHandoverApprove.mutate(input)),
+		declineHandover: (id: string) =>
+			then(client().cityHandoverDecline.mutate({ id })),
+		cancelHandover: (id: string) =>
+			then(client().cityHandoverCancel.mutate({ id })),
 	};
 }
