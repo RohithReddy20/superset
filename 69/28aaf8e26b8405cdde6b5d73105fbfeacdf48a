@@ -1,0 +1,25 @@
+packages/host-service/src/office/cityRooms.test.ts
+  s_8322a827a65284::t_262d9f621b079e 12,195-230
+packages/host-service/src/office/cityRooms.ts
+  s_8322a827a65284::t_d5e33d7f5ab45a 18-19,23-24,72-73,81-82,130-135,156,373-376,380-404
+packages/host-service/src/office/createCityRooms.ts
+  s_8322a827a65284::t_42b1883a30886f 10,77-78
+plans/20261105-office-orchestration-notes.md
+  s_8322a827a65284::t_3935f8c609c4f6 341-350
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6928aaf8e26b8405cdde6b5d73105fbfeacdf48a",
+  "prompts": {},
+  "sessions": {
+    "s_8322a827a65284": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "915e3ab3-2509-48d4-ac28-15e170582e47",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
