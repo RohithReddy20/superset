@@ -51,3 +51,6 @@ export type CityRoomsSnapshot =
 export type CityRoom = CityRoomsSnapshot["rooms"][number];
 export type CityRoomMessage = CityRoom["messages"][number];
 export type CityHandover = CityRoomsSnapshot["handovers"][number];
+export type OfficeRoomRef = CityRoomsSnapshot["officeRooms"][number];
+/** The `projectId` of a place in the office rather than a project's building. */
+export const OFFICE_PLACE = "office";

@@ -340,6 +340,18 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 		officeRuntime ??= new OfficeRuntime({
 			db,
 			homeDir: join(resolveAppHomeDir(), "office"),
+			sendToTerminal: async (terminalId, workspaceId, text) => {
+				const result = await sendAgentMessage({
+					terminalId,
+					workspaceId,
+					text,
+					submit: true,
+					db,
+					eventBus,
+					terminalAgentStore,
+				});
+				if ("error" in result) throw new Error(result.error);
+			},
 			baseUrl: () =>
 				`http://127.0.0.1:${process.env.HOST_SERVICE_PORT || process.env.PORT}`,
 		});
@@ -352,6 +364,12 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 		terminalAgentStore,
 		statePath: join(resolveAppHomeDir(), "office", "city.json"),
 		runAgent: (input) => runAgentInWorkspace(chatAgentContext, input),
+		office: {
+			rooms: () => office().guestRooms(),
+			sync: (guests) => office().syncGuests(guests),
+			turnEnded: (terminalId, reply) =>
+				office().guestTurnEnded(terminalId, reply),
+		},
 	});
 
 	const runtime = {

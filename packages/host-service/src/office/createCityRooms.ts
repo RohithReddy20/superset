@@ -11,6 +11,7 @@ import { findResumedSuccessorTerminalId } from "../terminal-agents/persistence";
 import {
 	type CityAgentInfo,
 	CityRooms,
+	type CityRoomsDeps,
 	lastAnswer,
 	MEETING_ROOM,
 } from "./cityRooms";
@@ -24,6 +25,7 @@ export function createCityRooms({
 	terminalAgentStore,
 	statePath,
 	runAgent,
+	office,
 }: {
 	db: HostDb;
 	eventBus: EventBus;
@@ -35,6 +37,8 @@ export function createCityRooms({
 		agent: string;
 		prompt: string;
 	}) => Promise<{ sessionId: string }>;
+	/** The office, so agents can sit in its rooms next to its own teammates. */
+	office?: CityRoomsDeps["office"];
 }): CityRooms {
 	mkdirSync(dirname(statePath), { recursive: true });
 	const workspaceRows = () =>
@@ -82,6 +86,7 @@ export function createCityRooms({
 	const rooms = new CityRooms({
 		statePath,
 		agents,
+		...(office ? { office } : {}),
 		successorOf: (terminalId, workspaceId) =>
 			findResumedSuccessorTerminalId(db, workspaceId, terminalId),
 		roomName: (projectId, roomId) => {

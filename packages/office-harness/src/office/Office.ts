@@ -111,6 +111,17 @@ export class Office {
 		return teammate;
 	}
 
+	/** Takes a teammate out of the office and every room; its past messages stay. */
+	removeTeammate(id: string): void {
+		const index = this.state.teammates.findIndex((t) => t.id === id);
+		if (index < 0) return;
+		this.state.teammates.splice(index, 1);
+		for (const room of this.state.rooms)
+			room.members = room.members.filter((m) => m !== id);
+		this.inboxes.delete(id);
+		this.save();
+	}
+
 	upsertRoom(room: Room): Room {
 		const existing = this.state.rooms.find((r) => r.id === room.id);
 		if (existing) Object.assign(existing, room);

@@ -16,6 +16,7 @@ import { ACP_HARNESSES, UNGATED_VERSION } from "../chat-v3/acpCatalogue";
 import { resolveAgentCli } from "../chat-v3/agentCli";
 import { buildChatAgentEnv } from "../chat-v3/agentEnv";
 import type { HostDb } from "../db";
+import { type OfficeGuestInfo, OfficeGuests } from "./officeGuests";
 import type {
 	OfficeConfig,
 	OfficeEngine,
@@ -86,12 +87,19 @@ export class OfficeRuntime {
 	private readonly tokens = new Map<string, string>();
 	private readonly log: OfficeLogLine[] = [];
 	private started = false;
+	private readonly guests: OfficeGuests;
 
 	constructor(
 		private readonly options: {
 			db: HostDb;
 			homeDir: string;
 			baseUrl: () => string;
+			/** Types a message into an agent's terminal, for CLI agents sitting in office rooms. */
+			sendToTerminal?: (
+				terminalId: string,
+				workspaceId: string,
+				text: string,
+			) => Promise<void>;
 		},
 	) {
 		mkdirSync(options.homeDir, { recursive: true });
@@ -101,6 +109,15 @@ export class OfficeRuntime {
 			limits: this.config.limits,
 			leadId: this.config.lead,
 			maxTaskRounds: this.config.limits?.taskRounds,
+		});
+		this.guests = new OfficeGuests({
+			office: this.office,
+			send: async (info, text) => {
+				if (!options.sendToTerminal)
+					throw new Error("This host cannot type into terminals");
+				await options.sendToTerminal(info.terminalId, info.workspaceId, text);
+			},
+			onRoomsChanged: () => this.applyRooms(),
 		});
 		this.applyConfig();
 		this.office.subscribe((event) => {
@@ -129,6 +146,20 @@ export class OfficeRuntime {
 				: null,
 			leadId: this.config.lead ?? null,
 		};
+	}
+
+	/** Office rooms a CLI agent can sit in. */
+	guestRooms(): Array<{ id: string; name: string }> {
+		return this.guests.rooms();
+	}
+
+	/** The CLI agents sitting in office rooms, exactly; see {@link OfficeGuests.sync}. */
+	syncGuests(list: OfficeGuestInfo[]): void {
+		this.guests.sync(list);
+	}
+
+	guestTurnEnded(terminalId: string, reply: string): Promise<void> {
+		return this.guests.turnEnded(terminalId, reply);
 	}
 
 	seatForToken(token: string): Seat | undefined {
@@ -754,12 +785,22 @@ ${check.output.slice(-600)}`
 				dailyTurns: seat.dailyTurns,
 			});
 		}
+		this.applyRooms();
+	}
+
+	/** Config rooms, with the CLI agents sitting in each added to its members. */
+	private applyRooms(): void {
 		for (const room of this.config.rooms) {
 			this.office.upsertRoom({
 				id: room.id,
 				name: room.name,
 				kind: room.kind ?? "room",
-				members: room.members,
+				members: [
+					...room.members,
+					...(this.guests?.membersOf(room.id) ?? []).filter(
+						(id) => !room.members.includes(id),
+					),
+				],
 				place: room.place,
 			});
 		}

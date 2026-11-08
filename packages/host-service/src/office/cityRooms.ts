@@ -85,6 +85,8 @@ export interface CitySnapshot {
 	rooms: CityRoomSnapshot[];
 	maxRelays: number;
 	handovers: CityHandover[];
+	/** Rooms of the office an agent can sit in, as the place `{ projectId: "office", roomId }`. */
+	officeRooms: Array<{ id: string; name: string }>;
 }
 
 export interface CityRoomsDeps {
@@ -95,6 +97,24 @@ export interface CityRoomsDeps {
 	send: (agent: CityAgentInfo, text: string) => Promise<void>;
 	/** The agent's last answer, read when its turn ends. */
 	lastReply: (agent: CityAgentInfo) => Promise<string | null>;
+	/** The office, for agents seated in its rooms (`projectId` {@link OFFICE}). */
+	office?: {
+		rooms: () => Array<{ id: string; name: string }>;
+		sync: (
+			guests: Array<
+				Pick<
+					CityAgentInfo,
+					| "terminalId"
+					| "workspaceId"
+					| "agentId"
+					| "label"
+					| "workspaceName"
+					| "projectName"
+				> & { roomId: string }
+			>,
+		) => void;
+		turnEnded: (terminalId: string, reply: string) => Promise<void>;
+	};
 	/** A workspace on this host, or null when there is none with that id. */
 	workspace?: (workspaceId: string) => {
 		projectId: string;
@@ -116,6 +136,8 @@ export interface CityRoomsDeps {
 }
 
 export const MEETING_ROOM = "meeting";
+/** The `projectId` of a place in the office rather than in a project's building. */
+export const OFFICE = "office";
 export const MAX_RELAYS = 8;
 /** A seat whose agent stopped running is kept this long, in case it comes back in a new terminal. */
 export const SEAT_KEPT_MS = 24 * 60 * 60 * 1000;
@@ -151,7 +173,8 @@ export class CityRooms {
 		const rooms: CityRoomSnapshot[] = [];
 		for (const key of keys) {
 			const { projectId, roomId } = parseKey(key);
-			const name = this.deps.roomName(projectId, roomId);
+			if (projectId === OFFICE) continue;
+			const name = this.nameOf(projectId, roomId);
 			if (!name) continue;
 			const room = this.state.rooms[key];
 			const members = this.handles(projectId, roomId, agents);
@@ -174,6 +197,7 @@ export class CityRooms {
 			rooms,
 			maxRelays: MAX_RELAYS,
 			handovers: this.state.handovers,
+			officeRooms: this.deps.office?.rooms() ?? [],
 		};
 	}
 
@@ -186,7 +210,7 @@ export class CityRooms {
 		const agents = this.liveAgents();
 		const agent = agents.find((a) => a.terminalId === terminalId);
 		if (!agent) throw new Error("That agent is no longer running");
-		const name = this.deps.roomName(projectId, roomId);
+		const name = this.nameOf(projectId, roomId);
 		if (!name) throw new Error("That room does not exist");
 		this.state.seats = this.state.seats.filter(
 			(s) => s.terminalId !== terminalId,
@@ -220,7 +244,7 @@ export class CityRooms {
 
 	/** A person's message to everyone in a room; it also lets paused talk go on. */
 	async say(projectId: string, roomId: string, text: string): Promise<void> {
-		const name = this.deps.roomName(projectId, roomId);
+		const name = this.nameOf(projectId, roomId);
 		if (!name) throw new Error("That room does not exist");
 		const agents = this.liveAgents();
 		const handles = this.handles(projectId, roomId, agents);
@@ -390,7 +414,7 @@ export class CityRooms {
 		handover.status = "starting";
 		this.save();
 		const place = this.placeOf(agent);
-		const placeName = this.deps.roomName(place.projectId, place.roomId) ?? "";
+		const placeName = this.nameOf(place.projectId, place.roomId) ?? "";
 		const kind = handover.agent ?? agent.agentId;
 		const agents = this.liveAgents();
 		const together = handlesFor([
@@ -473,7 +497,8 @@ export class CityRooms {
 		const briefing = this.state.handovers.find(
 			(h) => h.fromTerminalId === agent.terminalId && h.status === "briefing",
 		);
-		if (handles.size < 2 && !briefing) return;
+		const inOffice = place.projectId === OFFICE;
+		if (handles.size < 2 && !briefing && !inOffice) return;
 		const settle = this.deps.settleMs ?? 1000;
 		if (settle > 0) await new Promise((r) => setTimeout(r, settle));
 		const reply = (await this.deps.lastReply(agent))?.trim();
@@ -481,6 +506,11 @@ export class CityRooms {
 		if (briefing) {
 			this.lastRelayed.set(agent.terminalId, reply);
 			await this.finishHandover(briefing, agent, reply);
+			return;
+		}
+		if (inOffice) {
+			this.lastRelayed.set(agent.terminalId, reply);
+			await this.deps.office?.turnEnded(agent.terminalId, reply);
 			return;
 		}
 		const asked = handoverRequest(reply);
@@ -519,7 +549,7 @@ export class CityRooms {
 
 		const key = keyOf(place);
 		const room = this.room(key);
-		const name = this.deps.roomName(place.projectId, place.roomId) ?? "";
+		const name = this.nameOf(place.projectId, place.roomId) ?? "";
 		this.post(room, {
 			fromId: agent.terminalId,
 			toIds: targets,
@@ -692,7 +722,27 @@ export class CityRooms {
 			this.state.seats = seats;
 			this.save();
 		}
+		if (this.deps.office) {
+			const byId = new Map(agents.map((a) => [a.terminalId, a]));
+			this.deps.office.sync(
+				this.state.seats.flatMap((seat) => {
+					const agent = byId.get(seat.terminalId);
+					return seat.projectId === OFFICE && agent
+						? [{ ...agent, roomId: seat.roomId }]
+						: [];
+				}),
+			);
+		}
 		return agents;
+	}
+
+	/** A room's name: an office room, or one of a project's rooms. */
+	private nameOf(projectId: string, roomId: string): string | null {
+		if (projectId === OFFICE)
+			return (
+				this.deps.office?.rooms().find((r) => r.id === roomId)?.name ?? null
+			);
+		return this.deps.roomName(projectId, roomId);
 	}
 
 	private room(key: string): RoomState {
