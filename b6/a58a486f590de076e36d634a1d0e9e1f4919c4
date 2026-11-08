@@ -1,0 +1,47 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/CityScreen.tsx
+  s_8322a827a65284::t_5c87b62a0db61a 24-25,73-77,105
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/BuildingView.tsx
+  s_8322a827a65284::t_88f3a570326ab6 3,13,21,76
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentPanel/AgentPanel.tsx
+  s_8322a827a65284::t_c78afa314fc40a 3-8,23,35,72-73
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentPanel/components/AgentDetails/AgentDetails.tsx
+  s_8322a827a65284::t_d619159c25ba6d 9-13,18,25-26,29-34,88-93
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentPanel/components/AgentDetails/components/HandoverBox/HandoverBox.tsx
+  s_8322a827a65284::t_86594cc3dd1d0b 1-237
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentPanel/components/AgentDetails/components/HandoverBox/index.ts
+  s_8322a827a65284::t_567ece4ab41d42 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useCity/useCity.ts
+  s_8322a827a65284::t_66869991a03ad0 9,22,76
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useCityActions/useCityActions.ts
+  s_8322a827a65284::t_fa411fe5aaf722 33-48
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/types.ts
+  s_8322a827a65284::t_1b239b18481c1b 53
+packages/host-service/src/app.ts
+  s_8322a827a65284::t_a34c39b39722fd 13,354
+packages/host-service/src/office/cityRooms.test.ts
+  s_8322a827a65284::t_a8c42f9a210ea1 252-364
+packages/host-service/src/office/cityRooms.ts
+  s_8322a827a65284::t_3a768914532354 43-66,70,87,98-110,124-125,176,248-454,473-476,481-515,617,743-752,795,798-802,804
+packages/host-service/src/office/createCityRooms.ts
+  s_8322a827a65284::t_c045c6ec08ba3b 26,32-37,47,107-120
+packages/host-service/src/trpc/router/office/office.ts
+  s_8322a827a65284::t_bf2f694b35db07 86-129
+plans/20261105-office-orchestration-notes.md
+  s_8322a827a65284::t_9ac16e3a70d820 351-383
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b6a58a486f590de076e36d634a1d0e9e1f4919c4",
+  "prompts": {},
+  "sessions": {
+    "s_8322a827a65284": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "915e3ab3-2509-48d4-ac28-15e170582e47",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
