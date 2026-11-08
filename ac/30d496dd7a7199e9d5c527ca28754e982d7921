@@ -1,0 +1,21 @@
+packages/host-service/src/office/officeGuests.test.ts
+  s_8322a827a65284::t_77dc015ed93ccf 101,110-112
+packages/host-service/src/office/officeGuests.ts
+  s_8322a827a65284::t_b13a90ba15d787 115-116,144,168-174,176,186-187,207-211
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ac30d496dd7a7199e9d5c527ca28754e982d7921",
+  "prompts": {},
+  "sessions": {
+    "s_8322a827a65284": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "915e3ab3-2509-48d4-ac28-15e170582e47",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
