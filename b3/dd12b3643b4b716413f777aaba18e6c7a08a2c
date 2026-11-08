@@ -1,0 +1,73 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/CityScreen.tsx
+  s_8322a827a65284::t_18593dc1f483e7 57-59,105-108
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/BuildingView.tsx
+  s_8322a827a65284::t_d2778e8e1e0a66 1,5,13,15-26,34-35,39-46
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentIcon/AgentIcon.tsx
+  s_8322a827a65284::t_bbd1312228abe5 1-22
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentIcon/index.ts
+  s_8322a827a65284::t_f0fe87850613c9 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentPanel/AgentPanel.tsx
+  s_8322a827a65284::t_a9c846cff0ca6d 2-5,35,50-55
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentPanel/components/AgentDetails/AgentDetails.tsx
+  s_8322a827a65284::t_1a1718074e357e 1-100
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentPanel/components/AgentDetails/components/Conversation/Conversation.tsx
+  s_8322a827a65284::t_331f418a8186da 1-84
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentPanel/components/AgentDetails/components/Conversation/index.ts
+  s_8322a827a65284::t_052bf848546f2c 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentPanel/components/AgentDetails/components/KeyButtons/KeyButtons.tsx
+  s_8322a827a65284::t_1675402d27506f 1-36
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentPanel/components/AgentDetails/components/KeyButtons/index.ts
+  s_8322a827a65284::t_14e86f3fc1866b 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentPanel/components/AgentDetails/index.ts
+  s_8322a827a65284::t_900abc13609c03 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentPanel/components/WorkspaceDetails/WorkspaceDetails.tsx
+  s_8322a827a65284::t_280764d10d7c6a 1-56
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/AgentPanel/components/WorkspaceDetails/index.ts
+  s_8322a827a65284::t_40cd1c6086ec5e 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/BuildingFloor/BuildingFloor.tsx
+  s_8322a827a65284::t_6853358f5e06a1 37-39,48-49,59-60,120-121,147,151,160-162,172,177-188,197-198
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/GroupBox/GroupBox.tsx
+  s_8322a827a65284::t_36cac803b10eb1 1-93
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/GroupBox/index.ts
+  s_8322a827a65284::t_1d972b64ddea9c 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/MessageBox/MessageBox.tsx
+  s_8322a827a65284::t_4a6f811d6c1396 1-59
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/MessageBox/index.ts
+  s_8322a827a65284::t_4917ff2df9eec2 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/StatusBadge/StatusBadge.tsx
+  s_8322a827a65284::t_f6da5ed00d39dd 1-18
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/StatusBadge/index.ts
+  s_8322a827a65284::t_9619d75cd59253 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useAgentInput/index.ts
+  s_8322a827a65284::t_53858ec4a8a5b5 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useAgentInput/useAgentInput.ts
+  s_8322a827a65284::t_914b328d88ccf6 1-50
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useAgentTranscript/index.ts
+  s_8322a827a65284::t_9dc95d58c7e308 1-5
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useAgentTranscript/useAgentTranscript.ts
+  s_8322a827a65284::t_901e84173012af 1-41
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/parseTurns/index.ts
+  s_8322a827a65284::t_2fe756b4e7825c 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/parseTurns/parseTurns.test.ts
+  s_8322a827a65284::t_b11a898e1ecd96 1-33
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/parseTurns/parseTurns.ts
+  s_8322a827a65284::t_16e8e7f80df07a 1-39
+plans/20261105-office-orchestration-notes.md
+  s_8322a827a65284::t_1aeda9eb560d2f 260-280
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b3dd12b3643b4b716413f777aaba18e6c7a08a2c",
+  "prompts": {},
+  "sessions": {
+    "s_8322a827a65284": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "915e3ab3-2509-48d4-ac28-15e170582e47",
+        "model": "unknown"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
