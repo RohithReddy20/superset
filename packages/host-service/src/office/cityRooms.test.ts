@@ -9,6 +9,7 @@ import {
 	lastAnswer,
 	MAX_RELAYS,
 	mentioned,
+	SEAT_KEPT_MS,
 	saysNoReply,
 } from "./cityRooms";
 
@@ -189,6 +190,42 @@ describe("CityRooms", () => {
 		await rooms.say("p1", "api", "hello");
 		const texts = rooms.snapshot().rooms[0]?.messages.map((m) => m.text);
 		expect(texts).toContain("Could not reach @codex: terminal is gone");
+	});
+
+	test("a seat follows its agent into the terminal it continued in after a restart", async () => {
+		const a = agent("t1", "api");
+		const b = agent("t2", "docs", "codex");
+		const everyone = [a, b];
+		let clock = 0;
+		const rooms = new CityRooms({
+			statePath: join(mkdtempSync(join(tmpdir(), "city-")), "city.json"),
+			agents: () => everyone,
+			roomName: () => "ws api",
+			send: async () => {},
+			lastReply: async () => null,
+			successorOf: (terminalId) => (terminalId === "t2" ? "t2b" : undefined),
+			now: () => clock,
+			settleMs: 0,
+		});
+		await rooms.seat("t2", "p1", "api");
+		everyone.splice(1, 1);
+		expect(rooms.snapshot().seats).toEqual([]);
+		everyone.push({ ...b, terminalId: "t2b" });
+		expect(rooms.snapshot().seats.map((s) => [s.terminalId, s.roomId])).toEqual(
+			[["t2b", "api"]],
+		);
+		clock = SEAT_KEPT_MS * 2;
+		everyone.splice(1, 1);
+		rooms.snapshot();
+		clock += SEAT_KEPT_MS - 1;
+		everyone.push({ ...b, terminalId: "t2b" });
+		expect(rooms.snapshot().seats).toHaveLength(1);
+		everyone.splice(1, 1);
+		rooms.snapshot();
+		clock += SEAT_KEPT_MS + 1;
+		rooms.snapshot();
+		everyone.push({ ...b, terminalId: "t2b" });
+		expect(rooms.snapshot().seats).toEqual([]);
 	});
 
 	test("refuses rooms the project does not have", async () => {

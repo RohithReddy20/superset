@@ -7,6 +7,7 @@ import { projects, workspaces } from "../db/schema";
 import type { EventBus } from "../events";
 import { sendAgentMessage, transcriptSession } from "../terminal/terminal";
 import type { TerminalAgentStore } from "../terminal-agents";
+import { findResumedSuccessorTerminalId } from "../terminal-agents/persistence";
 import {
 	type CityAgentInfo,
 	CityRooms,
@@ -73,6 +74,8 @@ export function createCityRooms({
 	const rooms = new CityRooms({
 		statePath,
 		agents,
+		successorOf: (terminalId, workspaceId) =>
+			findResumedSuccessorTerminalId(db, workspaceId, terminalId),
 		roomName: (projectId, roomId) => {
 			if (roomId === MEETING_ROOM)
 				return projectNames().has(projectId) ? "Meeting room" : null;

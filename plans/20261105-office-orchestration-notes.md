@@ -338,3 +338,13 @@ that named the other agent ("@x answered: …") was passed on and cost it a turn
   on. Two messages passed in all, four turns in all, no pause. Running client.js against server.js
   outside the agents returned "1.2.0" and threw on a 404; each agent only added a file in its own
   folder.
+- **Seats survive an agent's restart.** A seat now records the agent's own workspace. When its
+  terminal is gone, the seat follows `findResumedSuccessorTerminalId` to the terminal the agent
+  continued in; otherwise it is kept for a day from when the agent went missing, then dropped.
+  Checked live: seated a fresh Claude ("Seat test") in the api meeting room, restarted the PTY
+  daemon (`terminal.daemon.restart`, which killed its terminal and ended its binding), resumed it
+  (`terminalAgents.resume`, as a terminal pane does on mount): it came back in a new terminal and
+  was still in the meeting room as @claude-seat-test.
+- **Still open.** Agents whose terminal died while their binding was not ended (two from earlier
+  tests, after a host restart) still list as running; messages to them are noted as "Could not
+  reach" in the room.

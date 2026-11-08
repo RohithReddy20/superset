@@ -15,9 +15,13 @@ export interface CityAgentInfo {
 
 export interface CitySeat {
 	terminalId: string;
+	/** The agent's own workspace, to find the terminal it continues in after a restart. */
+	workspaceId?: string;
 	projectId: string;
 	roomId: string;
 	since: number;
+	/** When its agent was first seen not running; cleared when it runs again. */
+	missingSince?: number;
 }
 
 export interface CityRoomMessage {
@@ -65,6 +69,8 @@ export interface CityRoomsDeps {
 	send: (agent: CityAgentInfo, text: string) => Promise<void>;
 	/** The agent's last answer, read when its turn ends. */
 	lastReply: (agent: CityAgentInfo) => Promise<string | null>;
+	/** The terminal an agent continued in after its terminal was restarted, if any. */
+	successorOf?: (terminalId: string, workspaceId: string) => string | undefined;
 	now?: () => number;
 	/** Wait after a turn ends before reading its answer, so the agent has written it down. */
 	settleMs?: number;
@@ -72,6 +78,8 @@ export interface CityRoomsDeps {
 
 export const MEETING_ROOM = "meeting";
 export const MAX_RELAYS = 8;
+/** A seat whose agent stopped running is kept this long, in case it comes back in a new terminal. */
+export const SEAT_KEPT_MS = 24 * 60 * 60 * 1000;
 /** What an agent writes to end its part in a room's talk; such an answer is never passed on. */
 export const NO_REPLY = "no reply";
 const KEPT_MESSAGES = 100;
@@ -119,7 +127,12 @@ export class CityRooms {
 				messages: room?.messages ?? [],
 			});
 		}
-		return { seats: this.state.seats, rooms, maxRelays: MAX_RELAYS };
+		const live = new Set(agents.map((a) => a.terminalId));
+		return {
+			seats: this.state.seats.filter((s) => live.has(s.terminalId)),
+			rooms,
+			maxRelays: MAX_RELAYS,
+		};
 	}
 
 	/** Seats an agent in a room; its own workspace's room sends it home. Nothing is typed into any terminal. */
@@ -140,6 +153,7 @@ export class CityRooms {
 		if (!home)
 			this.state.seats.push({
 				terminalId,
+				workspaceId: agent.workspaceId,
 				projectId,
 				roomId,
 				since: this.now(),
@@ -356,11 +370,38 @@ export class CityRooms {
 		return handlesFor(here);
 	}
 
+	/**
+	 * The running agents. A seat follows its agent into the terminal it continued in after a
+	 * restart; a seat whose agent is gone is kept a while for that, then dropped.
+	 */
 	private liveAgents(): CityAgentInfo[] {
 		const agents = this.deps.agents();
 		const live = new Set(agents.map((a) => a.terminalId));
-		const seats = this.state.seats.filter((s) => live.has(s.terminalId));
-		if (seats.length !== this.state.seats.length) {
+		let changed = false;
+		const seats = this.state.seats.flatMap((seat) => {
+			if (live.has(seat.terminalId)) {
+				if (seat.missingSince === undefined) return [seat];
+				changed = true;
+				const { missingSince: _gone, ...back } = seat;
+				return [back];
+			}
+			const next = seat.workspaceId
+				? this.deps.successorOf?.(seat.terminalId, seat.workspaceId)
+				: undefined;
+			if (next && live.has(next)) {
+				changed = true;
+				const { missingSince: _gone, ...moved } = seat;
+				return [{ ...moved, terminalId: next }];
+			}
+			if (seat.missingSince === undefined) {
+				changed = true;
+				return [{ ...seat, missingSince: this.now() }];
+			}
+			if (this.now() - seat.missingSince < SEAT_KEPT_MS) return [seat];
+			changed = true;
+			return [];
+		});
+		if (changed) {
 			this.state.seats = seats;
 			this.save();
 		}
