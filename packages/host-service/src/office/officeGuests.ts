@@ -112,6 +112,8 @@ export class OfficeGuests {
 		const guest = this.guests.get(terminalId);
 		const item = guest?.waiting.shift();
 		if (!guest || !item) return;
+		if (guest.waiting.length === 0)
+			this.deps.office.setPresence(guest.id, "in-office", "");
 		const text = reply.trim();
 		if (!text || saysNoReply(text)) return;
 		const message = item.message;
@@ -139,7 +141,7 @@ export class OfficeGuests {
 			.filter((t) => t !== undefined)
 			.map((t) =>
 				t.kind === "human"
-					? `@${t.name} (a person)`
+					? `@${t.name} (${personRole(t.name)})`
 					: `@${t.name} (${t.role.slice(0, 80)})`,
 			)
 			.join(", ");
@@ -163,8 +165,15 @@ export class OfficeGuests {
 			);
 		if (earlier.length > 0)
 			parts.push(`Earlier in this thread:\n${earlier.join("\n")}`);
+		const who = !author
+			? "Someone"
+			: author.kind === "human"
+				? author.name === "You"
+					? "The person running this office"
+					: `${author.name} (${personRole(author.name)})`
+				: author.name;
 		parts.push(
-			`[#${room?.name ?? message.roomId}] ${author?.name ?? "Someone"}${item.reason === "mention" ? " mentioned you" : ""}:\n${message.text}`,
+			`[#${room?.name ?? message.roomId}] ${who}${item.reason === "mention" ? " mentioned you" : " wrote"}:\n${message.text}`,
 		);
 		parts.push(
 			`Your answer is posted in this thread. Mention @Name to bring someone in. If you have nothing to add, write only "${GUEST_NO_REPLY}".`,
@@ -174,6 +183,8 @@ export class OfficeGuests {
 			.send(guest.info, parts.join("\n\n"))
 			.catch((error: unknown) => {
 				guest.waiting = guest.waiting.filter((w) => w !== item);
+				if (guest.waiting.length === 0)
+					office.setPresence(guest.id, "in-office", "");
 				office.log(
 					guest.id,
 					`could not reach its terminal: ${error instanceof Error ? error.message : String(error)}`,
@@ -191,6 +202,11 @@ export class OfficeGuests {
 			name = `${base}-${n}`;
 		}
 	}
+}
+
+/** How a person is introduced; the office's own person may simply be called "You". */
+function personRole(name: string): string {
+	return name === "You" ? "the person running this office" : "a person";
 }
 
 function saysNoReply(reply: string): boolean {

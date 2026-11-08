@@ -98,6 +98,7 @@ describe("OfficeGuests", () => {
 		);
 		expect(sent[0]).toContain("@Scout (researcher)");
 		expect(sent[0]).toContain("which files are in your folder?");
+		expect(sent[0]).toContain("Rohith (a person) mentioned you");
 		await guests.turnEnded(
 			guest.terminalId,
 			"README.md and server.js. @Scout can you check them?",
@@ -106,6 +107,9 @@ describe("OfficeGuests", () => {
 		expect(reply?.authorId).toBe(guests.idOf(guest.terminalId));
 		expect(reply?.threadId).toBe(message.id);
 		expect(scoutInbox.at(-1)?.reason).toBe("mention");
+		expect(office.teammate(guests.idOf(guest.terminalId))?.presence).toBe(
+			"in-office",
+		);
 	});
 
 	test('"no reply" posts nothing, and leaving takes it out of the room', async () => {
