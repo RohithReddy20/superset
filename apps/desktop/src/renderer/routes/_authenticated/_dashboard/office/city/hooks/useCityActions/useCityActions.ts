@@ -8,10 +8,11 @@ import { cityQueryKey } from "../useCity";
 export function useCityActions() {
 	const { activeHostUrl } = useLocalHostService();
 	const queryClient = useQueryClient();
-	const client = () => {
+	const host = () => {
 		if (!activeHostUrl) throw new Error("No local host");
-		return getHostServiceClientByUrl(activeHostUrl).office;
+		return getHostServiceClientByUrl(activeHostUrl);
 	};
+	const client = () => host().office;
 	const refresh = () =>
 		queryClient.invalidateQueries({ queryKey: cityQueryKey(activeHostUrl) });
 	const then = async <T>(promise: Promise<T>): Promise<T> => {
@@ -46,5 +47,11 @@ export function useCityActions() {
 			then(client().cityHandoverDecline.mutate({ id })),
 		cancelHandover: (id: string) =>
 			then(client().cityHandoverCancel.mutate({ id })),
+		/** Starts a CLI in a workspace's folder, the same way the workspace's agent bar does. */
+		startAgent: (input: {
+			workspaceId: string;
+			agent: string;
+			prompt: string;
+		}) => then(host().agents.run.mutate(input)),
 	};
 }

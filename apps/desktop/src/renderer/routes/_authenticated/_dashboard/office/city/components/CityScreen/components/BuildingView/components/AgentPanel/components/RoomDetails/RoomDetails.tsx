@@ -14,6 +14,7 @@ import { MEETING_ROOM } from "../../../../../../../../utils/buildingSnapshot";
 import { AgentIcon } from "../../../AgentIcon";
 import { MessageBox } from "../../../MessageBox";
 import { StatusBadge } from "../../../StatusBadge";
+import { AgentBar } from "./components/AgentBar";
 
 interface RoomDetailsProps {
 	project: CityProject;
@@ -65,6 +66,13 @@ export function RoomDetails({
 						? `Workspace room · ${workspace.branch}`
 						: "Workspace room"}
 			</div>
+			{workspace ? (
+				<AgentBar
+					workspaceId={workspace.id}
+					projectId={project.id}
+					shown={workspace.agents.map((a) => a.terminalId)}
+				/>
+			) : null}
 			<div className="flex flex-col gap-1">
 				<span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
 					{people.length === 0 ? "Nobody sits here" : `${people.length} here`}
