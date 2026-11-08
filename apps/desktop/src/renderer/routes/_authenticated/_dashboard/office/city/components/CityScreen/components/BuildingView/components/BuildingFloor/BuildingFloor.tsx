@@ -34,6 +34,9 @@ const AREAS = WORLD_MAP.zones.flatMap((zone) =>
 interface BuildingFloorProps {
 	project: CityProject;
 	selectedId: string | null;
+	/** Agents picked for a group message. */
+	picked: string[];
+	onPick: (terminalIds: string[]) => void;
 	onSelectAgent: (terminalId: string) => void;
 	onSelectWorkspace: (workspaceId: string) => void;
 }
@@ -42,6 +45,8 @@ interface BuildingFloorProps {
 export function BuildingFloor({
 	project,
 	selectedId,
+	picked,
+	onPick,
 	onSelectAgent,
 	onSelectWorkspace,
 }: BuildingFloorProps) {
@@ -51,8 +56,8 @@ export function BuildingFloor({
 	const latest = useRef<ScenePayload | null>(null);
 	const previousHomes = useRef<Map<string, SeatTarget> | undefined>(undefined);
 	const [view, setView] = useState<SceneView | null>(null);
-	const handlers = useRef({ onSelectAgent, onSelectWorkspace });
-	handlers.current = { onSelectAgent, onSelectWorkspace };
+	const handlers = useRef({ onSelectAgent, onSelectWorkspace, onPick });
+	handlers.current = { onSelectAgent, onSelectWorkspace, onPick };
 	const dark = useIsDarkTheme();
 
 	const snapshot = useMemo(() => buildingSnapshot(project), [project]);
@@ -112,7 +117,8 @@ export function BuildingFloor({
 						if (id !== YOU_ID) handlers.current.onSelectAgent(id);
 					},
 					onSelectRoom: (id) => handlers.current.onSelectWorkspace(id),
-					onPick: () => {},
+					onPick: (ids) =>
+						handlers.current.onPick(ids.filter((id) => id !== YOU_ID)),
 					onMoveTeammates: () => {},
 					onDropOnEmptyArea: () => {},
 					onFrame: (frame) => overlayRef.current?.setFrame(frame),
@@ -138,11 +144,11 @@ export function BuildingFloor({
 			layout,
 			selectedId,
 			meId: YOU_ID,
-			picked: [],
+			picked,
 			canCarry: false,
 		};
 		sceneRef.current?.setState(latest.current);
-	}, [snapshot, layout, selectedId]);
+	}, [snapshot, layout, selectedId, picked]);
 
 	return (
 		<div className="relative h-full w-full overflow-hidden">
@@ -151,6 +157,9 @@ export function BuildingFloor({
 				role="application"
 				aria-label={`${project.name} building`}
 				onPointerDown={() => hostRef.current?.focus()}
+				onKeyDown={(event) => {
+					if (event.key === "Escape") onPick([]);
+				}}
 				className="h-full w-full outline-none"
 			/>
 			<FloorOverlay
@@ -160,13 +169,23 @@ export function BuildingFloor({
 				areas={AREAS}
 				faces={faces}
 				selectedId={selectedId}
-				picked={[]}
+				picked={picked}
 				meId={YOU_ID}
 				canCarry={false}
 				dots={dots}
 				icons={icons}
-				onClickTeammate={(id) => {
-					if (id !== YOU_ID) onSelectAgent(id);
+				onClickTeammate={(id, additive) => {
+					if (id === YOU_ID) return;
+					if (additive)
+						onPick(
+							picked.includes(id)
+								? picked.filter((p) => p !== id)
+								: [...picked, id],
+						);
+					else {
+						onSelectAgent(id);
+						onPick([id]);
+					}
 				}}
 				onSelectRoom={onSelectWorkspace}
 				onCarryStart={() => {}}
@@ -175,8 +194,8 @@ export function BuildingFloor({
 			/>
 			<div className="pointer-events-none absolute bottom-3 left-1/2 max-w-[calc(100%-24px)] -translate-x-1/2 truncate rounded-full border border-border bg-background/90 px-3 py-1.5 text-[12px] text-muted-foreground shadow-sm backdrop-blur">
 				<span className="font-medium text-foreground">Click someone</span> to
-				see what they are doing · click a room's sign for its workspace ·
-				double-click to walk
+				talk to them · Shift-click or Shift-drag to message several · click a
+				room's sign for its workspace
 			</div>
 			{view ? (
 				<FloorControls

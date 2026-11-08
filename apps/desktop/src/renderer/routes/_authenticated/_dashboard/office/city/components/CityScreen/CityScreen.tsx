@@ -54,9 +54,9 @@ export function CityScreen({ projectId }: CityScreenProps) {
 						) : null}
 						<span className="ml-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
 							{inside
-								? `${inside.workspaces.length} workspaces`
-								: `${projects.length} buildings`}{" "}
-							· {agents.length} agents
+								? plural(inside.workspaces.length, "workspace")
+								: plural(projects.length, "building")}{" "}
+							· {plural(agents.length, "agent")}
 							{SUMMARY.map(([status, label]) => {
 								const count = agents.filter((a) => a.status === status).length;
 								return count > 0 ? (
@@ -100,6 +100,10 @@ export function CityScreen({ projectId }: CityScreenProps) {
 			</div>
 		</div>
 	);
+}
+
+function plural(count: number, noun: string): string {
+	return `${count} ${noun}${count === 1 ? "" : "s"}`;
 }
 
 function Empty({ text }: { text: string }) {

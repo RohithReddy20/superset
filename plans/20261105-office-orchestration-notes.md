@@ -257,3 +257,24 @@ on the host.
   (not shown at all).
 - **Debt.** The city imports the office floor's scene, overlay and controls across folders; if it
   stays, move them to a shared place. `AgentPanel.tsx` holds four small components.
+
+## 2026-11-08 later: talking to CLI agents from their building (step 2)
+
+- **One agent.** The panel is now a chat. When the agent keeps its own record (`terminal.transcript`
+  source `harness`: Claude, Codex) `parseTurns` splits it into "To it" and agent bubbles; other
+  agents show their raw terminal output. A message box sends with `terminal.send` (bracketed paste,
+  then Enter); a CLI that is mid-turn queues it itself (Claude and Codex both show it as queued).
+  "Answer its screen" buttons send one key with `terminal.writeInput` (↑, ↓, Enter, Esc), for
+  permission prompts and "trust this folder?". "Terminal" opens it in its workspace as before.
+- **Several agents.** Shift-click or Shift-drag picks people on the floor; with two or more a
+  floating box lists each with its status and latest words (`lastReply`), and one message goes to
+  every picked terminal. Failures are named in the box. Esc clears the pick.
+- **Checked in the running app.** Messaged Claude "Reply with only the word pong." and saw "pong" as
+  its bubble. Picked Claude and Codex, sent "Say the word ready." from the group box: Claude's row
+  showed "ready"; Codex was still on the earlier question (its screen showed the new message
+  queued "after next tool call"). Created a fresh project whose Claude stopped at "trust this
+  folder?", opened it, pressed ↓ then Enter in the panel: it started and answered "started". No
+  console errors.
+- **Not yet.** Agents cannot message each other (step 3), the reply in the group box is the
+  agent's last words, not matched to the message that was sent, and a CLI's own numbered prompts
+  still need arrow keys rather than named answers.

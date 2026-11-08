@@ -1,0 +1,39 @@
+export interface Turn {
+	who: "you" | "agent";
+	text: string;
+}
+
+const TURN = /(?:^|\n\n)(User|Assistant): /g;
+
+/**
+ * Splits an agent's own conversation record ("User: …" and "Assistant: …" turns, blank lines
+ * between) into turns. Text before the first marker is the tail of a turn the record cut off.
+ */
+export function parseTurns(text: string): Turn[] {
+	const turns: Turn[] = [];
+	const marks = [...text.matchAll(TURN)];
+	const head = text.slice(0, marks[0]?.index ?? text.length).trim();
+	if (head) turns.push({ who: "agent", text: head });
+	marks.forEach((mark, i) => {
+		const start = (mark.index ?? 0) + mark[0].length;
+		const end = marks[i + 1]?.index ?? text.length;
+		const body = text.slice(start, end).trim();
+		if (body)
+			turns.push({ who: mark[1] === "User" ? "you" : "agent", text: body });
+	});
+	return turns;
+}
+
+/** The agent's latest words: its last turn in a conversation record, else the last line of its screen. */
+export function lastReply(
+	text: string,
+	source: "harness" | "stream" | "screen",
+): string {
+	if (source === "harness")
+		return parseTurns(text).findLast((t) => t.who === "agent")?.text ?? "";
+	const lines = text
+		.split("\n")
+		.map((l) => l.trim())
+		.filter(Boolean);
+	return lines.at(-1) ?? "";
+}
