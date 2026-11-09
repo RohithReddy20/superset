@@ -223,6 +223,22 @@ export const officeRouter = router({
 			}),
 		),
 
+	cityReconnect: protectedProcedure
+		.input(z.object({ terminalId: z.string().min(1) }))
+		.mutation(({ ctx, input }) =>
+			badRequest(() => cityOf(ctx.runtime).reconnect(input.terminalId)),
+		),
+
+	cityRemove: protectedProcedure
+		.input(z.object({ terminalId: z.string().min(1) }))
+		.mutation(({ ctx, input }) =>
+			badRequest(async () => {
+				await cityOf(ctx.runtime).remove(input.terminalId);
+				ctx.runtime.cityTasks?.().dropAgent(input.terminalId);
+				return { ok: true as const };
+			}),
+		),
+
 	cityResume: protectedProcedure.input(place).mutation(({ ctx, input }) => {
 		cityOf(ctx.runtime).resume(input.projectId, input.roomId);
 		return { ok: true as const };

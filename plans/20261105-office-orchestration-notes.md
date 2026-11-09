@@ -540,3 +540,42 @@ the CLI agents in the city's workspaces, without the office's own seats.
   above, that also stranded C-1 in "Opening a pull request". The city should say an agent's terminal
   is not connected (snapshots fail) and offer to reconnect it. The agent panel's conversation also
   shows Claude's `</pasted_content …>` wrapper on messages typed into it.
+
+## 2026-11-09: agents whose terminal stopped
+
+**Problem.** After a host restart, a crash or a reboot, an agent's terminal can be gone while
+the City still drew it as Idle. The host's reaper marks such a binding ended only after two
+missing observations five minutes apart, so the City showed a dead agent for about ten
+minutes, and messages and tasks sent to it failed. After the reaper marked it, the agent
+vanished from the City with its name, seat and task, although the app keeps it as a resume
+candidate (`endReason: "terminal-exited"`).
+
+**What changed.**
+- `office/terminalWatch.ts`: checks the daemon's live sessions at most every 10 s while the City
+  is polled. A live binding whose terminal is missing on two checks in a row is "lost". A daemon
+  that does not answer concludes nothing.
+- `createCityRooms.lostAgents()`: those, plus every resume candidate
+  (`listResumeCandidateBindings`). `CityRooms.snapshot().lost` keeps only agents the City named
+  (names are kept 24 h), with their seat.
+- `CityRooms.reconnect()`: marks a still-live binding `terminal-exited`, then calls the app's own
+  `resumeTerminalAgentSession`. The name and seat move to the new terminal at once and show as
+  "reconnecting" until it reports in (60 s at most).
+- `CityRooms.remove()`: `markTerminalDisposed` + dispose (no longer a resume candidate), and
+  drops the name and seat. The router also cancels the agent's open task.
+- `CityTasks` follows `successorOf` for every task, so a resume from anywhere (the City, a
+  terminal pane's auto-resume) carries the task along. An open task that was `working` or `pr`
+  gets one "your terminal restarted, carry on" message, 3 s after the agent's first event in
+  the new terminal.
+- Renderer: status `"lost"` ("Disconnected"): grey, faded at its desk, counted on signs, in the
+  list, and as a Needs-you chip. The agent panel shows Reconnect / Remove; a paused task card
+  says so.
+
+**Checked live** (dev app, CDP): the host restart from editing host-service left Nova's terminal
+dead, and the City flagged it within about 20 s. Bolt, Iris and Ada (dead for hours) came back as
+disconnected. Reconnect resumed Nova with its name, desk and conversation. Remove ended Ada
+(binding `disposed`). Killing Nova's shell mid-task (C-4): disconnected, Reconnect, "Told Nova
+to carry on", Nova re-ran its cut-off step, TASK DONE, ready.
+
+**Found on the way.** TanStack polling stops while the app window is unfocused, so CDP
+screenshots of a background window are stale; `focusManager.setFocused(true)` through the
+renderer's own module refreshes it.

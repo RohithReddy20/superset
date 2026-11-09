@@ -14,6 +14,8 @@ import type { CityTask } from "../../../../../../../../../../types";
 
 interface TaskCardProps {
 	task: CityTask;
+	/** Its agent's terminal stopped, so work in progress waits until it is reconnected. */
+	paused?: boolean;
 	onAskForPullRequest: () => Promise<unknown>;
 	onClose: () => Promise<unknown>;
 	onCancel: () => Promise<unknown>;
@@ -51,6 +53,7 @@ const TONE: Partial<Record<CityTask["status"], string>> = {
 /** One task's progress, its checks, and what you can do with it now. */
 export function TaskCard({
 	task,
+	paused = false,
 	onAskForPullRequest,
 	onClose,
 	onCancel,
@@ -89,7 +92,11 @@ export function TaskCard({
 				</span>
 				<span className="min-w-0 flex-1 font-medium">{task.title}</span>
 			</div>
-			<p className="text-muted-foreground">{statusText(task)}</p>
+			<p className="text-muted-foreground">
+				{paused && (task.status === "working" || task.status === "pr")
+					? `Paused: ${task.agentName}'s terminal stopped. Reconnect it and it carries on.`
+					: statusText(task)}
+			</p>
 			{task.report ? (
 				<p>
 					<span className="text-muted-foreground">It says: </span>

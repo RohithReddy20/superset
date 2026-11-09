@@ -29,6 +29,7 @@ const SUMMARY: Array<[AgentStatus, string]> = [
 	["working", "working"],
 	["review", "done"],
 	["failed", "failed"],
+	["lost", "disconnected"],
 ];
 
 export function CityScreen({ projectId, agentId, view }: CityScreenProps) {

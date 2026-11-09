@@ -56,7 +56,7 @@ function setup(over: Partial<CityTasksDeps> = {}) {
 		replies.set(terminalId, reply);
 		await tasks.onAgentEvent({ terminalId, eventType: "Stop" });
 	};
-	return { tasks, sent, stopped, started, say };
+	return { tasks, agents, sent, stopped, started, say };
 }
 
 describe("CityTasks", () => {
@@ -167,7 +167,7 @@ describe("CityTasks when the agent's terminal is not connected", () => {
 		connected = false;
 
 		await expect(tasks.askForPullRequest(task.id)).rejects.toThrow(
-			"Couldn't reach Milo: its terminal is not connected. Open its terminal once, then try again.",
+			"Couldn't reach Milo: its terminal stopped. Reconnect it in the city, then try again.",
 		);
 		expect(task.status).toBe("ready");
 		await expect(
@@ -178,6 +178,31 @@ describe("CityTasks when the agent's terminal is not connected", () => {
 			tasks.give({ terminalId: "w1", title: "More", brief: "" }),
 		).rejects.toThrow("Couldn't reach Milo");
 		expect(tasks.snapshot().tasks.map((t) => t.id)).toEqual(["C-1"]);
+	});
+});
+
+describe("CityTasks when the agent continues in a new terminal", () => {
+	test("the task follows it, and it is told to carry on once it is up", async () => {
+		const successors = new Map<string, string>();
+		const { tasks, agents, sent, say } = setup({
+			successorOf: (terminalId) => successors.get(terminalId),
+			bootMs: 0,
+		});
+		const task = await tasks.give({
+			terminalId: "w1",
+			title: "Docs",
+			brief: "",
+		});
+
+		successors.set("w1", "w2");
+		agents.splice(0, 1, { ...worker, terminalId: "w2" });
+		await tasks.onAgentEvent({ terminalId: "w2", eventType: "Attached" });
+		expect(task.terminalId).toBe("w2");
+		expect(sent.at(-1)).toMatchObject({ to: "w2" });
+		expect(sent.at(-1)?.text).toContain("Carry on where you left off");
+
+		await say("w2", "TASK DONE: wrote docs");
+		expect(task.status).toBe("ready");
 	});
 });
 

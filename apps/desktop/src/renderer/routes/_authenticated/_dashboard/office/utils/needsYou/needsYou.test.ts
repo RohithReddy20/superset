@@ -56,6 +56,28 @@ function handover(
 }
 
 describe("needsYou", () => {
+	test("a disconnected agent needs you, unless it is already reconnecting", () => {
+		const reconnecting = {
+			...agent("t2", "lost", 2),
+			lost: { resumable: true, reconnecting: true },
+		};
+		const items = needsYou({
+			projects: city([
+				{
+					...agent("t1", "lost", 1),
+					lost: { resumable: true, reconnecting: false },
+				},
+				reconnecting,
+				agent("t3", "review", 3),
+			]),
+			handovers: [],
+		});
+		expect(items.map((i) => [i.title, i.reason])).toEqual([
+			["t1", "lost"],
+			["t3", "review"],
+		]);
+	});
+
 	test("puts a question before a failure, a hand-over, office tasks and finished work", () => {
 		const items = needsYou({
 			projects: city([

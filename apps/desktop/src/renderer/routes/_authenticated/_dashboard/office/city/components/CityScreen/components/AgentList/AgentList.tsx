@@ -26,6 +26,7 @@ interface AgentListProps {
 const URGENCY: AgentStatus[] = [
 	"permission",
 	"failed",
+	"lost",
 	"review",
 	"working",
 	"idle",

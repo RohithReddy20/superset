@@ -54,5 +54,14 @@ export function useCityActions() {
 		}) => then(client().cityStart.mutate(input)),
 		rename: (terminalId: string, name: string) =>
 			then(client().cityRename.mutate({ terminalId, name })),
+		/** Continues a disconnected agent's conversation in a new terminal; resolves once the city shows it there. */
+		reconnect: async (terminalId: string) => {
+			const result = await then(client().cityReconnect.mutate({ terminalId }));
+			await refresh();
+			return result;
+		},
+		/** Ends a disconnected agent for good and takes it out of the city. */
+		remove: (terminalId: string) =>
+			then(client().cityRemove.mutate({ terminalId })),
 	};
 }

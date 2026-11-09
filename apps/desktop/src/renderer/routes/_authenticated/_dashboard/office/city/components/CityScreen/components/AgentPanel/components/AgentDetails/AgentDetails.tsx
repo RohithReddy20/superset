@@ -18,6 +18,7 @@ import { StatusBadge } from "../../../StatusBadge";
 import { Conversation } from "./components/Conversation";
 import { HandoverBox } from "./components/HandoverBox";
 import { KeyButtons } from "./components/KeyButtons";
+import { LostNotice } from "./components/LostNotice";
 import { ScreenQuestion } from "./components/ScreenQuestion";
 import { SeatRow } from "./components/SeatRow";
 import { TaskBox } from "./components/TaskBox";
@@ -27,6 +28,7 @@ interface AgentDetailsProps {
 	projects: CityProject[];
 	handovers: CityHandover[];
 	onSelectAgent: (terminalId: string) => void;
+	onRemoved: () => void;
 }
 
 export function AgentDetails({
@@ -34,6 +36,7 @@ export function AgentDetails({
 	projects,
 	handovers,
 	onSelectAgent,
+	onRemoved,
 }: AgentDetailsProps) {
 	const project = projects.find((p) => p.id === agent.projectId);
 	const workspace = project?.workspaces.find((w) => w.id === agent.workspaceId);
@@ -43,6 +46,7 @@ export function AgentDetails({
 	const [keyError, setKeyError] = useState<string | null>(null);
 	const markTerminalSeen = useV2NotificationStore((s) => s.markTerminalSeen);
 	const { terminalId, status, lastEventAt } = agent;
+	const lost = status === "lost";
 	useEffect(() => {
 		if (status === "review") markTerminalSeen(terminalId, lastEventAt);
 	}, [status, terminalId, lastEventAt, markTerminalSeen]);
@@ -102,6 +106,11 @@ export function AgentDetails({
 					</span>
 				) : null}
 			</div>
+			<LostNotice
+				agent={agent}
+				onReconnected={onSelectAgent}
+				onRemoved={onRemoved}
+			/>
 			<TaskBox agent={agent} />
 			<SeatRow agent={agent} projects={projects} />
 			<HandoverBox
@@ -110,31 +119,42 @@ export function AgentDetails({
 				handovers={handovers}
 				onSelectAgent={onSelectAgent}
 			/>
-			<ScreenQuestion agent={agent} />
-			<Conversation
-				agentName={agent.name}
-				transcript={transcript?.data}
-				loading={!!transcript?.isLoading}
-				failed={!!transcript?.isError}
-			/>
-			<KeyButtons
-				onPress={(key) => {
-					setKeyError(null);
-					input
-						.press(agent, key)
-						.catch((cause: unknown) =>
-							setKeyError(
-								cause instanceof Error ? cause.message : String(cause),
-							),
-						);
-				}}
-			/>
+			{lost ? null : <ScreenQuestion agent={agent} />}
+			{lost ? (
+				<p className="flex-1 text-[12px] text-muted-foreground">
+					Its conversation shows here again once it is reconnected.
+				</p>
+			) : (
+				<Conversation
+					agentName={agent.name}
+					transcript={transcript?.data}
+					loading={!!transcript?.isLoading}
+					failed={!!transcript?.isError}
+				/>
+			)}
+			{lost ? null : (
+				<KeyButtons
+					onPress={(key) => {
+						setKeyError(null);
+						input
+							.press(agent, key)
+							.catch((cause: unknown) =>
+								setKeyError(
+									cause instanceof Error ? cause.message : String(cause),
+								),
+							);
+					}}
+				/>
+			)}
 			{keyError ? <p className="text-[11px] text-red-500">{keyError}</p> : null}
 			<MessageBox
+				disabled={lost}
 				placeholder={
-					agent.status === "working"
-						? `Message ${agent.name}; it reads it after this turn`
-						: `Message ${agent.name}`
+					lost
+						? `Reconnect ${agent.name} to message it`
+						: agent.status === "working"
+							? `Message ${agent.name}; it reads it after this turn`
+							: `Message ${agent.name}`
 				}
 				onSend={(text) => input.send(agent, text)}
 			/>

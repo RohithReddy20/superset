@@ -8,6 +8,7 @@ import {
 	LuCircleCheck,
 	LuEye,
 	LuHand,
+	LuUnplug,
 } from "react-icons/lu";
 import type { NeedsYouItem, NeedsYouReason } from "../../../../utils/needsYou";
 
@@ -29,6 +30,11 @@ const REASONS: Record<
 		label: "Asks to hand over its work",
 		icon: LuArrowRightLeft,
 		tone: "text-amber-500 border-amber-500/40 bg-amber-500/10",
+	},
+	lost: {
+		label: "Disconnected",
+		icon: LuUnplug,
+		tone: "text-muted-foreground border-border bg-muted",
 	},
 	blocked: {
 		label: "Task blocked",

@@ -92,7 +92,7 @@ function person(agent: CityAgent): Teammate {
 		...(agent.agentId === "claude" || agent.agentId === "codex"
 			? { engine: agent.agentId }
 			: {}),
-		presence: line ? "focused" : "in-office",
+		presence: agent.lost ? "away" : line ? "focused" : "in-office",
 		line,
 		lineSince: agent.lastEventAt,
 		paused: false,

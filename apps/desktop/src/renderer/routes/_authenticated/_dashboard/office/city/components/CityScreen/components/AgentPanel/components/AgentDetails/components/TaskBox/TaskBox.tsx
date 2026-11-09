@@ -10,7 +10,7 @@ import { GiveTaskForm } from "./components/GiveTaskForm";
 import { TaskCard } from "./components/TaskCard";
 
 interface TaskBoxProps {
-	agent: Pick<CityAgent, "terminalId" | "projectId" | "name">;
+	agent: Pick<CityAgent, "terminalId" | "projectId" | "name" | "status">;
 }
 
 /** The agent's task: give it one, follow it through its checks, and decide when it is ready. */
@@ -48,13 +48,14 @@ export function TaskBox({ agent }: TaskBoxProps) {
 			{last ? (
 				<TaskCard
 					task={last}
+					paused={agent.status === "lost"}
 					onAskForPullRequest={() => city.askForPullRequest(last.id)}
 					onClose={() => city.close(last.id)}
 					onCancel={() => city.cancel(last.id)}
 					onSendBack={(note) => city.sendBack(last.id, note)}
 				/>
 			) : null}
-			{open ? null : (
+			{open || agent.status === "lost" ? null : (
 				<Button
 					variant="outline"
 					size="sm"

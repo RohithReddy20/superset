@@ -49,6 +49,16 @@ export interface NameRow {
 	handle: string;
 }
 
+/** A named agent whose terminal stopped; its binding may be gone already. */
+export interface LostRow extends NameRow {
+	workspaceId: string;
+	agentId: AgentIdentityId;
+	startedAt: number;
+	since: number;
+	resumable: boolean;
+	reconnecting?: boolean;
+}
+
 /** This machine's projects that have a workspace here, each with its workspaces and running agents. */
 export function buildCity({
 	projects,
@@ -56,6 +66,7 @@ export function buildCity({
 	bindings,
 	seats,
 	names = [],
+	lost = [],
 	asks = new Map(),
 	seenAt,
 	machineId,
@@ -65,6 +76,7 @@ export function buildCity({
 	bindings: BindingRow[];
 	seats: SeatRow[];
 	names?: NameRow[];
+	lost?: LostRow[];
 	/** Questions read off agents' screens, by terminal. */
 	asks?: ReadonlyMap<string, { question: string; trust: boolean }>;
 	seenAt: Record<string, number>;
@@ -75,10 +87,26 @@ export function buildCity({
 	);
 	const workspaceById = new Map(local.map((w) => [w.id, w]));
 	const seatOf = new Map(seats.map((s) => [s.terminalId, s]));
-	const nameOf = new Map(names.map((n) => [n.terminalId, n]));
+	const nameOf = new Map(
+		[...names, ...lost].map((n) => [n.terminalId, n] as const),
+	);
+	const lostOf = new Map(lost.map((l) => [l.terminalId, l]));
+	const running = new Set(bindings.map((b) => b.terminalId));
+	const stopped: BindingRow[] = lost
+		.filter((l) => !running.has(l.terminalId))
+		.map((l) => ({
+			terminalId: l.terminalId,
+			workspaceId: l.workspaceId,
+			agentId: l.agentId,
+			startedAt: l.startedAt,
+			lastEventAt: l.since,
+			lastEventType: "Stop",
+		}));
 
 	const agentsOf = new Map<string, CityAgent[]>();
-	const ordered = [...bindings].sort((a, b) => a.startedAt - b.startedAt);
+	const ordered = [...bindings, ...stopped].sort(
+		(a, b) => a.startedAt - b.startedAt,
+	);
 	for (const binding of ordered) {
 		const workspace = workspaceById.get(binding.workspaceId);
 		if (!workspace?.projectId || binding.chatSessionId) continue;
@@ -92,7 +120,9 @@ export function buildCity({
 			lastEventAt: binding.lastEventAt,
 			lastSeenAt: seenAt[binding.terminalId],
 		});
-		const ask = status === "failed" ? undefined : asks.get(binding.terminalId);
+		const gone = lostOf.get(binding.terminalId);
+		const ask =
+			status === "failed" || gone ? undefined : asks.get(binding.terminalId);
 		list.push({
 			terminalId: binding.terminalId,
 			workspaceId: binding.workspaceId,
@@ -102,10 +132,18 @@ export function buildCity({
 			kind: label,
 			name: named?.name ?? (same > 0 ? `${label} ${same + 1}` : label),
 			handle: named?.handle ?? "",
-			status: ask ? "permission" : status,
+			status: gone ? "lost" : ask ? "permission" : status,
+			...(gone
+				? {
+						lost: {
+							resumable: gone.resumable,
+							reconnecting: !!gone.reconnecting,
+						},
+					}
+				: {}),
 			...(ask ? { asking: { question: ask.question, trust: ask.trust } } : {}),
 			startedAt: binding.startedAt,
-			lastEventAt: binding.lastEventAt,
+			lastEventAt: gone ? gone.since : binding.lastEventAt,
 			subagents: binding.subagents?.length ?? 0,
 			place: seat
 				? { projectId: seat.projectId, roomId: seat.roomId }

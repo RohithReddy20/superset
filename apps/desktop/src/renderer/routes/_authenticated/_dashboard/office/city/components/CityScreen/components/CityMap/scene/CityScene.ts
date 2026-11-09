@@ -42,6 +42,7 @@ const LIGHT: Record<AgentStatus, number> = {
 	permission: 0xff8a50,
 	review: 0x7ef0a2,
 	failed: 0xff5a5a,
+	lost: 0x4a5160,
 };
 const ZOOMS = [0.5, 0.75, 1, 1.5, 2, 3];
 const DRAG_START = 5;

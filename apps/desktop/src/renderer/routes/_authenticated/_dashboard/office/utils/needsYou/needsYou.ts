@@ -12,6 +12,7 @@ export type NeedsYouReason =
 	| "permission"
 	| "failed"
 	| "handover"
+	| "lost"
 	| "blocked"
 	| "verified"
 	| "review";
@@ -35,6 +36,7 @@ const ORDER: NeedsYouReason[] = [
 	"permission",
 	"failed",
 	"handover",
+	"lost",
 	"blocked",
 	"verified",
 	"review",
@@ -43,6 +45,7 @@ const ORDER: NeedsYouReason[] = [
 const AGENT_REASONS = new Set<CityAgent["status"]>([
 	"permission",
 	"failed",
+	"lost",
 	"review",
 ]);
 
@@ -82,6 +85,7 @@ export function needsYou({
 		if (!AGENT_REASONS.has(agent.status)) continue;
 		if (agent.status === "review" && waitingTask.has(agent.terminalId))
 			continue;
+		if (agent.lost?.reconnecting) continue;
 		items.push({
 			id: `agent:${agent.terminalId}`,
 			reason: agent.status as NeedsYouReason,

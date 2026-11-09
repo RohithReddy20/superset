@@ -86,9 +86,13 @@ export interface CityTasksDeps {
 	) => Promise<{ ok: boolean; output: string }>;
 	/** The commit checked out in a folder, or null outside git. */
 	headOf: (cwd: string) => Promise<string | null>;
+	/** The terminal an agent continued in after its terminal stopped, if any. */
+	successorOf?: (terminalId: string, workspaceId: string) => string | undefined;
 	now?: () => number;
 	/** Wait after a turn ends before reading its answer, so the agent has written it down. */
 	settleMs?: number;
+	/** Wait after an agent comes back in a new terminal before typing to it, so its screen is ready. */
+	bootMs?: number;
 }
 
 export const MAX_ROUNDS = 3;
@@ -115,6 +119,8 @@ export class CityTasks {
 	private readonly now: () => number;
 	private readonly lastSeen = new Map<string, string>();
 	private readonly busy = new Set<string>();
+	/** Tasks whose agent stopped mid-way and continues in a new terminal: told to carry on once it is up. */
+	private readonly interrupted = new Set<string>();
 
 	constructor(private readonly deps: CityTasksDeps) {
 		this.now = deps.now ?? Date.now;
@@ -122,6 +128,7 @@ export class CityTasks {
 	}
 
 	snapshot(): CityTasksSnapshot {
+		this.follow();
 		return {
 			tasks: [...this.state.tasks].sort((a, b) => b.createdAt - a.createdAt),
 			checkCommands: this.state.checkCommands,
@@ -233,11 +240,24 @@ export class CityTasks {
 		return task;
 	}
 
+	/** Cancels the open task of an agent that was removed for good. */
+	dropAgent(terminalId: string): void {
+		const task = this.openTaskOf(terminalId);
+		if (!task) return;
+		task.status = "cancelled";
+		this.event(task, `${task.agentName} was removed`);
+	}
+
 	/** On a finished turn, moves the task of the worker or the checker that just stopped. */
 	async onAgentEvent(event: {
 		terminalId: string;
 		eventType: string;
 	}): Promise<void> {
+		this.follow();
+		const resumed = this.state.tasks.find(
+			(t) => t.terminalId === event.terminalId && this.interrupted.has(t.id),
+		);
+		if (resumed) await this.carryOn(resumed);
 		if (event.eventType !== "Stop") return;
 		const asWorker = this.state.tasks.find(
 			(t) =>
@@ -402,6 +422,49 @@ export class CityTasks {
 		this.event(task, `Round ${task.round}: sent back to ${task.agentName}`);
 	}
 
+	/** Moves tasks onto the terminal their agent continued in after its terminal stopped. */
+	private follow(): void {
+		const successorOf = this.deps.successorOf;
+		if (!successorOf) return;
+		let moved = false;
+		for (const task of this.state.tasks) {
+			const next = successorOf(task.terminalId, task.workspaceId);
+			if (!next) continue;
+			task.terminalId = next;
+			moved = true;
+			if (!OPEN.includes(task.status)) continue;
+			if (task.status === "working" || task.status === "pr")
+				this.interrupted.add(task.id);
+			this.event(task, `${task.agentName} continues in a new terminal`);
+		}
+		if (moved) this.save();
+	}
+
+	/** Tells an agent that came back in a new terminal to finish what its old one was doing. */
+	private async carryOn(task: CityTask): Promise<void> {
+		const agent = this.agent(task.terminalId);
+		if (!agent || !OPEN.includes(task.status)) return;
+		this.interrupted.delete(task.id);
+		const boot = this.deps.bootMs ?? 3000;
+		if (boot > 0) await new Promise((r) => setTimeout(r, boot));
+		const end =
+			task.status === "pr"
+				? "End your reply with one line: PR: <the pull request's URL>, or PR FAILED: <why>"
+				: doneLine();
+		try {
+			await this.reach(
+				agent,
+				[
+					`[Paradev task ${task.id}] Your terminal restarted while you worked on "${task.title}". Carry on where you left off.`,
+					end,
+				].join("\n\n"),
+			);
+			this.event(task, `Told ${task.agentName} to carry on`);
+		} catch (error) {
+			this.event(task, error instanceof Error ? error.message : String(error));
+		}
+	}
+
 	/** Types into the agent's terminal, with a reason a person can act on when it is not connected. */
 	private async reach(agent: TaskAgent, text: string): Promise<void> {
 		try {
@@ -410,7 +473,7 @@ export class CityTasks {
 			const reason = error instanceof Error ? error.message : String(error);
 			throw new Error(
 				/not active/i.test(reason)
-					? `Couldn't reach ${agent.name}: its terminal is not connected. Open its terminal once, then try again.`
+					? `Couldn't reach ${agent.name}: its terminal stopped. Reconnect it in the city, then try again.`
 					: `Couldn't reach ${agent.name}: ${reason}`,
 			);
 		}

@@ -6,6 +6,7 @@ import {
 	type CityAgentInfo,
 	CityRooms,
 	handlesFor,
+	type LostAgent,
 	lastAnswer,
 	MAX_RELAYS,
 	mentioned,
@@ -52,6 +53,37 @@ function setup(agents: CityAgentInfo[]) {
 		settleMs: 0,
 	});
 	return { rooms, sent, replies };
+}
+
+function lostAgent(terminalId: string): LostAgent {
+	return {
+		terminalId,
+		workspaceId: "docs",
+		agentId: "codex",
+		startedAt: 0,
+		since: 1,
+		resumable: true,
+	};
+}
+
+function lostSetup() {
+	const everyone = [agent("t1", "api"), agent("t2", "docs", "codex")];
+	const lost: LostAgent[] = [];
+	const stopped: string[] = [];
+	const rooms = new CityRooms({
+		statePath: join(mkdtempSync(join(tmpdir(), "city-")), "city.json"),
+		agents: () => everyone,
+		roomName: () => "ws api",
+		send: async () => {},
+		lastReply: async () => null,
+		lostAgents: () => lost,
+		resumeAgent: async () => ({ terminalId: "t2b" }),
+		stopAgent: async (terminalId) => {
+			stopped.push(terminalId);
+		},
+		settleMs: 0,
+	});
+	return { rooms, everyone, lost, stopped };
 }
 
 describe("handlesFor", () => {
@@ -227,6 +259,46 @@ describe("CityRooms", () => {
 		rooms.snapshot();
 		everyone.push({ ...b, terminalId: "t2b" });
 		expect(rooms.snapshot().seats).toEqual([]);
+	});
+
+	test("a lost agent keeps its seat, and reconnecting moves its name and seat to the new terminal", async () => {
+		const { rooms, everyone, lost } = lostSetup();
+		await rooms.seat("t2", "p1", "api");
+		everyone.splice(1, 1);
+		lost.push(lostAgent("t2"));
+		expect(rooms.snapshot().lost.map((l) => [l.terminalId, l.name])).toEqual([
+			["t2", "Milo"],
+		]);
+		expect(rooms.snapshot().seats.map((s) => s.terminalId)).toEqual(["t2"]);
+
+		await rooms.reconnect("t2");
+		lost.splice(0);
+		expect(rooms.snapshot().lost).toMatchObject([
+			{ terminalId: "t2b", name: "Milo", reconnecting: true },
+		]);
+		everyone.push(agent("t2b", "docs", "codex"));
+		const after = rooms.snapshot();
+		expect(after.lost).toEqual([]);
+		expect(after.names.map((n) => [n.terminalId, n.name])).toEqual([
+			["t1", "Ada"],
+			["t2b", "Milo"],
+		]);
+		expect(after.seats.map((s) => [s.terminalId, s.roomId])).toEqual([
+			["t2b", "api"],
+		]);
+	});
+
+	test("removing a lost agent ends it and takes it out of the city", async () => {
+		const { rooms, everyone, lost, stopped } = lostSetup();
+		rooms.snapshot();
+		everyone.splice(1, 1);
+		lost.push(lostAgent("t2"));
+		await expect(rooms.remove("t1")).rejects.toThrow("Only a disconnected");
+
+		await rooms.remove("t2");
+		lost.splice(0);
+		expect(stopped).toEqual(["t2"]);
+		expect(rooms.snapshot().lost).toEqual([]);
 	});
 
 	test("refuses rooms the project does not have", async () => {

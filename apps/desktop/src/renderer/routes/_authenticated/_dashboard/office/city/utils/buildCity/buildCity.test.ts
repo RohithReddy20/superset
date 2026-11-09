@@ -70,6 +70,46 @@ describe("buildCity", () => {
 		]);
 	});
 
+	test("an agent whose terminal stopped shows as disconnected in its seat, even once its binding is gone", () => {
+		const city = buildCity({
+			projects,
+			workspaces: [workspace("w1", "p1"), workspace("w2", "p1")],
+			bindings: [binding("t1", "w1", "Stop", 1)],
+			seats: [{ terminalId: "t2", projectId: "p1", roomId: "w1" }],
+			lost: [
+				{
+					terminalId: "t1",
+					name: "Ada",
+					handle: "ada",
+					workspaceId: "w1",
+					agentId: "claude",
+					startedAt: 1,
+					since: 20,
+					resumable: true,
+				},
+				{
+					terminalId: "t2",
+					name: "Bolt",
+					handle: "bolt",
+					workspaceId: "w2",
+					agentId: "codex",
+					startedAt: 2,
+					since: 30,
+					resumable: false,
+				},
+			],
+			seenAt: {},
+			machineId: "me",
+		});
+		const agents = city[0]?.workspaces.flatMap((w) => w.agents);
+		expect(
+			agents?.map((a) => [a.name, a.status, a.lost?.resumable, a.place.roomId]),
+		).toEqual([
+			["Ada", "lost", true, "w1"],
+			["Bolt", "lost", false, "w1"],
+		]);
+	});
+
 	test("a finished turn reads as done until you have seen it", () => {
 		const run = (seenAt: Record<string, number>) =>
 			buildCity({

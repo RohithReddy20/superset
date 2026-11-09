@@ -21,13 +21,20 @@ interface CitySignsProps {
 /** Below this zoom a sign shows only the project's name. */
 const COMPACT_BELOW = 1;
 const SIGN_LIFT = 6;
-const SHOWN: AgentStatus[] = ["permission", "failed", "working", "review"];
+const SHOWN: AgentStatus[] = [
+	"permission",
+	"failed",
+	"lost",
+	"working",
+	"review",
+];
 const SHORT: Record<AgentStatus, string> = {
 	idle: "idle",
 	permission: "need you",
 	failed: "failed",
 	working: "working",
 	review: "done",
+	lost: "disconnected",
 };
 
 export const CitySigns = forwardRef<CitySignsHandle, CitySignsProps>(

@@ -76,6 +76,7 @@ export function AgentPanel({
 					projects={projects}
 					handovers={handovers}
 					onSelectAgent={onSelectAgent}
+					onRemoved={onClose}
 				/>
 			) : selection.kind === "room" && roomName ? (
 				<RoomDetails

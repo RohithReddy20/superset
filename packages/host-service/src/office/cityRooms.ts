@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import type { AgentIdentityId } from "@superset/shared/agent-catalog";
 
 /** A CLI agent running in a workspace terminal, with the names the city shows for it. */
 export interface CityAgentInfo {
@@ -26,6 +27,25 @@ export interface CityName {
 	/** Set once the agent was told this name; a rename clears it. */
 	told?: boolean;
 	missingSince?: number;
+}
+
+/** An agent whose terminal stopped under it: a restart, a crash or a reboot. */
+export interface LostAgent {
+	terminalId: string;
+	workspaceId: string;
+	agentId: AgentIdentityId;
+	startedAt: number;
+	/** When its terminal was first seen gone. */
+	since: number;
+	/** Whether its conversation can continue in a new terminal. */
+	resumable: boolean;
+}
+
+export interface CityLostAgent extends LostAgent {
+	name: string;
+	handle: string;
+	/** Set while it starts again in a new terminal. */
+	reconnecting?: boolean;
 }
 
 export interface CitySeat {
@@ -105,6 +125,8 @@ export interface CitySnapshot {
 	handovers: CityHandover[];
 	/** Rooms of the office an agent can sit in, as the place `{ projectId: "office", roomId }`. */
 	officeRooms: Array<{ id: string; name: string }>;
+	/** Named agents whose terminal stopped; they keep their seat until they are reconnected or removed. */
+	lost: CityLostAgent[];
 }
 
 export interface CityRoomsDeps {
@@ -150,6 +172,12 @@ export interface CityRoomsDeps {
 	) => Promise<{ terminalId: string }>;
 	/** The terminal an agent continued in after its terminal was restarted, if any. */
 	successorOf?: (terminalId: string, workspaceId: string) => string | undefined;
+	/** Agents whose terminal stopped under them; the city shows the ones it named. */
+	lostAgents?: () => LostAgent[];
+	/** Continues a lost agent's conversation in a new terminal. */
+	resumeAgent?: (agent: LostAgent) => Promise<{ terminalId: string }>;
+	/** Ends an agent and closes its terminal. */
+	stopAgent?: (terminalId: string, workspaceId: string) => Promise<void>;
 	now?: () => number;
 	/** Wait after a turn ends before reading its answer, so the agent has written it down. */
 	settleMs?: number;
@@ -161,6 +189,8 @@ export const OFFICE = "office";
 export const MAX_RELAYS = 8;
 /** A seat whose agent stopped running is kept this long, in case it comes back in a new terminal. */
 export const SEAT_KEPT_MS = 24 * 60 * 60 * 1000;
+/** How long a reconnected agent shows as reconnecting before its new terminal reports in. */
+const RECONNECT_SHOWN_MS = 60_000;
 /** What an agent writes to end its part in a room's talk; such an answer is never passed on. */
 export const NO_REPLY = "no reply";
 export const HANDOVER_REQUEST = "HANDOVER REQUEST:";
@@ -232,6 +262,11 @@ export class CityRooms {
 	private readonly lastRelayed = new Map<string, string>();
 	/** What each agent was last told about its room: the room and who was in it. */
 	private readonly told = new Map<string, { key: string; people: string }>();
+	/** Agents started again in a new terminal, by that terminal, until it reports in. */
+	private readonly reconnecting = new Map<
+		string,
+		{ agent: CityLostAgent; at: number }
+	>();
 	private readonly now: () => number;
 
 	constructor(private readonly deps: CityRoomsDeps) {
@@ -266,8 +301,10 @@ export class CityRooms {
 			});
 		}
 		const live = new Set(agents.map((a) => a.terminalId));
+		const lost = this.lost(live);
+		const shown = new Set([...live, ...lost.map((a) => a.terminalId)]);
 		return {
-			seats: this.state.seats.filter((s) => live.has(s.terminalId)),
+			seats: this.state.seats.filter((s) => shown.has(s.terminalId)),
 			names: agents.map((a) => ({
 				terminalId: a.terminalId,
 				name: a.name,
@@ -277,7 +314,68 @@ export class CityRooms {
 			maxRelays: MAX_RELAYS,
 			handovers: this.state.handovers,
 			officeRooms: this.deps.office?.rooms() ?? [],
+			lost,
 		};
+	}
+
+	/** Named agents whose terminal stopped, and those starting again in a new one. */
+	private lost(live: Set<string>): CityLostAgent[] {
+		const nameOf = new Map(this.state.names.map((n) => [n.terminalId, n.name]));
+		const lost = (this.deps.lostAgents?.() ?? []).flatMap((agent) => {
+			const name = nameOf.get(agent.terminalId);
+			return name
+				? [{ ...agent, name, handle: handleOf({ ...agent, name }) }]
+				: [];
+		});
+		for (const [terminalId, { agent, at }] of this.reconnecting) {
+			if (live.has(terminalId) || this.now() - at > RECONNECT_SHOWN_MS)
+				this.reconnecting.delete(terminalId);
+			else lost.push(agent);
+		}
+		return lost;
+	}
+
+	/**
+	 * Continues a lost agent's conversation in a new terminal. It keeps its name, seat and room;
+	 * its task follows it there.
+	 */
+	async reconnect(terminalId: string): Promise<{ terminalId: string }> {
+		const agent = this.lost(new Set()).find(
+			(a) => a.terminalId === terminalId && !a.reconnecting,
+		);
+		if (!agent) throw new Error("That agent is not disconnected");
+		if (!agent.resumable || !this.deps.resumeAgent)
+			throw new Error(
+				`${agent.name}'s conversation can't continue in a new terminal`,
+			);
+		const next = await this.deps.resumeAgent(agent);
+		for (const entry of [...this.state.names, ...this.state.seats]) {
+			if (entry.terminalId !== terminalId) continue;
+			entry.terminalId = next.terminalId;
+			delete entry.missingSince;
+		}
+		this.reconnecting.set(next.terminalId, {
+			agent: { ...agent, terminalId: next.terminalId, reconnecting: true },
+			at: this.now(),
+		});
+		this.save();
+		return next;
+	}
+
+	/** Ends a lost agent for good and takes it out of the city. */
+	async remove(terminalId: string): Promise<void> {
+		const agent = this.lost(new Set()).find(
+			(a) => a.terminalId === terminalId && !a.reconnecting,
+		);
+		if (!agent) throw new Error("Only a disconnected agent can be removed");
+		await this.deps.stopAgent?.(terminalId, agent.workspaceId);
+		this.state.names = this.state.names.filter(
+			(n) => n.terminalId !== terminalId,
+		);
+		this.state.seats = this.state.seats.filter(
+			(s) => s.terminalId !== terminalId,
+		);
+		this.save();
 	}
 
 	/** Seats an agent in a room; its own workspace's room sends it home. Nothing is typed into any terminal. */

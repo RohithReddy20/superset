@@ -3,7 +3,8 @@ import type { AgentIdentityId } from "@superset/shared/agent-catalog";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { PaneStatus } from "shared/tabs-types";
 
-export type AgentStatus = PaneStatus;
+/** "lost": its terminal stopped under it, by a restart, a crash or a reboot. */
+export type AgentStatus = PaneStatus | "lost";
 
 /** A room in a building: a workspace's own room, or the building's meeting room. */
 export interface CityPlace {
@@ -32,6 +33,8 @@ export interface CityAgent {
 	place: CityPlace;
 	/** A question it shows on its screen, such as "trust this folder?", which no hook reports. */
 	asking?: { question: string; trust: boolean };
+	/** Set when its terminal stopped: whether its conversation can continue in a new one. */
+	lost?: { resumable: boolean; reconnecting: boolean };
 }
 
 export interface CityWorkspace {

@@ -76,6 +76,7 @@ import {
 import {
 	resumeCrashedAgentSessions,
 	resumeSessionDepsFor,
+	resumeTerminalAgentSession,
 } from "./trpc/router/terminal-agents/terminal-agents";
 import { provisionSelectedAccounts } from "./trpc/router/usage/account-provisioning";
 import {
@@ -364,6 +365,8 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 		terminalAgentStore,
 		statePath: join(resolveAppHomeDir(), "office", "city.json"),
 		runAgent: (input) => runAgentInWorkspace(chatAgentContext, input),
+		resumeAgent: (input) =>
+			resumeTerminalAgentSession(resumeSessionDepsFor(chatAgentContext), input),
 		office: {
 			rooms: () => office().guestRooms(),
 			sync: (guests) => office().syncGuests(guests),

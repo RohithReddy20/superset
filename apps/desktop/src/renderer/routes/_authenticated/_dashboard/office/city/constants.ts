@@ -6,6 +6,7 @@ export const STATUS_COLORS: Record<AgentStatus, string> = {
 	permission: "#ff7a45",
 	review: "#39d353",
 	failed: "#ff4d4d",
+	lost: "#5b6475",
 };
 
 /** What a person in the building says about their state; idle people say nothing. */
@@ -15,6 +16,7 @@ export const STATUS_LINES: Record<AgentStatus, string> = {
 	permission: "Needs your OK",
 	review: "Done, take a look",
 	failed: "Stopped with an error",
+	lost: "Disconnected",
 };
 
 /** What an agent asking on its screen says, shortened for a bubble or a chip. */
@@ -32,4 +34,5 @@ export const STATUS_LABELS: Record<AgentStatus, string> = {
 	permission: "Needs you",
 	review: "Done",
 	failed: "Failed",
+	lost: "Disconnected",
 };
