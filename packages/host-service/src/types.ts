@@ -5,6 +5,7 @@ import type { TRPCClient } from "@trpc/client";
 import type { HostDb } from "./db";
 import type { EventBus } from "./events";
 import type { CityRooms } from "./office/cityRooms";
+import type { CityTasks } from "./office/cityTasks";
 import type { OfficeRuntime } from "./office/officeRuntime";
 import type { PageWatchManager } from "./page-watch/index.ts";
 import type { ApiAuthProvider } from "./providers/auth/types";
@@ -26,6 +27,7 @@ export interface HostServiceRuntime {
 	agentJobs?: AgentJobRunner;
 	office?: () => OfficeRuntime;
 	city?: () => CityRooms;
+	cityTasks?: () => CityTasks;
 }
 
 export interface HostServiceContext {

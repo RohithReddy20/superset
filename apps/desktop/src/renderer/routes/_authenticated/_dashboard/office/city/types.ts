@@ -72,5 +72,17 @@ export type CityRoom = CityRoomsSnapshot["rooms"][number];
 export type CityRoomMessage = CityRoom["messages"][number];
 export type CityHandover = CityRoomsSnapshot["handovers"][number];
 export type OfficeRoomRef = CityRoomsSnapshot["officeRooms"][number];
+export type CityTask =
+	inferRouterOutputs<AppRouter>["office"]["cityTasks"]["tasks"][number];
+export type CityTaskStatus = CityTask["status"];
+/** Tasks that still need someone: the agent, its checker, or you. */
+export const OPEN_TASK_STATUSES: CityTaskStatus[] = [
+	"working",
+	"checking",
+	"reviewing",
+	"ready",
+	"pr",
+	"blocked",
+];
 /** The `projectId` of a place in the office rather than a project's building. */
 export const OFFICE_PLACE = "office";

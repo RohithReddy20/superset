@@ -20,6 +20,7 @@ import { HandoverBox } from "./components/HandoverBox";
 import { KeyButtons } from "./components/KeyButtons";
 import { ScreenQuestion } from "./components/ScreenQuestion";
 import { SeatRow } from "./components/SeatRow";
+import { TaskBox } from "./components/TaskBox";
 
 interface AgentDetailsProps {
 	agent: CityAgent;
@@ -101,6 +102,7 @@ export function AgentDetails({
 					</span>
 				) : null}
 			</div>
+			<TaskBox agent={agent} />
 			<SeatRow agent={agent} projects={projects} />
 			<HandoverBox
 				agent={agent}

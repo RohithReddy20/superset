@@ -358,7 +358,7 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 		return officeRuntime;
 	};
 
-	const cityRooms = createCityRooms({
+	const city = createCityRooms({
 		db,
 		eventBus,
 		terminalAgentStore,
@@ -375,7 +375,8 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 	const runtime = {
 		agentJobs,
 		office,
-		city: () => cityRooms,
+		city: () => city.rooms,
+		cityTasks: () => city.tasks,
 		filesystem,
 		pullRequests: pullRequestRuntime,
 		pageWatch,

@@ -3,8 +3,9 @@ import { cn } from "@superset/ui/utils";
 import { LuBuilding2 } from "react-icons/lu";
 import { EngineMark } from "../../../../../components/EngineMark";
 import type { OfficeSnapshot } from "../../../../../types";
+import { useCityTasks } from "../../../../hooks/useCityTasks";
 import type { AgentStatus, CityAgent, CityProject } from "../../../../types";
-import { OFFICE_PLACE } from "../../../../types";
+import { OFFICE_PLACE, OPEN_TASK_STATUSES } from "../../../../types";
 import { MEETING_ROOM } from "../../../../utils/buildingSnapshot";
 import { teammateStatus } from "../../../../utils/officeBuilding";
 import { AgentIcon } from "../AgentIcon";
@@ -58,6 +59,12 @@ export function AgentList({
 		return [room, project?.name].filter(Boolean).join(" · ") || null;
 	};
 	const aiTeammates = office?.teammates.filter((t) => t.kind === "ai") ?? [];
+	const { tasks } = useCityTasks();
+	const taskOf = (terminalId: string) =>
+		tasks.find(
+			(t) =>
+				t.terminalId === terminalId && OPEN_TASK_STATUSES.includes(t.status),
+		);
 
 	return (
 		<div className="h-full overflow-y-auto">
@@ -145,6 +152,7 @@ export function AgentList({
 							<ul>
 								{agents.map((agent) => {
 									const visiting = placeName(agent);
+									const task = taskOf(agent.terminalId);
 									const branch = project.workspaces.find(
 										(w) => w.id === agent.workspaceId,
 									)?.branch;
@@ -184,6 +192,11 @@ export function AgentList({
 													{visiting ? (
 														<span className="block truncate text-[11px]">
 															sitting in {visiting}
+														</span>
+													) : null}
+													{task ? (
+														<span className="block truncate text-[11px] text-foreground">
+															{task.id} · {task.title}
 														</span>
 													) : null}
 												</span>

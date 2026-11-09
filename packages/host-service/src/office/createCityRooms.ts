@@ -1,11 +1,17 @@
+import { execFile } from "node:child_process";
 import { mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
+import { promisify } from "node:util";
 import { AGENT_IDENTITY_LABELS } from "@superset/shared/agent-catalog";
 import { isNull } from "drizzle-orm";
 import type { HostDb } from "../db";
 import { projects, workspaces } from "../db/schema";
 import type { EventBus } from "../events";
-import { sendAgentMessage, transcriptSession } from "../terminal/terminal";
+import {
+	disposeSessionAndWait,
+	sendAgentMessage,
+	transcriptSession,
+} from "../terminal/terminal";
 import type { TerminalAgentStore } from "../terminal-agents";
 import { findResumedSuccessorTerminalId } from "../terminal-agents/persistence";
 import {
@@ -15,10 +21,16 @@ import {
 	lastAnswer,
 	MEETING_ROOM,
 } from "./cityRooms";
+import { CityTasks } from "./cityTasks";
 
 const REPLY_CHARS = 12_000;
+const CHECK_TIMEOUT_MS = 10 * 60 * 1000;
+const run = promisify(execFile);
 
-/** The city's rooms wired to this host: its agents, workspaces, terminals and lifecycle events. */
+/**
+ * The city's rooms and tasks wired to this host: its agents, workspaces, terminals and lifecycle
+ * events. Tasks keep their state next to the rooms' state file.
+ */
 export function createCityRooms({
 	db,
 	eventBus,
@@ -39,7 +51,7 @@ export function createCityRooms({
 	}) => Promise<{ sessionId: string }>;
 	/** The office, so agents can sit in its rooms next to its own teammates. */
 	office?: CityRoomsDeps["office"];
-}): CityRooms {
+}): { rooms: CityRooms; tasks: CityTasks } {
 	mkdirSync(dirname(statePath), { recursive: true });
 	const workspaceRows = () =>
 		db
@@ -83,6 +95,46 @@ export function createCityRooms({
 		});
 	};
 
+	const workspaceOf = (workspaceId: string) => {
+		const row = workspaceRows().find((w) => w.id === workspaceId);
+		if (!row?.projectId) return null;
+		return {
+			projectId: row.projectId,
+			name: row.name || row.branch,
+			projectName: projectNames().get(row.projectId) || "a project",
+			path: row.path,
+			branch: row.branch,
+		};
+	};
+	const send = async (
+		agent: { terminalId: string; workspaceId: string },
+		text: string,
+	) => {
+		const result = await sendAgentMessage({
+			terminalId: agent.terminalId,
+			workspaceId: agent.workspaceId,
+			text,
+			submit: true,
+			db,
+			eventBus,
+			terminalAgentStore,
+		});
+		if ("error" in result) throw new Error(result.error);
+	};
+	const lastReply = async (agent: {
+		terminalId: string;
+		workspaceId: string;
+	}) => {
+		const result = await transcriptSession({
+			terminalId: agent.terminalId,
+			workspaceId: agent.workspaceId,
+			maxChars: REPLY_CHARS,
+			db,
+			eventBus,
+		});
+		return "error" in result ? null : lastAnswer(result.text, result.source);
+	};
+
 	const rooms = new CityRooms({
 		statePath,
 		agents,
@@ -97,42 +149,54 @@ export function createCityRooms({
 			);
 			return workspace ? workspace.name || workspace.branch : null;
 		},
-		send: async (agent, text) => {
-			const result = await sendAgentMessage({
-				terminalId: agent.terminalId,
-				workspaceId: agent.workspaceId,
-				text,
-				submit: true,
-				db,
-				eventBus,
-				terminalAgentStore,
-			});
-			if ("error" in result) throw new Error(result.error);
-		},
-		workspace: (workspaceId) => {
-			const row = workspaceRows().find((w) => w.id === workspaceId);
-			if (!row?.projectId) return null;
-			return {
-				projectId: row.projectId,
-				name: row.name || row.branch,
-				projectName: projectNames().get(row.projectId) || "a project",
-				path: row.path,
-				branch: row.branch,
-			};
-		},
+		send,
+		workspace: workspaceOf,
 		startAgent: async (workspaceId, agent, prompt) => {
 			const result = await runAgent({ workspaceId, agent, prompt });
 			return { terminalId: result.sessionId };
 		},
-		lastReply: async (agent) => {
-			const result = await transcriptSession({
-				terminalId: agent.terminalId,
-				workspaceId: agent.workspaceId,
-				maxChars: REPLY_CHARS,
-				db,
-				eventBus,
-			});
-			return "error" in result ? null : lastAnswer(result.text, result.source);
+		lastReply,
+	});
+
+	const tasks = new CityTasks({
+		statePath: join(dirname(statePath), "city-tasks.json"),
+		agents: () => rooms.namedAgents(),
+		workspace: workspaceOf,
+		send,
+		lastReply,
+		startChecker: (workspaceId, agent, prompt) =>
+			rooms.start({ workspaceId, agent, prompt }),
+		stopAgent: async (terminalId) => {
+			terminalAgentStore.markTerminalDisposed(terminalId);
+			await disposeSessionAndWait(terminalId, db);
+		},
+		runCheck: async (command, cwd) => {
+			try {
+				const { stdout, stderr } = await run("sh", ["-lc", command], {
+					cwd,
+					timeout: CHECK_TIMEOUT_MS,
+					maxBuffer: 16 * 1024 * 1024,
+				});
+				return { ok: true, output: `${stdout}\n${stderr}` };
+			} catch (error) {
+				const e = error as {
+					stdout?: string;
+					stderr?: string;
+					message: string;
+				};
+				return {
+					ok: false,
+					output: `${e.stdout ?? ""}\n${e.stderr ?? ""}\n${e.message}`,
+				};
+			}
+		},
+		headOf: async (cwd) => {
+			try {
+				const { stdout } = await run("git", ["rev-parse", "HEAD"], { cwd });
+				return stdout.trim() || null;
+			} catch {
+				return null;
+			}
 		},
 	});
 
@@ -140,6 +204,9 @@ export function createCityRooms({
 		rooms.onAgentEvent(event).catch((error: unknown) => {
 			console.warn("[city] relay failed", { error });
 		});
+		tasks.onAgentEvent(event).catch((error: unknown) => {
+			console.warn("[city] task step failed", { error });
+		});
 	});
-	return rooms;
+	return { rooms, tasks };
 }

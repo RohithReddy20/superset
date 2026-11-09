@@ -109,3 +109,40 @@ describe("needsYou", () => {
 		});
 	});
 });
+
+describe("needsYou with city tasks", () => {
+	test("a checked or blocked task opens its agent, in place of the agent's own 'done'", () => {
+		const items = needsYou({
+			projects: city([agent("worker", "review", 1)]),
+			handovers: [],
+			cityTasks: [
+				{
+					id: "C-1",
+					title: "Health",
+					status: "ready",
+					updatedAt: 2,
+					terminalId: "worker",
+					projectId: "p1",
+					agentName: "worker",
+				},
+				{
+					id: "C-2",
+					title: "Docs",
+					status: "working",
+					updatedAt: 2,
+					terminalId: "other",
+					projectId: "p1",
+					agentName: "other",
+				},
+			],
+		});
+		expect(items.map((i) => [i.id, i.reason])).toEqual([
+			["city-task:C-1", "verified"],
+		]);
+		expect(items[0]?.target).toEqual({
+			kind: "agent",
+			projectId: "p1",
+			terminalId: "worker",
+		});
+	});
+});

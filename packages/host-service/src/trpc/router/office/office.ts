@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import type { CityRooms, CitySnapshot } from "../../../office/cityRooms";
+import type { CityTasks, CityTasksSnapshot } from "../../../office/cityTasks";
 import type { OfficeRuntime } from "../../../office/officeRuntime";
 import type { OfficeSnapshot } from "../../../office/types";
 import { protectedProcedure, router } from "../../index";
@@ -27,6 +28,17 @@ function cityOf(runtime: { city?: () => CityRooms }): CityRooms {
 	return city;
 }
 
+function tasksOf(runtime: { cityTasks?: () => CityTasks }): CityTasks {
+	const tasks = runtime.cityTasks?.();
+	if (!tasks) {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message: "City tasks are not available on this host.",
+		});
+	}
+	return tasks;
+}
+
 async function badRequest<T>(run: () => Promise<T> | T): Promise<T> {
 	try {
 		return await run();
@@ -43,10 +55,54 @@ const place = z.object({
 	roomId: z.string().min(1),
 });
 
+const taskId = z.object({ id: z.string().min(1) });
+
 export const officeRouter = router({
 	cityState: protectedProcedure.query(
 		({ ctx }): CitySnapshot => cityOf(ctx.runtime).snapshot(),
 	),
+
+	cityTasks: protectedProcedure.query(
+		({ ctx }): CityTasksSnapshot => tasksOf(ctx.runtime).snapshot(),
+	),
+
+	cityTaskGive: protectedProcedure
+		.input(
+			z.object({
+				terminalId: z.string().min(1),
+				title: z.string().min(1).max(200),
+				brief: z.string().max(8000),
+				checkCommand: z.string().max(500).optional(),
+				checker: z.enum(["claude", "codex"]).optional(),
+			}),
+		)
+		.mutation(({ ctx, input }) =>
+			badRequest(() => tasksOf(ctx.runtime).give(input)),
+		),
+
+	cityTaskSendBack: protectedProcedure
+		.input(taskId.extend({ note: z.string().max(4000) }))
+		.mutation(({ ctx, input }) =>
+			badRequest(() => tasksOf(ctx.runtime).sendBack(input.id, input.note)),
+		),
+
+	cityTaskPullRequest: protectedProcedure
+		.input(taskId)
+		.mutation(({ ctx, input }) =>
+			badRequest(() => tasksOf(ctx.runtime).askForPullRequest(input.id)),
+		),
+
+	cityTaskClose: protectedProcedure
+		.input(taskId)
+		.mutation(({ ctx, input }) =>
+			badRequest(() => tasksOf(ctx.runtime).close(input.id)),
+		),
+
+	cityTaskCancel: protectedProcedure
+		.input(taskId)
+		.mutation(({ ctx, input }) =>
+			badRequest(() => tasksOf(ctx.runtime).cancel(input.id)),
+		),
 
 	citySeat: protectedProcedure
 		.input(place.extend({ terminalId: z.string().min(1) }))

@@ -1,5 +1,10 @@
 import { askingLine } from "../../city/constants";
-import type { CityAgent, CityHandover, CityProject } from "../../city/types";
+import type {
+	CityAgent,
+	CityHandover,
+	CityProject,
+	CityTask,
+} from "../../city/types";
 import { OFFICE_PLACE } from "../../city/types";
 import type { Task } from "../../types";
 
@@ -46,18 +51,37 @@ export function needsYou({
 	projects,
 	handovers,
 	tasks = [],
+	cityTasks = [],
 }: {
 	projects: CityProject[];
 	handovers: CityHandover[];
 	tasks?: Pick<Task, "id" | "title" | "status" | "updatedAt">[];
+	cityTasks?: Pick<
+		CityTask,
+		| "id"
+		| "title"
+		| "status"
+		| "updatedAt"
+		| "terminalId"
+		| "projectId"
+		| "agentName"
+		| "blockedReason"
+	>[];
 }): NeedsYouItem[] {
 	const projectName = new Map(projects.map((p) => [p.id, p.name]));
 	const agents = projects.flatMap((p) => p.workspaces.flatMap((w) => w.agents));
 	const byTerminal = new Map(agents.map((a) => [a.terminalId, a]));
 	const items: NeedsYouItem[] = [];
+	const waitingTask = new Set(
+		cityTasks
+			.filter((t) => t.status === "ready" || t.status === "blocked")
+			.map((t) => t.terminalId),
+	);
 
 	for (const agent of agents) {
 		if (!AGENT_REASONS.has(agent.status)) continue;
+		if (agent.status === "review" && waitingTask.has(agent.terminalId))
+			continue;
 		items.push({
 			id: `agent:${agent.terminalId}`,
 			reason: agent.status as NeedsYouReason,
@@ -92,6 +116,28 @@ export function needsYou({
 			where: "Office",
 			since: task.updatedAt,
 			target: { kind: "tasks" },
+		});
+	}
+
+	for (const task of cityTasks) {
+		if (task.status !== "blocked" && task.status !== "ready") continue;
+		const agent = byTerminal.get(task.terminalId);
+		items.push({
+			id: `city-task:${task.id}`,
+			reason: task.status === "ready" ? "verified" : "blocked",
+			...(task.status === "blocked" && task.blockedReason
+				? { note: `Blocked: ${task.blockedReason}` }
+				: {}),
+			title: `${task.id} ${task.title}`,
+			where: agent ? whereOf(agent, projectName) : task.agentName,
+			since: task.updatedAt,
+			target: agent
+				? agentTarget(agent)
+				: {
+						kind: "agent",
+						projectId: task.projectId,
+						terminalId: task.terminalId,
+					},
 		});
 	}
 

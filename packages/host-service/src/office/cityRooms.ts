@@ -773,6 +773,11 @@ export class CityRooms {
 	 * follows its agent into the terminal it continued in after a restart; one whose agent is gone is
 	 * kept a while for that, then dropped.
 	 */
+	/** Running agents with their city names. */
+	namedAgents(): NamedAgent[] {
+		return this.liveAgents();
+	}
+
 	private liveAgents(): NamedAgent[] {
 		const agents = this.deps.agents();
 		const live = new Set(agents.map((a) => a.terminalId));

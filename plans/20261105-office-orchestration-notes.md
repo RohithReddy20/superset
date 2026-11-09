@@ -494,3 +494,49 @@ chip, reduced motion.
   from the Office. About two minutes later the City's bar showed "Checked, ready to close · T-2";
   the chip opened the Office on its Tasks tab (`/office?tab=tasks`) with T-2 verified; "done" closed
   it and the bar went back to "Nothing needs you right now". No console errors.
+
+## 2026-11-09: tasks for any agent in the city
+
+The office's task flow (owner works, tests run, a second agent checks, a person closes) now works for
+the CLI agents in the city's workspaces, without the office's own seats.
+
+- **Host: `office/cityTasks.ts`, wired in `createCityRooms.ts`.** A task (`C-<n>`) belongs to one
+  running agent in its own workspace. Giving it types a brief into the agent's terminal: what to do,
+  what done means, its folder and branch, what will check it, and to end with `TASK DONE: …` or
+  `TASK BLOCKED: …`. The commit checked out at that moment is kept as the base. On the agent's
+  `Stop` the city reads its last answer; `TASK DONE` runs the task's check command in the workspace
+  (if any), then starts a checker (Claude or Codex, through `CityRooms.start`, so it gets a city
+  name) in the same workspace with the base, the report and the check result, told not to change
+  anything and to end with `VERDICT: PASS` or `VERDICT: FAIL: …`. A failed check or a FAIL goes back
+  to the agent as the next round (3 rounds, then blocked); a PASS, or no checker, makes the task
+  ready for the person, and the checker's terminal is closed. Ready tasks can be closed, sent back
+  with a note (which gives the agent 3 more rounds) or turned into a pull request: the agent is
+  asked to push and open one and to end with `PR: <url>` or `PR FAILED: …`; a URL closes the task
+  with its link, a failure leaves it ready and says why. State is
+  `<app home>/office/city-tasks.json`; the last check command per project is offered again. A task
+  only changes after its message reached the agent; when a terminal is not connected the error says
+  to open it once and try again. tRPC: `office.cityTasks`, `cityTaskGive`, `cityTaskSendBack`,
+  `cityTaskPullRequest`, `cityTaskClose`, `cityTaskCancel` (all new, nothing changed shape).
+- **Renderer.** The agent panel has "Give it a task" (title, what done looks like, check command,
+  which agent checks it) and a task card: each step in words, the agent's report, the check result
+  with its output, the checker's verdict, why a pull request could not be opened, the history, and
+  the buttons that fit the step. A checker's own panel says what it is checking. Ready and blocked
+  tasks are in the "Needs you" bar (in place of the agent's own "done"); the list shows each agent's
+  open task.
+- **Checked in the running app** (city-demo-api, scratch repo with no remote):
+  - C-1 "Add HEALTH.md" to a fresh Claude (Iris) with the check `test "$(cat HEALTH.md)" = ok` and a
+    Claude checker: Iris committed only HEALTH.md, the check passed, the checker (Otto) read the
+    diff and passed it within 10 s and was closed, and the bar showed "Checked, ready to close · C-1".
+    "Ask for a pull request" came back as "No pull request: the repository has no git remote".
+  - C-2 "Add v2 line" to another Claude with no check and no checker: ready in 12 s; asking for a pull
+    request showed "Couldn't open a pull request: The repo has no git remote…" on the card (the agent
+    declined to create a GitHub repo on its own); Close made it Done and the bar went back to
+    "Nothing needs you right now". The repo has the two commits and nothing else.
+  - The unit tests cover a failing check running out of rounds, a FAIL going back, a pull request URL
+    closing the task and an unreachable terminal changing nothing.
+- **Found.** A host restart leaves running agents' terminals unreachable ("Terminal session … is not
+  active") while the city still lists them as Idle; opening the workspace then resumed an older
+  Claude session in a new terminal rather than reconnecting the one the city showed. Before the fix
+  above, that also stranded C-1 in "Opening a pull request". The city should say an agent's terminal
+  is not connected (snapshots fail) and offer to reconnect it. The agent panel's conversation also
+  shows Claude's `</pasted_content …>` wrapper on messages typed into it.
