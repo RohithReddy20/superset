@@ -803,3 +803,15 @@ The person's idea: an agent whose terminal stopped should come back by itself wh
   delivery.done, and Iris wrote "woke-ok" to the person about 12 s later. Clicking Milo's
   "Disconnected" chip reconnected it without pressing anything; it showed Idle. Nova and Ada,
   untouched, stayed disconnected.
+
+## 2026-11-11: a visible way to add an agent
+
+A building with no agents showed no way to start one; it was behind a click on a room's sign.
+
+- The city header has **Add agent** (`CityScreen/components/AddAgent`): pick the workspace (the
+  open building's, or any in the city from the map), type an optional first task, click a CLI. It
+  reuses `AgentBar`, now at `CityScreen/components/AgentBar` since two places use it; the CLIs are
+  the workspace's own agent bar, or every enabled agent when none is pinned.
+- **Checked in the running app:** in city-demo-ops (1 workspace, 0 agents) the button listed
+  Claude, Codex, OpenCode and the others; clicking Claude started it in "Rotate logs" and the
+  header went to "1 agent".

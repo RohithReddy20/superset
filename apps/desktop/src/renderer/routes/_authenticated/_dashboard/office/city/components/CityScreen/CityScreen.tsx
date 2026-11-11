@@ -7,6 +7,7 @@ import { NeedsYouBar } from "../../../components/NeedsYouBar";
 import { STATUS_COLORS } from "../../constants";
 import { useCity } from "../../hooks/useCity";
 import type { AgentStatus } from "../../types";
+import { AddAgent } from "./components/AddAgent";
 import { AgentList } from "./components/AgentList";
 import { AgentPanel } from "./components/AgentPanel";
 import { BuildingView } from "./components/BuildingView";
@@ -98,33 +99,36 @@ export function CityScreen({ projectId, agentId, view }: CityScreenProps) {
 					</div>
 				}
 				end={
-					<fieldset
-						aria-label="Show as"
-						className="flex items-center rounded-md border border-border p-0.5"
-					>
-						{(
-							[
-								["map", "Map", LuMap],
-								["list", "List", LuList],
-							] as const
-						).map(([mode, label, Icon]) => (
-							<button
-								key={mode}
-								type="button"
-								aria-pressed={view === mode}
-								onClick={() => setView(mode)}
-								className={cn(
-									"flex items-center gap-1.5 rounded px-2 py-0.5 text-[12px]",
-									view === mode
-										? "bg-fill-selected text-foreground"
-										: "text-muted-foreground hover:text-foreground",
-								)}
-							>
-								<Icon className="size-3.5" />
-								{label}
-							</button>
-						))}
-					</fieldset>
+					<div className="flex items-center gap-2">
+						<AddAgent projects={shown} />
+						<fieldset
+							aria-label="Show as"
+							className="flex items-center rounded-md border border-border p-0.5"
+						>
+							{(
+								[
+									["map", "Map", LuMap],
+									["list", "List", LuList],
+								] as const
+							).map(([mode, label, Icon]) => (
+								<button
+									key={mode}
+									type="button"
+									aria-pressed={view === mode}
+									onClick={() => setView(mode)}
+									className={cn(
+										"flex items-center gap-1.5 rounded px-2 py-0.5 text-[12px]",
+										view === mode
+											? "bg-fill-selected text-foreground"
+											: "text-muted-foreground hover:text-foreground",
+									)}
+								>
+									<Icon className="size-3.5" />
+									{label}
+								</button>
+							))}
+						</fieldset>
+					</div>
 				}
 			/>
 			<NeedsYouBar />

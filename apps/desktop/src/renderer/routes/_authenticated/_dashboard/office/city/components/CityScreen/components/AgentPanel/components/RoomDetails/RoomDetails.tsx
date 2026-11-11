@@ -13,10 +13,10 @@ import {
 	YOU,
 } from "../../../../../../types";
 import { MEETING_ROOM } from "../../../../../../utils/buildingSnapshot";
+import { AgentBar } from "../../../AgentBar";
 import { AgentIcon } from "../../../AgentIcon";
 import { MessageBox } from "../../../MessageBox";
 import { StatusBadge } from "../../../StatusBadge";
-import { AgentBar } from "./components/AgentBar";
 
 interface RoomDetailsProps {
 	project: CityProject;

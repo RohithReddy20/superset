@@ -10,8 +10,8 @@ import { navigateToV2Workspace } from "renderer/routes/_authenticated/_dashboard
 import { useCollections } from "renderer/routes/_authenticated/providers/CollectionsProvider";
 import { useLocalHostService } from "renderer/routes/_authenticated/providers/LocalHostServiceProvider";
 import { filterMatchingPresetsForProject } from "shared/preset-project-targeting";
-import { useCityActions } from "../../../../../../../../hooks/useCityActions";
-import { AgentIcon } from "../../../../../AgentIcon";
+import { useCityActions } from "../../../../hooks/useCityActions";
+import { AgentIcon } from "../AgentIcon";
 
 const SLOW_START_MS = 20_000;
 
