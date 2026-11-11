@@ -28,6 +28,8 @@ interface AgentBarProps {
 	shown: string[];
 	/** Open shows the task box and every CLI; closed is one line to open it. */
 	defaultOpen: boolean;
+	/** One row of CLIs, each started by one click, like a workspace's own bar. */
+	inline?: boolean;
 }
 
 /**
@@ -39,6 +41,7 @@ export function AgentBar({
 	projectId,
 	shown,
 	defaultOpen,
+	inline = false,
 }: AgentBarProps) {
 	const [open, setOpen] = useState(defaultOpen);
 	const navigate = useNavigate();
@@ -105,6 +108,41 @@ export function AgentBar({
 	};
 
 	if (choices.length === 0) return null;
+	if (inline)
+		return (
+			<div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none]">
+				{choices.map(({ key, label, agent }) => (
+					<Button
+						key={key}
+						variant="ghost"
+						size="sm"
+						title={`Start ${label} here`}
+						className="h-7 shrink-0 gap-1.5 rounded-md px-2 text-[12px] font-normal text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+						onClick={() => void start(agent.id, label)}
+					>
+						<AgentIcon
+							agentId={
+								resolveV2PresetIconKey({ agentId: agent.id }, configs) ??
+								agent.presetId
+							}
+							className="size-3.5"
+						/>
+						{label}
+					</Button>
+				))}
+				{waiting.map((s) => (
+					<span
+						key={s.terminalId}
+						className="shrink-0 text-[11px] text-muted-foreground"
+					>
+						Starting {s.label}…
+					</span>
+				))}
+				{error ? (
+					<span className="shrink-0 text-[11px] text-red-500">{error}</span>
+				) : null}
+			</div>
+		);
 	const Chevron = open ? LuChevronDown : LuChevronRight;
 	return (
 		<div className="flex flex-col gap-1.5">

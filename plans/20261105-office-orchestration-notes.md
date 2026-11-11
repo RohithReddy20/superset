@@ -815,3 +815,17 @@ A building with no agents showed no way to start one; it was behind a click on a
 - **Checked in the running app:** in city-demo-ops (1 workspace, 0 agents) the button listed
   Claude, Codex, OpenCode and the others; clicking Claude started it in "Rotate logs" and the
   header went to "1 agent".
+
+## 2026-11-11: a one-click row of CLIs in each building
+
+The person did not want an "Add agent" form: starting an agent should work like a workspace's own
+terminal bar.
+
+- Inside a building there is a row of CLIs under the "Needs you" bar (`StartBar`, using
+  `AgentBar` with `inline`): the workspace's own pinned agents, or every enabled one. One click
+  starts that CLI in the workspace through the app's own launch path, so the person's launch
+  command is used; it gets a city name at once and can be renamed from its panel. A building with
+  several workspaces has a small picker at the left of the row.
+- The "Add agent" button and its popover are gone.
+- **Checked in the running app:** city-demo-ops showed "Rotate logs · Claude · Codex · OpenCode ·
+  …"; one click on Codex started it as Leo, sitting next to Otto, and the header read "2 agents".
