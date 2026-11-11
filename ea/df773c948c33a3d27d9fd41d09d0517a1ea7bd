@@ -1,0 +1,31 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentBar/AgentBar.tsx
+  s_5f8913573c0c91::t_5856d61cf8b5da 2,14,77-80,94,101,103,123,125-129,131-185
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useCity/useCity.ts
+  s_5f8913573c0c91::t_2daf6968be4ebe 27-28,106
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useCityActions/useCityActions.ts
+  s_5f8913573c0c91::t_0b65092d4e18e7 43
+packages/host-service/src/office/cityRooms.test.ts
+  s_5f8913573c0c91::t_ecb2e1fbdfe46b 344-366
+packages/host-service/src/office/cityRooms.ts
+  s_5f8913573c0c91::t_a4e41d03e940de 111-112,270,725-738,804-805,811-813,845
+packages/host-service/src/trpc/router/office/office.ts
+  s_5f8913573c0c91::t_49f18c1fcdb971 220
+plans/20261105-office-orchestration-notes.md
+  s_5f8913573c0c91::t_a1d4cee18a01a0 832-845
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "eadf773c948c33a3d27d9fd41d09d0517a1ea7bd",
+  "prompts": {},
+  "sessions": {
+    "s_5f8913573c0c91": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ffe1d21c-40b7-4316-ace2-1908f5fdc59b",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
