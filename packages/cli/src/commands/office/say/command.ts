@@ -12,7 +12,7 @@ export default command({
 	],
 	skipMiddleware: true,
 	run: async ({ args }) => {
-		const note = await office((o) =>
+		const { note, waiting } = await office((o) =>
 			o.teamSay.mutate({
 				caller: officeCaller(),
 				to: handles(args.to as string),
@@ -20,8 +20,11 @@ export default command({
 			}),
 		);
 		return {
-			data: { id: note.id, to: note.toIds.length },
-			message: `Sent to ${note.toIds.length}.`,
+			data: { id: note.id, to: note.toIds.length, waiting },
+			message:
+				waiting.length > 0
+					? `Saved. ${waiting.join(", ")} cannot be reached now and will get it when back.`
+					: `Sent to ${note.toIds.length}.`,
 		};
 	},
 });

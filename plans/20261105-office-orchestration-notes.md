@@ -682,3 +682,28 @@ Order: 2 first on top of today's city (additive, old paths keep working), then 3
 - **Open.** An answer to an agent's ask has to be typed in the message box; "Finished" only closes
   the item. The dev CLI prints its own `$ dotenv …` line into the agent's output. Every host
   restart still disconnects running agents.
+
+## 2026-11-11: step 2 built — saved history, a waiting queue, live updates
+
+- **History.** `CityTeam` no longer keeps a JSON file. Every change is one event (`CityTeamEvent`:
+  note, todo.added, todo.moved, ask.added/started/answered, read, delivery.queued/done/failed,
+  moved) appended to the host's SQLite table `office_events` (migration `0039_office_events`); the
+  lists, asks and messages are those events replayed at start. `CityTeam.timeline(id)` turns them
+  into sentences for one teammate, following it across terminals. The old `city-team.json` is not
+  read; it only held test data.
+- **Waiting queue.** A message for an agent is a delivery. It is typed in at once when the agent
+  can be reached; otherwise it stays queued, in order, and goes in at the agent's next sign of life
+  (any lifecycle event), also after it continued in a new terminal. `say` and `ask` no longer fail
+  on a dead terminal: they answer with who the message waits for.
+- **Live updates.** New bus message `office:changed` (`scope`: team, rooms, tasks), sent by
+  `CityTeam`, `CityRooms` and `CityTasks` on every change. `useCityLive` refreshes every city query
+  on it and on agent and terminal lifecycle events. The city's own 1.5 s polls are now a 10 s
+  fallback (10 s keeps the disconnected-agent check working). The transcript and screen polls of an
+  open agent panel are unchanged, as is the old office floor's state poll.
+- **Renderer.** The agent panel has "History with the team" (folded) and a line when messages wait
+  to reach the agent.
+- **Checked in the running app.** Asked Milo while its terminal was dead: the command said it
+  waits, the panel showed "1 message waits to reach Milo". Reconnect from the panel: the log shows
+  moved → delivery.done → Milo started the item, added its own item, wrote "queued-ok" to the
+  person and finished. The history section lists those lines. A new item from Milo was on screen
+  117 ms after it was saved.

@@ -421,3 +421,11 @@ export const mobileLastDevices = sqliteTable("mobile_last_devices", {
 	deviceKey: text("device_key").notNull(),
 	pickedAt: integer("picked_at").notNull(),
 });
+
+/** Everything that happens in the office team, in order; its state is these rows replayed. */
+export const officeEvents = sqliteTable("office_events", {
+	seq: integer().primaryKey({ autoIncrement: true }),
+	at: integer().notNull(),
+	kind: text().notNull(),
+	payload: text().notNull(),
+});

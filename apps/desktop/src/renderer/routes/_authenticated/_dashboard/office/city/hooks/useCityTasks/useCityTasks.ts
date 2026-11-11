@@ -2,8 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getHostServiceClientByUrl } from "renderer/lib/host-service-client";
 import { useLocalHostService } from "renderer/routes/_authenticated/providers/LocalHostServiceProvider";
 import type { CityTask } from "../../types";
-
-const POLL_MS = 1500;
+import { CITY_FALLBACK_POLL_MS } from "../useCityLive";
 
 /** Tasks given to the city's agents, kept live, and what a person can do with them. */
 export function useCityTasks() {
@@ -18,7 +17,7 @@ export function useCityTasks() {
 		queryKey,
 		enabled: !!activeHostUrl,
 		queryFn: () => client().cityTasks.query(),
-		refetchInterval: POLL_MS,
+		refetchInterval: CITY_FALLBACK_POLL_MS,
 	});
 	const then = async <T>(promise: Promise<T>): Promise<T> => {
 		try {

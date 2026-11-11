@@ -266,7 +266,15 @@ export type ServerMessage =
 	| TagFoldersChangedMessage
 	| PageWatchChangedMessage
 	| ChatSessionsChangedMessage
+	| OfficeChangedMessage
 	| EventBusErrorMessage;
+
+/** Something in the office changed: the team's lists and messages, the rooms, or the tasks. */
+export interface OfficeChangedMessage {
+	type: "office:changed";
+	scope: "team" | "rooms" | "tasks";
+	occurredAt: number;
+}
 
 /**
  * Automatic naming gave up on a workspace after its last attempt; the

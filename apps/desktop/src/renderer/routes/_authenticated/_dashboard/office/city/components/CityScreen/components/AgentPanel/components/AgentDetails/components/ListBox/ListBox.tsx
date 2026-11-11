@@ -14,7 +14,7 @@ const SHOWN_NOTES = 3;
 
 /** What the agent carries on its own list, what it asked of you, and what it wrote to you. */
 export function ListBox({ agent }: { agent: CityAgent }) {
-	const { todos, setTodo, toYou, unread, markRead } = useCityTeam();
+	const { todos, setTodo, toYou, unread, markRead, waiting } = useCityTeam();
 	const [error, setError] = useState<string | null>(null);
 	const open = todos.filter(isOpenTodo);
 	const own = open.filter((t) => t.ownerId === agent.terminalId);
@@ -29,7 +29,13 @@ export function ListBox({ agent }: { agent: CityAgent }) {
 	useEffect(() => {
 		if (newest) void markRead(agent.terminalId).catch(() => {});
 	}, [newest, agent.terminalId]);
-	if (own.length === 0 && forYou.length === 0 && wrote.length === 0)
+	const held = waiting.filter((d) => d.toId === agent.terminalId);
+	if (
+		own.length === 0 &&
+		forYou.length === 0 &&
+		wrote.length === 0 &&
+		held.length === 0
+	)
 		return null;
 
 	const move = (todo: CityTodo, state: CityTodo["state"]) => {
@@ -116,6 +122,15 @@ export function ListBox({ agent }: { agent: CityAgent }) {
 						))}
 					</ul>
 				</section>
+			) : null}
+			{held.length > 0 ? (
+				<p className="text-amber-500">
+					{held.length === 1
+						? "1 message waits"
+						: `${held.length} messages wait`}{" "}
+					to reach {agent.name}; it gets {held.length === 1 ? "it" : "them"}{" "}
+					when it is back.
+				</p>
 			) : null}
 			{error ? <p className="text-[11px] text-red-500">{error}</p> : null}
 		</div>

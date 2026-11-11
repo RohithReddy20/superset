@@ -1,4 +1,3 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import {
 	handleOf,
 	type NamedAgent,
@@ -54,6 +53,18 @@ export interface CityNote {
 	at: number;
 }
 
+/** A message on its way into an agent's terminal; it waits while the agent cannot be reached. */
+export interface CityDelivery {
+	id: string;
+	toId: string;
+	toName: string;
+	toWorkspaceId?: string;
+	text: string;
+	status: "queued" | "delivered";
+	error?: string;
+	createdAt: number;
+}
+
 export interface CityTeammate {
 	id: string;
 	name: string;
@@ -66,6 +77,8 @@ export interface CityTeammate {
 	/** The item it marked as being worked on. */
 	doing: string | null;
 	open: number;
+	/** Messages waiting to reach its terminal. */
+	waiting: number;
 }
 
 export interface CityTeamSnapshot {
@@ -74,16 +87,45 @@ export interface CityTeamSnapshot {
 	notes: CityNote[];
 	/** When the person last read what each teammate wrote to them, by teammate id. */
 	readAt: Record<string, number>;
+	/** Messages that have not reached their agent yet. */
+	waiting: CityDelivery[];
+}
+
+/** Everything that happens in the team, in order. The team's state is these, replayed. */
+export type CityTeamEvent =
+	| { kind: "note"; note: CityNote }
+	| { kind: "todo.added"; todo: CityTodo }
+	| { kind: "todo.moved"; id: string; state: CityTodoState; at: number }
+	| { kind: "ask.added"; ask: CityAsk }
+	| { kind: "ask.started"; id: string }
+	| { kind: "ask.answered"; id: string }
+	| { kind: "read"; fromId: string; at: number }
+	| { kind: "delivery.queued"; delivery: CityDelivery }
+	| { kind: "delivery.done"; id: string; at: number }
+	| { kind: "delivery.failed"; id: string; error: string; at: number }
+	/** An agent continued in a new terminal; what was its, is now the new terminal's. */
+	| { kind: "moved"; fromId: string; toId: string; at: number };
+
+export interface CityTeamLog {
+	append: (event: CityTeamEvent) => void;
+	all: () => CityTeamEvent[];
+}
+
+export interface CityTimelineEntry {
+	at: number;
+	text: string;
 }
 
 export interface CityTeamDeps {
-	statePath: string;
+	log: CityTeamLog;
 	agents: () => NamedAgent[];
 	send: (agent: NamedAgent, text: string) => Promise<void>;
 	lastReply: (agent: NamedAgent) => Promise<string | null>;
 	successorOf?: (terminalId: string, workspaceId: string) => string | undefined;
 	/** True when the room talk already passes this answer on to that teammate. */
 	passedOnInRoom?: (fromId: string, toId: string, reply: string) => boolean;
+	/** Called after anything in the team changed. */
+	onChange?: () => void;
 	/** Defaults to {@link OFFICE_CLI}. */
 	officeCli?: string;
 	now?: () => number;
@@ -96,23 +138,34 @@ interface TeamState {
 	asks: CityAsk[];
 	notes: CityNote[];
 	readAt: Record<string, number>;
+	deliveries: CityDelivery[];
 }
 
 const TAG = "[Paradev office]";
+const TIMELINE_ENTRIES = 200;
 
 /**
  * The team as equals: the person and every running CLI agent. Each has its own list, anyone may
- * write to or ask anyone, and an ask comes back to the asker when the other's turn ends.
+ * write to or ask anyone, and an ask comes back to the asker when the other's turn ends. A message
+ * for an agent that cannot be reached waits and is typed in when the agent is back.
  */
 export class CityTeam {
-	private readonly state: TeamState;
+	private readonly state: TeamState = {
+		next: 1,
+		todos: [],
+		asks: [],
+		notes: [],
+		readAt: {},
+		deliveries: [],
+	};
 	private readonly now: () => number;
 	private readonly cli: string;
+	private readonly flushing = new Set<string>();
 
 	constructor(private readonly deps: CityTeamDeps) {
 		this.now = deps.now ?? Date.now;
 		this.cli = deps.officeCli ?? OFFICE_CLI;
-		this.state = load(deps.statePath);
+		for (const event of deps.log.all()) this.apply(event);
 	}
 
 	snapshot(): CityTeamSnapshot {
@@ -122,7 +175,74 @@ export class CityTeam {
 			todos: this.state.todos,
 			notes: this.state.notes,
 			readAt: this.state.readAt,
+			waiting: this.state.deliveries.filter((d) => d.status === "queued"),
 		};
+	}
+
+	/** What happened with one teammate, oldest first. */
+	timeline(id: string): CityTimelineEntry[] {
+		this.live();
+		const events = this.deps.log.all();
+		const involved = new Set([id]);
+		for (const event of [...events].reverse()) {
+			if (event.kind === "moved" && involved.has(event.toId))
+				involved.add(event.fromId);
+		}
+		const names = new Map<string, string>();
+		const todos = new Map<string, CityTodo>();
+		const deliveries = new Map<string, CityDelivery>();
+		const name = (who: string) =>
+			who === YOU ? "the person" : (names.get(who) ?? "a teammate");
+		const entries: CityTimelineEntry[] = [];
+		for (const event of events) {
+			if (event.kind === "note") {
+				const { note } = event;
+				names.set(note.fromId, note.fromName);
+				if (
+					!involved.has(note.fromId) &&
+					!note.toIds.some((t) => involved.has(t))
+				)
+					continue;
+				entries.push({
+					at: note.at,
+					text: `${note.fromName} ${note.expectsReply ? "asked" : "wrote to"} ${note.toIds.map(name).join(", ")}: ${note.text}`,
+				});
+			} else if (event.kind === "todo.added") {
+				todos.set(event.todo.id, event.todo);
+				names.set(event.todo.ownerId, event.todo.ownerName);
+				if (!involved.has(event.todo.ownerId) || event.todo.askedById) continue;
+				entries.push({
+					at: event.todo.createdAt,
+					text: `${event.todo.ownerName} put ${event.todo.id} on its own list: ${event.todo.text}`,
+				});
+			} else if (event.kind === "todo.moved") {
+				const todo = todos.get(event.id);
+				if (!todo || !involved.has(todo.ownerId)) continue;
+				const verb =
+					event.state === "doing"
+						? "started"
+						: event.state === "open"
+							? "reopened"
+							: event.state;
+				entries.push({
+					at: event.at,
+					text: `${todo.ownerName} ${verb} ${todo.id}: ${todo.text}`,
+				});
+			} else if (event.kind === "delivery.queued") {
+				deliveries.set(event.delivery.id, event.delivery);
+				names.set(event.delivery.toId, event.delivery.toName);
+			} else if (event.kind === "delivery.failed") {
+				const delivery = deliveries.get(event.id);
+				if (!delivery || !involved.has(delivery.toId)) continue;
+				entries.push({
+					at: event.at,
+					text: `A message could not reach ${delivery.toName} (${event.error}); it waits`,
+				});
+			} else if (event.kind === "moved" && involved.has(event.toId)) {
+				entries.push({ at: event.at, text: "Continued in a new terminal" });
+			}
+		}
+		return entries.slice(-TIMELINE_ENTRIES);
 	}
 
 	/** The caller of a command: the agent in that terminal, else the person. */
@@ -135,15 +255,14 @@ export class CityTeam {
 
 	/** The person has read what this teammate wrote to them. */
 	markRead(fromId: string): void {
-		this.state.readAt[fromId] = this.now();
-		this.save();
+		this.record({ kind: "read", fromId, at: this.now() });
 	}
 
 	async say(input: {
 		fromId: string;
 		to: string[];
 		text: string;
-	}): Promise<CityNote> {
+	}): Promise<{ note: CityNote; waiting: string[] }> {
 		const agents = this.live();
 		const targets = this.targets(input.to, input.fromId, agents);
 		const text = input.text.trim();
@@ -156,21 +275,20 @@ export class CityTeam {
 				ask.toId === input.fromId &&
 				targets.includes(ask.fromId)
 			)
-				ask.answered = true;
+				this.record({ kind: "ask.answered", id: ask.id });
 		}
-		this.save();
-		await this.deliver(
+		const waiting = await this.deliver(
 			agents.filter((a) => targets.includes(a.terminalId)),
 			`${TAG} ${from.name} (@${from.handle}) writes:\n${text}\n\n(No answer is needed. To write back: ${this.cli} say @${from.handle} "...")`,
 		);
-		return note;
+		return { note, waiting };
 	}
 
 	async ask(input: {
 		fromId: string;
 		to: string;
 		text: string;
-	}): Promise<CityTodo> {
+	}): Promise<{ todo: CityTodo; waiting: string[] }> {
 		const agents = this.live();
 		const [toId] = this.targets([input.to], input.fromId, agents);
 		const text = input.text.trim();
@@ -179,8 +297,9 @@ export class CityTeam {
 		const from = this.nameOf(input.fromId, agents);
 		const to = agents.find((a) => a.terminalId === toId);
 		const at = this.now();
+		const n = this.state.next;
 		const todo: CityTodo = {
-			id: `D-${this.state.next}`,
+			id: `D-${n}`,
 			ownerId: toId,
 			ownerName: to?.name ?? "You",
 			...(to ? { ownerWorkspaceId: to.workspaceId } : {}),
@@ -188,37 +307,39 @@ export class CityTeam {
 			state: "open",
 			askedById: input.fromId,
 			askedByName: from.name,
-			askId: `A-${this.state.next}`,
+			askId: `A-${n}`,
 			createdAt: at,
 			updatedAt: at,
 		};
-		this.state.next += 1;
-		this.state.todos.push(todo);
-		this.state.asks.push({
-			id: todo.askId ?? todo.id,
-			fromId: input.fromId,
-			fromName: from.name,
-			...workspaceOf(agents, input.fromId, "fromWorkspaceId"),
-			toId,
-			...(to ? { toWorkspaceId: to.workspaceId } : {}),
-			text,
-			todoId: todo.id,
-			started: false,
-			answered: false,
-			createdAt: at,
+		this.record({ kind: "todo.added", todo });
+		this.record({
+			kind: "ask.added",
+			ask: {
+				id: `A-${n}`,
+				fromId: input.fromId,
+				fromName: from.name,
+				...workspaceOf(agents, input.fromId, "fromWorkspaceId"),
+				toId,
+				...(to ? { toWorkspaceId: to.workspaceId } : {}),
+				text,
+				todoId: todo.id,
+				started: false,
+				answered: false,
+				createdAt: at,
+			},
 		});
 		this.note(input.fromId, from, [toId], text, true);
-		this.save();
-		if (to)
-			await this.deliver(
-				[to],
-				[
-					`${TAG} ${from.name} (@${from.handle}) asks you:\n${text}`,
-					`It is on your list as ${todo.id}. When you have the answer: ${this.cli} say @${from.handle} "..."`,
-					`To keep your list: ${this.cli} todo start ${todo.id}, then ${this.cli} todo finish ${todo.id}. If it is not yours to do: ${this.cli} todo drop ${todo.id}.`,
-				].join("\n\n"),
-			);
-		return todo;
+		const waiting = to
+			? await this.deliver(
+					[to],
+					[
+						`${TAG} ${from.name} (@${from.handle}) asks you:\n${text}`,
+						`It is on your list as ${todo.id}. When you have the answer: ${this.cli} say @${from.handle} "..."`,
+						`To keep your list: ${this.cli} todo start ${todo.id}, then ${this.cli} todo finish ${todo.id}. If it is not yours to do: ${this.cli} todo drop ${todo.id}.`,
+					].join("\n\n"),
+				)
+			: [];
+		return { todo, waiting };
 	}
 
 	addTodo(input: { callerId: string; text: string }): CityTodo {
@@ -237,9 +358,7 @@ export class CityTeam {
 			createdAt: at,
 			updatedAt: at,
 		};
-		this.state.next += 1;
-		this.state.todos.push(todo);
-		this.save();
+		this.record({ kind: "todo.added", todo });
 		return todo;
 	}
 
@@ -257,78 +376,123 @@ export class CityTeam {
 			throw new Error(
 				`${todo.id} is on ${todo.ownerName}'s list; only its owner moves it`,
 			);
-		todo.state = input.state;
-		todo.updatedAt = this.now();
+		this.record({
+			kind: "todo.moved",
+			id: todo.id,
+			state: input.state,
+			at: this.now(),
+		});
 		const ask = this.state.asks.find((a) => a.id === todo.askId);
 		const closing = input.state === "finished" || input.state === "dropped";
-		const tell = ask && !ask.answered && closing ? ask : null;
-		if (tell) tell.answered = true;
-		this.save();
-		if (tell) {
+		if (ask && !ask.answered && closing) {
+			this.record({ kind: "ask.answered", id: ask.id });
 			const owner = this.nameOf(todo.ownerId, agents);
 			const verb = input.state === "finished" ? "finished" : "dropped";
 			const line = `${owner.name} (@${owner.handle}) ${verb} what you asked: ${todo.text}`;
-			this.note(todo.ownerId, owner, [tell.fromId], line, false);
-			this.save();
+			this.note(todo.ownerId, owner, [ask.fromId], line, false);
 			await this.deliver(
-				agents.filter((a) => a.terminalId === tell.fromId),
+				agents.filter((a) => a.terminalId === ask.fromId),
 				`${TAG} ${line}\n\n(No answer is needed.)`,
 			);
 		}
 		return todo;
 	}
 
-	/** When an asked agent's turn ends without it writing back, its last words go to the asker. */
+	/**
+	 * Any sign of life from an agent sends it what waited for it. When an asked agent's turn ends
+	 * without it writing back, its last words go to the asker.
+	 */
 	async onAgentEvent(event: {
 		terminalId: string;
 		eventType: string;
 	}): Promise<void> {
+		const agents = this.live();
+		const agent = agents.find((a) => a.terminalId === event.terminalId);
+		if (agent) await this.flush(agent);
 		const waiting = this.state.asks.filter(
 			(a) => !a.answered && a.toId === event.terminalId,
 		);
 		if (waiting.length === 0) return;
 		if (event.eventType === "Start") {
-			for (const ask of waiting) ask.started = true;
-			this.save();
+			for (const ask of waiting)
+				if (!ask.started) this.record({ kind: "ask.started", id: ask.id });
 			return;
 		}
-		if (event.eventType !== "Stop") return;
+		if (event.eventType !== "Stop" || !agent) return;
 		const due = waiting.filter((a) => a.started);
 		if (due.length === 0) return;
 		const settle = this.deps.settleMs ?? 1000;
 		if (settle > 0) await new Promise((r) => setTimeout(r, settle));
-		const agents = this.live();
-		const agent = agents.find((a) => a.terminalId === event.terminalId);
-		if (!agent) return;
 		const reply = (await this.deps.lastReply(agent))?.trim();
 		for (const ask of due) {
 			if (ask.answered) continue;
-			ask.answered = true;
+			this.record({ kind: "ask.answered", id: ask.id });
 			if (!reply || saysNoReply(reply)) continue;
 			if (this.deps.passedOnInRoom?.(agent.terminalId, ask.fromId, reply))
 				continue;
 			const who = this.nameOf(agent.terminalId, agents);
 			this.note(agent.terminalId, who, [ask.fromId], reply, false);
 			await this.deliver(
-				agents.filter((a) => a.terminalId === ask.fromId),
+				this.live().filter((a) => a.terminalId === ask.fromId),
 				`${TAG} ${who.name} (@${who.handle}) ended its turn on what you asked (${ask.todoId}: ${ask.text}). Its last words:\n${reply}\n\n(No answer is needed.)`,
 			);
 		}
-		this.save();
 	}
 
-	private async deliver(to: NamedAgent[], text: string): Promise<void> {
-		const results = await Promise.allSettled(
-			to.map((agent) => this.deps.send(agent, text)),
-		);
-		const failed = results.flatMap((result, i) => {
-			const agent = to[i];
-			return result.status === "rejected" && agent
-				? [`${agent.name}: ${reason(result.reason)}`]
-				: [];
-		});
-		if (failed.length > 0)
-			throw new Error(`Could not reach ${failed.join("; ")}`);
+	/** Queues the text for each agent and tries to type it in; resolves to who it still waits for. */
+	private async deliver(to: NamedAgent[], text: string): Promise<string[]> {
+		for (const agent of to) {
+			this.record({
+				kind: "delivery.queued",
+				delivery: {
+					id: `M-${this.state.deliveries.length + 1}`,
+					toId: agent.terminalId,
+					toName: agent.name,
+					toWorkspaceId: agent.workspaceId,
+					text,
+					status: "queued",
+					createdAt: this.now(),
+				},
+			});
+		}
+		await Promise.all(to.map((agent) => this.flush(agent)));
+		return to
+			.filter((agent) =>
+				this.state.deliveries.some(
+					(d) => d.toId === agent.terminalId && d.status === "queued",
+				),
+			)
+			.map((agent) => agent.name);
+	}
+
+	/** Types in, oldest first, what waits for this agent; stops at the first that fails. */
+	private async flush(agent: NamedAgent): Promise<void> {
+		if (this.flushing.has(agent.terminalId)) return;
+		this.flushing.add(agent.terminalId);
+		try {
+			for (;;) {
+				const next = this.state.deliveries.find(
+					(d) => d.toId === agent.terminalId && d.status === "queued",
+				);
+				if (!next) return;
+				try {
+					await this.deps.send(agent, next.text);
+				} catch (error) {
+					const message = reason(error);
+					if (next.error !== message)
+						this.record({
+							kind: "delivery.failed",
+							id: next.id,
+							error: message,
+							at: this.now(),
+						});
+					return;
+				}
+				this.record({ kind: "delivery.done", id: next.id, at: this.now() });
+			}
+		} finally {
+			this.flushing.delete(agent.terminalId);
+		}
 	}
 
 	private note(
@@ -347,7 +511,7 @@ export class CityTeam {
 			expectsReply,
 			at: this.now(),
 		};
-		this.state.notes.push(note);
+		this.record({ kind: "note", note });
 		return note;
 	}
 
@@ -412,46 +576,134 @@ export class CityTeam {
 		};
 	}
 
-	private carrying(ownerId: string): { doing: string | null; open: number } {
+	private carrying(ownerId: string): {
+		doing: string | null;
+		open: number;
+		waiting: number;
+	} {
 		const mine = this.state.todos.filter((t) => t.ownerId === ownerId);
 		return {
 			doing: mine.find((t) => t.state === "doing")?.text ?? null,
 			open: mine.filter((t) => t.state === "open" || t.state === "doing")
 				.length,
+			waiting: this.state.deliveries.filter(
+				(d) => d.toId === ownerId && d.status === "queued",
+			).length,
 		};
 	}
 
-	/** The running agents; lists and asks follow an agent into the terminal it continued in. */
+	/** The running agents; what belongs to an agent follows it into the terminal it continued in. */
 	private live(): NamedAgent[] {
 		const agents = this.deps.agents();
 		const alive = new Set(agents.map((a) => a.terminalId));
-		const next = (id: string, workspaceId: string | undefined) => {
-			if (id === YOU || alive.has(id) || !workspaceId) return id;
-			const successor = this.deps.successorOf?.(id, workspaceId);
-			return successor && alive.has(successor) ? successor : id;
-		};
-		let moved = false;
-		const move = (from: string, to: string) => {
-			if (from !== to) moved = true;
-			return to;
-		};
-		for (const todo of this.state.todos) {
-			todo.ownerId = move(
-				todo.ownerId,
-				next(todo.ownerId, todo.ownerWorkspaceId),
-			);
-		}
+		const owners = new Map<string, string | undefined>();
+		for (const todo of this.state.todos)
+			owners.set(todo.ownerId, todo.ownerWorkspaceId);
 		for (const ask of this.state.asks) {
-			ask.toId = move(ask.toId, next(ask.toId, ask.toWorkspaceId));
-			ask.fromId = move(ask.fromId, next(ask.fromId, ask.fromWorkspaceId));
+			owners.set(ask.toId, ask.toWorkspaceId);
+			owners.set(ask.fromId, ask.fromWorkspaceId);
 		}
-		if (moved) this.save();
+		for (const delivery of this.state.deliveries)
+			if (delivery.status === "queued")
+				owners.set(delivery.toId, delivery.toWorkspaceId);
+		for (const [id, workspaceId] of owners) {
+			if (id === YOU || alive.has(id) || !workspaceId) continue;
+			const successor = this.deps.successorOf?.(id, workspaceId);
+			if (successor && alive.has(successor))
+				this.record({
+					kind: "moved",
+					fromId: id,
+					toId: successor,
+					at: this.now(),
+				});
+		}
 		return agents;
 	}
 
-	private save(): void {
-		writeFileSync(this.deps.statePath, JSON.stringify(this.state, null, 1));
+	private record(event: CityTeamEvent): void {
+		this.deps.log.append(event);
+		this.apply(event);
+		this.deps.onChange?.();
 	}
+
+	private apply(event: CityTeamEvent): void {
+		const { state } = this;
+		switch (event.kind) {
+			case "note":
+				state.notes.push({ ...event.note });
+				return;
+			case "todo.added":
+				state.todos.push({ ...event.todo });
+				state.next += 1;
+				return;
+			case "todo.moved": {
+				const todo = state.todos.find((t) => t.id === event.id);
+				if (!todo) return;
+				todo.state = event.state;
+				todo.updatedAt = event.at;
+				return;
+			}
+			case "ask.added":
+				state.asks.push({ ...event.ask });
+				return;
+			case "ask.started": {
+				const ask = state.asks.find((a) => a.id === event.id);
+				if (ask) ask.started = true;
+				return;
+			}
+			case "ask.answered": {
+				const ask = state.asks.find((a) => a.id === event.id);
+				if (ask) ask.answered = true;
+				return;
+			}
+			case "read":
+				state.readAt[event.fromId] = event.at;
+				return;
+			case "delivery.queued":
+				state.deliveries.push({ ...event.delivery });
+				return;
+			case "delivery.done": {
+				const delivery = state.deliveries.find((d) => d.id === event.id);
+				if (delivery) delivery.status = "delivered";
+				return;
+			}
+			case "delivery.failed": {
+				const delivery = state.deliveries.find((d) => d.id === event.id);
+				if (delivery) delivery.error = event.error;
+				return;
+			}
+			case "moved": {
+				const { fromId, toId } = event;
+				for (const todo of state.todos)
+					if (todo.ownerId === fromId) todo.ownerId = toId;
+				for (const ask of state.asks) {
+					if (ask.toId === fromId) ask.toId = toId;
+					if (ask.fromId === fromId) ask.fromId = toId;
+				}
+				for (const delivery of state.deliveries)
+					if (delivery.toId === fromId) delivery.toId = toId;
+				if (state.readAt[fromId] !== undefined) {
+					state.readAt[toId] = state.readAt[fromId];
+					delete state.readAt[fromId];
+				}
+				for (const note of state.notes) {
+					if (note.fromId === fromId) note.fromId = toId;
+					note.toIds = note.toIds.map((id) => (id === fromId ? toId : id));
+				}
+				return;
+			}
+		}
+	}
+}
+
+/** A log kept in memory, for tests and hosts with nowhere to save one. */
+export function memoryTeamLog(events: CityTeamEvent[] = []): CityTeamLog {
+	return {
+		append: (event) => {
+			events.push(structuredClone(event));
+		},
+		all: () => events,
+	};
 }
 
 function workspaceOf<K extends string>(
@@ -467,27 +719,4 @@ function workspaceOf<K extends string>(
 
 function reason(error: unknown): string {
 	return error instanceof Error ? error.message : String(error);
-}
-
-function load(path: string): TeamState {
-	const empty: TeamState = {
-		next: 1,
-		todos: [],
-		asks: [],
-		notes: [],
-		readAt: {},
-	};
-	if (!existsSync(path)) return empty;
-	try {
-		const raw = JSON.parse(readFileSync(path, "utf8")) as Partial<TeamState>;
-		return {
-			next: raw.next ?? 1,
-			todos: raw.todos ?? [],
-			asks: raw.asks ?? [],
-			notes: raw.notes ?? [],
-			readAt: raw.readAt ?? {},
-		};
-	} catch {
-		return empty;
-	}
 }

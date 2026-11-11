@@ -180,6 +180,8 @@ export interface CityRoomsDeps {
 	now?: () => number;
 	/** Wait after a turn ends before reading its answer, so the agent has written it down. */
 	settleMs?: number;
+	/** Called after the saved state changed. */
+	onChange?: () => void;
 }
 
 export const MEETING_ROOM = "meeting";
@@ -1107,6 +1109,7 @@ export class CityRooms {
 
 	private save(): void {
 		writeFileSync(this.deps.statePath, JSON.stringify(this.state, null, "\t"));
+		this.deps.onChange?.();
 	}
 }
 

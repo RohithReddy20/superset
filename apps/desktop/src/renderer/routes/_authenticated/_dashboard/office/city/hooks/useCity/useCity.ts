@@ -9,11 +9,14 @@ import { useV2NotificationStore } from "renderer/stores/v2-notifications";
 import type { CityHandover, CityProject, CityRoom } from "../../types";
 import { buildCity } from "../../utils/buildCity";
 import { useAgentScreens } from "../useAgentScreens";
-
-const POLL_MS = 1500;
+import {
+	CITY_FALLBACK_POLL_MS,
+	CITY_QUERY_ROOT,
+	useCityLive,
+} from "../useCityLive";
 
 export function cityQueryKey(hostUrl: string | null) {
-	return ["city", "rooms", hostUrl] as const;
+	return [CITY_QUERY_ROOT, "rooms", hostUrl] as const;
 }
 
 /** This machine's projects and workspaces, the agents running in them, and where they sit, kept live. */
@@ -25,6 +28,7 @@ export function useCity(): {
 	ready: boolean;
 } {
 	const { activeHostUrl, machineId } = useLocalHostService();
+	useCityLive();
 	const { workspaces, isReady: workspacesReady } = useHostWorkspaces();
 	const { projects, isReady: projectsReady } = useHostProjects();
 	const seenAt = useV2NotificationStore((state) => state.terminalSeenAt);
@@ -33,13 +37,13 @@ export function useCity(): {
 		: null;
 
 	const bindings = useQuery({
-		queryKey: ["city", "agents", activeHostUrl],
+		queryKey: [CITY_QUERY_ROOT, "agents", activeHostUrl],
 		enabled: !!client,
 		queryFn: () => {
 			if (!client) throw new Error("No local host");
 			return client.terminalAgents.list.query();
 		},
-		refetchInterval: POLL_MS,
+		refetchInterval: CITY_FALLBACK_POLL_MS,
 	});
 	const rooms = useQuery({
 		queryKey: cityQueryKey(activeHostUrl),
@@ -48,7 +52,7 @@ export function useCity(): {
 			if (!client) throw new Error("No local host");
 			return client.office.cityState.query();
 		},
-		refetchInterval: POLL_MS,
+		refetchInterval: CITY_FALLBACK_POLL_MS,
 	});
 
 	const watched = useMemo(

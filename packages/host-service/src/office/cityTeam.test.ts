@@ -1,9 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import type { NamedAgent } from "./cityRooms";
-import { CityTeam, type CityTeamDeps, YOU } from "./cityTeam";
+import {
+	CityTeam,
+	type CityTeamDeps,
+	type CityTeamEvent,
+	memoryTeamLog,
+	YOU,
+} from "./cityTeam";
 
 const agent = (terminalId: string, name: string): NamedAgent => ({
 	terminalId,
@@ -20,8 +23,9 @@ function setup(over: Partial<CityTeamDeps> = {}) {
 	const agents = [agent("t1", "Milo"), agent("t2", "Ada")];
 	const replies = new Map<string, string>();
 	const sent: Array<{ to: string; text: string }> = [];
-	const team = new CityTeam({
-		statePath: join(mkdtempSync(join(tmpdir(), "city-team-")), "team.json"),
+	const events: CityTeamEvent[] = [];
+	const deps: CityTeamDeps = {
+		log: memoryTeamLog(events),
 		agents: () => agents,
 		send: async (to, text) => {
 			sent.push({ to: to.terminalId, text });
@@ -29,19 +33,24 @@ function setup(over: Partial<CityTeamDeps> = {}) {
 		lastReply: async (from) => replies.get(from.terminalId) ?? null,
 		settleMs: 0,
 		...over,
-	});
+	};
+	const team = new CityTeam(deps);
 	const turn = async (terminalId: string, reply: string) => {
 		replies.set(terminalId, reply);
 		await team.onAgentEvent({ terminalId, eventType: "Start" });
 		await team.onAgentEvent({ terminalId, eventType: "Stop" });
 	};
-	return { team, agents, sent, turn };
+	return { team, agents, sent, turn, deps };
 }
 
 describe("CityTeam", () => {
 	test("an ask lands on the other's list and reaches its terminal", async () => {
 		const { team, sent } = setup();
-		const todo = await team.ask({ fromId: "t1", to: "@ada", text: "Run it" });
+		const { todo } = await team.ask({
+			fromId: "t1",
+			to: "@ada",
+			text: "Run it",
+		});
 		expect(todo).toMatchObject({
 			ownerId: "t2",
 			state: "open",
@@ -79,7 +88,11 @@ describe("CityTeam", () => {
 
 	test("only the owner moves an item, and finishing tells the asker", async () => {
 		const { team, sent } = setup();
-		const todo = await team.ask({ fromId: "t1", to: "ada", text: "Run it" });
+		const { todo } = await team.ask({
+			fromId: "t1",
+			to: "ada",
+			text: "Run it",
+		});
 		await expect(
 			team.setTodo({ callerId: "t1", id: todo.id, state: "finished" }),
 		).rejects.toThrow(/only its owner/);
@@ -90,7 +103,11 @@ describe("CityTeam", () => {
 
 	test("the person is one of the team: asked, listed, and written to", async () => {
 		const { team, sent } = setup();
-		const todo = await team.ask({ fromId: "t1", to: "@you", text: "Pick one" });
+		const { todo } = await team.ask({
+			fromId: "t1",
+			to: "@you",
+			text: "Pick one",
+		});
 		expect(todo.ownerId).toBe(YOU);
 		expect(sent).toHaveLength(0);
 		await team.setTodo({ callerId: YOU, id: todo.id, state: "doing" });
@@ -104,10 +121,49 @@ describe("CityTeam", () => {
 		const { team, agents } = setup({
 			successorOf: (terminalId) => (terminalId === "t2" ? "t3" : undefined),
 		});
-		const todo = await team.ask({ fromId: "t1", to: "ada", text: "Run it" });
+		const { todo } = await team.ask({
+			fromId: "t1",
+			to: "ada",
+			text: "Run it",
+		});
 		agents[1] = { ...agent("t3", "Ada"), workspaceId: "ws-t2" };
 		expect(team.snapshot().todos.find((t) => t.id === todo.id)?.ownerId).toBe(
 			"t3",
 		);
+	});
+
+	test("a message for an agent that cannot be reached waits, then arrives in order", async () => {
+		let down = true;
+		const sent: string[] = [];
+		const { team } = setup({
+			send: async (_to, text) => {
+				if (down) throw new Error("terminal is gone");
+				sent.push(text);
+			},
+		});
+		const first = await team.say({ fromId: YOU, to: ["ada"], text: "one" });
+		await team.say({ fromId: YOU, to: ["ada"], text: "two" });
+		expect(first.waiting).toEqual(["Ada"]);
+		expect(team.snapshot().waiting).toHaveLength(2);
+		down = false;
+		await team.onAgentEvent({ terminalId: "t2", eventType: "Attached" });
+		expect(sent.map((t) => t.split("\n")[1])).toEqual(["one", "two"]);
+		expect(team.snapshot().waiting).toHaveLength(0);
+	});
+
+	test("a restart replays the saved history into the same lists", async () => {
+		const { team, deps } = setup();
+		const { todo } = await team.ask({
+			fromId: "t1",
+			to: "ada",
+			text: "Run it",
+		});
+		await team.setTodo({ callerId: "t2", id: todo.id, state: "doing" });
+		const again = new CityTeam(deps);
+		expect(again.snapshot()).toEqual(team.snapshot());
+		expect(again.timeline("t2").map((e) => e.text)).toEqual([
+			"Milo asked Ada: Run it",
+			"Ada started D-1: Run it",
+		]);
 	});
 });

@@ -119,6 +119,10 @@ export const officeRouter = router({
 			}),
 		),
 
+	teamTimeline: protectedProcedure
+		.input(z.object({ id: z.string().min(1) }))
+		.query(({ ctx, input }) => teamOf(ctx.runtime).timeline(input.id)),
+
 	teamRead: protectedProcedure
 		.input(z.object({ fromId: z.string().min(1) }))
 		.mutation(({ ctx, input }) => {

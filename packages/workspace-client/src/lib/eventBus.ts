@@ -25,6 +25,7 @@ type EventType =
 	| "workspace:naming-failed"
 	| "project:changed"
 	| "tag-folders:changed"
+	| "office:changed"
 	| "page-watch:changed"
 	| "chat:sessions-changed";
 
@@ -122,6 +123,10 @@ export interface ChatSessionsChangedPayload {
 	occurredAt: number;
 }
 
+export interface OfficeChangedPayload {
+	occurredAt: number;
+}
+
 type TagFoldersChangedMessage = Extract<
 	ServerMessage,
 	{ type: "tag-folders:changed" }
@@ -167,17 +172,22 @@ type EventListener<T extends EventType> = T extends "fs:events"
 													scope: string,
 													payload: TagFoldersChangedPayload,
 												) => void
-											: T extends "page-watch:changed"
+											: T extends "office:changed"
 												? (
-														workspaceId: string,
-														payload: PageWatchChangedPayload,
+														scope: "team" | "rooms" | "tasks",
+														payload: OfficeChangedPayload,
 													) => void
-												: T extends "chat:sessions-changed"
+												: T extends "page-watch:changed"
 													? (
 															workspaceId: string,
-															payload: ChatSessionsChangedPayload,
+															payload: PageWatchChangedPayload,
 														) => void
-													: never;
+													: T extends "chat:sessions-changed"
+														? (
+																workspaceId: string,
+																payload: ChatSessionsChangedPayload,
+															) => void
+														: never;
 
 interface ListenerEntry {
 	type: EventType;
@@ -322,7 +332,8 @@ function handleMessage(state: ConnectionState, data: unknown): void {
 				? message.workspaceId
 				: message.type === "project:changed"
 					? message.projectId
-					: message.type === "tag-folders:changed"
+					: message.type === "tag-folders:changed" ||
+							message.type === "office:changed"
 						? message.scope
 						: null;
 
@@ -402,6 +413,10 @@ function handleMessage(state: ConnectionState, data: unknown): void {
 				message.workspaceId,
 				{ occurredAt: message.occurredAt },
 			);
+		} else if (message.type === "office:changed") {
+			(entry.callback as EventListener<"office:changed">)(message.scope, {
+				occurredAt: message.occurredAt,
+			});
 		} else if (message.type === "tag-folders:changed") {
 			(entry.callback as EventListener<"tag-folders:changed">)(message.scope, {
 				settings: message.settings,

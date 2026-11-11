@@ -386,6 +386,10 @@ export class EventBus {
 		this.broadcast({ type: "project:changed", ...message });
 	}
 
+	broadcastOfficeChanged(scope: "team" | "rooms" | "tasks"): void {
+		this.broadcast({ type: "office:changed", scope, occurredAt: Date.now() });
+	}
+
 	/**
 	 * Fan out tag-folder presentation changes for one scope (a project id, or
 	 * the Sessions lane). Its own channel rather than a field on the project

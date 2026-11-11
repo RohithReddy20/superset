@@ -92,6 +92,8 @@ export interface CityTasksDeps {
 	settleMs?: number;
 	/** Wait after an agent comes back in a new terminal before typing to it, so its screen is ready. */
 	bootMs?: number;
+	/** Called after the saved state changed. */
+	onChange?: () => void;
 }
 
 const KEPT_FINISHED = 50;
@@ -560,6 +562,7 @@ export class CityTasks {
 			.slice(0, KEPT_FINISHED);
 		this.state.tasks = [...open, ...finished];
 		writeFileSync(this.deps.statePath, JSON.stringify(this.state, null, 2));
+		this.deps.onChange?.();
 	}
 }
 

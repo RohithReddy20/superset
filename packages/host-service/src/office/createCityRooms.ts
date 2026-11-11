@@ -3,9 +3,9 @@ import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { promisify } from "node:util";
 import { AGENT_IDENTITY_LABELS } from "@superset/shared/agent-catalog";
-import { isNull } from "drizzle-orm";
+import { asc, isNull } from "drizzle-orm";
 import type { HostDb } from "../db";
-import { projects, workspaces } from "../db/schema";
+import { officeEvents, projects, workspaces } from "../db/schema";
 import type { EventBus } from "../events";
 import { getDaemonClient } from "../terminal/daemon-client-singleton";
 import {
@@ -32,7 +32,7 @@ import {
 	MEETING_ROOM,
 } from "./cityRooms";
 import { CityTasks } from "./cityTasks";
-import { CityTeam } from "./cityTeam";
+import { CityTeam, type CityTeamEvent, type CityTeamLog } from "./cityTeam";
 import { TerminalWatch } from "./terminalWatch";
 
 const REPLY_CHARS = 12_000;
@@ -198,6 +198,7 @@ export function createCityRooms({
 
 	const rooms = new CityRooms({
 		statePath,
+		onChange: () => eventBus.broadcastOfficeChanged("rooms"),
 		agents,
 		lostAgents,
 		stopAgent,
@@ -235,6 +236,7 @@ export function createCityRooms({
 	});
 
 	const tasks = new CityTasks({
+		onChange: () => eventBus.broadcastOfficeChanged("tasks"),
 		statePath: join(dirname(statePath), "city-tasks.json"),
 		agents: () => rooms.namedAgents(),
 		workspace: workspaceOf,
@@ -274,8 +276,28 @@ export function createCityRooms({
 		},
 	});
 
+	const events: CityTeamEvent[] = db
+		.select({ payload: officeEvents.payload })
+		.from(officeEvents)
+		.orderBy(asc(officeEvents.seq))
+		.all()
+		.map((row) => JSON.parse(row.payload) as CityTeamEvent);
+	const log: CityTeamLog = {
+		append: (event) => {
+			db.insert(officeEvents)
+				.values({
+					at: Date.now(),
+					kind: event.kind,
+					payload: JSON.stringify(event),
+				})
+				.run();
+			events.push(event);
+		},
+		all: () => events,
+	};
 	const team = new CityTeam({
-		statePath: join(dirname(statePath), "city-team.json"),
+		log,
+		onChange: () => eventBus.broadcastOfficeChanged("team"),
 		agents: () => rooms.namedAgents(),
 		send: (agent, text) => rooms.tell(agent.terminalId, text),
 		lastReply,

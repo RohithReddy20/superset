@@ -17,6 +17,7 @@ import { MessageBox } from "../../../MessageBox";
 import { StatusBadge } from "../../../StatusBadge";
 import { Conversation } from "./components/Conversation";
 import { HandoverBox } from "./components/HandoverBox";
+import { HistoryBox } from "./components/HistoryBox";
 import { KeyButtons } from "./components/KeyButtons";
 import { ListBox } from "./components/ListBox";
 import { LostNotice } from "./components/LostNotice";
@@ -113,6 +114,7 @@ export function AgentDetails({
 				onRemoved={onRemoved}
 			/>
 			<ListBox agent={agent} />
+			<HistoryBox agent={agent} />
 			<TaskBox agent={agent} />
 			<SeatRow agent={agent} projects={projects} />
 			<HandoverBox

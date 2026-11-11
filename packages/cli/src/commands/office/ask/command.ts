@@ -11,7 +11,7 @@ export default command({
 	],
 	skipMiddleware: true,
 	run: async ({ args }) => {
-		const todo = await office((o) =>
+		const { todo, waiting } = await office((o) =>
 			o.teamAsk.mutate({
 				caller: officeCaller(),
 				to: args.to as string,
@@ -19,8 +19,11 @@ export default command({
 			}),
 		);
 		return {
-			data: { id: todo.id, owner: todo.ownerName },
-			message: `Asked ${todo.ownerName}; it is ${todo.id} on their list. Their answer will reach you here.`,
+			data: { id: todo.id, owner: todo.ownerName, waiting },
+			message:
+				waiting.length > 0
+					? `${todo.id} is on ${todo.ownerName}'s list. ${todo.ownerName} cannot be reached now and will get it when back.`
+					: `Asked ${todo.ownerName}; it is ${todo.id} on their list. Their answer will reach you here.`,
 		};
 	},
 });

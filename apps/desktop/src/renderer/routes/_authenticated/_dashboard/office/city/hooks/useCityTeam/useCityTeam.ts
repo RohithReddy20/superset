@@ -3,16 +3,17 @@ import { useMemo } from "react";
 import { getHostServiceClientByUrl } from "renderer/lib/host-service-client";
 import { useLocalHostService } from "renderer/routes/_authenticated/providers/LocalHostServiceProvider";
 import { type CityNote, type CityTodo, YOU } from "../../types";
+import { CITY_FALLBACK_POLL_MS, CITY_QUERY_ROOT } from "../useCityLive";
 
-const POLL_MS = 1500;
 const NO_TODOS: CityTodo[] = [];
 const NO_NOTES: CityNote[] = [];
+const NO_WAITING: Array<{ id: string; toId: string; error?: string }> = [];
 
 /** Everyone's own list and what they wrote to the person, kept live. */
 export function useCityTeam() {
 	const { activeHostUrl } = useLocalHostService();
 	const queryClient = useQueryClient();
-	const queryKey = ["city", "team", activeHostUrl] as const;
+	const queryKey = [CITY_QUERY_ROOT, "team", activeHostUrl] as const;
 	const client = () => {
 		if (!activeHostUrl) throw new Error("No local host");
 		return getHostServiceClientByUrl(activeHostUrl).office;
@@ -21,7 +22,7 @@ export function useCityTeam() {
 		queryKey,
 		enabled: !!activeHostUrl,
 		queryFn: () => client().team.query(),
-		refetchInterval: POLL_MS,
+		refetchInterval: CITY_FALLBACK_POLL_MS,
 	});
 	const then = async <T>(promise: Promise<T>): Promise<T> => {
 		try {
@@ -46,6 +47,7 @@ export function useCityTeam() {
 		todos: query.data?.todos ?? NO_TODOS,
 		toYou,
 		unread,
+		waiting: query.data?.waiting ?? NO_WAITING,
 		markRead: (fromId: string) => then(client().teamRead.mutate({ fromId })),
 		ask: (to: string, text: string) =>
 			then(client().teamAsk.mutate({ to, text })),
