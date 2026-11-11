@@ -1,0 +1,114 @@
+packages/host-service/src/office/cityTeam.test.ts
+  s_5f8913573c0c91::t_074e7aec50a5db 1-113
+packages/host-service/src/office/cityTeam.ts
+  s_5f8913573c0c91::t_c5c1ea6304f665 1-463
+  s_5f8913573c0c91::t_3d226cc8a963e3 464-493
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/CityScreen.tsx
+  s_5f8913573c0c91::t_119f4f980658c2 37
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/AgentDetails.tsx
+  s_5f8913573c0c91::t_d4e2b28dd5cc7a 21,115
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/components/ListBox/ListBox.tsx
+  s_5f8913573c0c91::t_60d678374f42ae 1-123
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/components/ListBox/index.ts
+  s_5f8913573c0c91::t_ed50640f8e8700 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/components/TaskBox/components/TaskCard/TaskCard.tsx
+  s_5f8913573c0c91::t_ac154ce7cfd29a 29
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useCityTeam/index.ts
+  s_5f8913573c0c91::t_10b33e1bd147aa 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useCityTeam/useCityTeam.ts
+  s_5f8913573c0c91::t_bb14588559ada1 1-55
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/types.ts
+  s_5f8913573c0c91::t_d4ff00aa9c1f11 90-97
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/NeedsYouBar/components/NeedsYouChip/NeedsYouChip.tsx
+  s_5f8913573c0c91::t_1f933918489dfe 11-12,31-40
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/TaskBoard/TaskBoard.tsx
+  s_5f8913573c0c91::t_3fcbc59108e010 108-113
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/TeammateCard/TeammateCard.tsx
+  s_5f8913573c0c91::t_29f788341d7907 89,94
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/hooks/useNeedsYou/useNeedsYou.ts
+  s_5f8913573c0c91::t_63c841a621ad36 4,13,16-17
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/needsYou/needsYou.test.ts
+  s_5f8913573c0c91::t_fff74df4447eb8 170-196
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/needsYou/needsYou.ts
+  s_5f8913573c0c91::t_94440d4e41367c 5,8,10,16-17,42-43,64-65,81-92,134-163
+packages/cli/src/commands/office/ask/command.ts
+  s_5f8913573c0c91::t_ff3b4cdae78f4d 1-26
+packages/cli/src/commands/office/meta.ts
+  s_5f8913573c0c91::t_b99d52e1cc1f6a 1-4
+packages/cli/src/commands/office/say/command.ts
+  s_5f8913573c0c91::t_edc2299fea836c 1-27
+packages/cli/src/commands/office/todo/add/command.ts
+  s_5f8913573c0c91::t_82a60c27630d30 1-21
+packages/cli/src/commands/office/todo/drop/command.ts
+  s_5f8913573c0c91::t_bc8cab1063585f 1-22
+packages/cli/src/commands/office/todo/finish/command.ts
+  s_5f8913573c0c91::t_3490e6254e472f 1-22
+packages/cli/src/commands/office/todo/list/command.ts
+  s_5f8913573c0c91::t_a4cb61fd4885af 1-40
+packages/cli/src/commands/office/todo/meta.ts
+  s_5f8913573c0c91::t_ab46aba2719252 1-3
+packages/cli/src/commands/office/todo/start/command.ts
+  s_5f8913573c0c91::t_3490dc99570e65 1-22
+packages/cli/src/commands/office/who/command.ts
+  s_5f8913573c0c91::t_8759184249f5c3 1-31
+packages/cli/src/lib/office/index.ts
+  s_5f8913573c0c91::t_c720d0fbfaff6b 1
+packages/cli/src/lib/office/office.ts
+  s_5f8913573c0c91::t_df0a1f24397483 1-38
+packages/cli/src/lib/settings/host-settings.ts
+  s_5f8913573c0c91::t_c91023a52244e9 75,95
+packages/host-service/src/app.ts
+  s_5f8913573c0c91::t_127f6d70fa3e27 1-2,368-369,371,396
+packages/host-service/src/office/cityRooms.test.ts
+  s_5f8913573c0c91::t_71b12315fc6ded 13,16,185,190,195,324,332
+packages/host-service/src/office/cityRooms.ts
+  s_5f8913573c0c91::t_f553a107d49b8f 29-30,178-179,197-202,261,422,606,623,733,967-970,982-984,986,991-1005,1030,1047,1092
+packages/host-service/src/office/cityTasks.test.ts
+  s_5f8913573c0c91::t_7c9152407f09b4 85,102-103
+packages/host-service/src/office/createCityRooms.ts
+  s_5f8913573c0c91::t_95d13e8f0d9fc5 35,54,73-74,218,277-287,295-297,299
+packages/host-service/src/office/officeGuests.ts
+  s_5f8913573c0c91::t_d8af6aca589816 34
+packages/host-service/src/office/officeRuntime.ts
+  s_5f8913573c0c91::t_186d41797758af 527
+packages/host-service/src/office/types.ts
+  s_5f8913573c0c91::t_2e033313e127a4 16-18
+packages/host-service/src/trpc/router/office/office.ts
+  s_5f8913573c0c91::t_b1cf100244dcdf 5,43-53,72-74,80-159
+packages/host-service/src/types.ts
+  s_5f8913573c0c91::t_277d37af1ad4f1 11,40
+packages/office-harness/README.md
+  s_5f8913573c0c91::t_cff3fc513d4945 28-30
+packages/office-harness/src/guards/guards.ts
+  s_5f8913573c0c91::t_57fbd9f56bd132 1,5
+packages/office-harness/src/office/Office.test.ts
+  s_5f8913573c0c91::t_e40eb770a0f0ee 184
+packages/office-harness/src/office/Office.ts
+  s_5f8913573c0c91::t_f2017cb07bd846 3,80,267-268,551
+packages/office-harness/src/office/types.ts
+  s_5f8913573c0c91::t_e7dbd5ca641c9f 32-33
+packages/office-harness/src/seat/prompt.ts
+  s_5f8913573c0c91::t_33ecf0995e299a 104
+packages/office-harness/src/web/page.html
+  s_5f8913573c0c91::t_843118d7d1fa9e 130
+plans/20261105-office-orchestration-notes.md
+  s_5f8913573c0c91::t_3fc86c19d3da6d 582-684
+scripts/dev-cli.ts
+  s_5f8913573c0c91::t_80d19cdebdd86d 22,24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1d6d11238525671050ebcc08654472e31597aec2",
+  "prompts": {},
+  "sessions": {
+    "s_5f8913573c0c91": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ffe1d21c-40b7-4316-ace2-1908f5fdc59b",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
