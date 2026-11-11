@@ -7,8 +7,10 @@ import { CityScreen } from "./components/CityScreen";
 
 interface CitySearch {
 	project?: string;
-	/** An agent to open in its building, e.g. from the "Needs you" bar. */
+	/** The agent whose panel is open. */
 	agent?: string;
+	/** The room whose panel is open, when no agent is. */
+	room?: string;
 	view?: "list";
 }
 
@@ -23,7 +25,9 @@ export const Route = createFileRoute("/_authenticated/_dashboard/office/city/")(
 			const project = text(raw.project);
 			const agent = text(raw.agent);
 			if (project) search.project = project;
+			const room = text(raw.room);
 			if (agent) search.agent = agent;
+			else if (room) search.room = room;
 			if (raw.view === "list") search.view = "list";
 			return search;
 		},
@@ -31,11 +35,12 @@ export const Route = createFileRoute("/_authenticated/_dashboard/office/city/")(
 );
 
 function CityPage() {
-	const { project, agent, view } = Route.useSearch();
+	const { project, agent, room, view } = Route.useSearch();
 	const screen = (
 		<CityScreen
 			projectId={project ?? null}
 			agentId={agent ?? null}
+			roomId={room ?? null}
 			view={view ?? "map"}
 		/>
 	);

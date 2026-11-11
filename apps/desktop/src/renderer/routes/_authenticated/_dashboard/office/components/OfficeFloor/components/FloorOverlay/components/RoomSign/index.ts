@@ -1,0 +1,1 @@
+export { RoomSign } from "./RoomSign";

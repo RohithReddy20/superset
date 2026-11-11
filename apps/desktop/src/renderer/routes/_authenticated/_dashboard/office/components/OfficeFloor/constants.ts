@@ -19,14 +19,3 @@ export function engineLabel(engine: EngineId | undefined): string {
 			return "";
 	}
 }
-
-export const OFFICE_CONTROLS: Array<[string, string]> = [
-	["Click a teammate", "Chat with them"],
-	["Shift-click or Shift-drag", "Pick several to chat with at once"],
-	["Drag a teammate", "Move them to another room"],
-	["Click a room", "Show its talk on the right"],
-	["Drag the floor", "Look around"],
-	["Scroll, or − and +", "Zoom"],
-	["Arrow keys", "Walk"],
-	["Esc", "Clear the pick"],
-];

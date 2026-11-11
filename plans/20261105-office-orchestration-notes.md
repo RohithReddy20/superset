@@ -875,3 +875,58 @@ The person's idea: keep the row of CLIs, but fill in the details and let them ed
   health check n…" at small zoom, and the room panel opened the decision box with fields for You,
   Nova and Scribe. Saving a decision from that box was not clicked through; it calls the same
   route as the command.
+
+## 2026-11-12: UI/UX pass, step 1 — finding your way, and people on the floor
+
+No new capability; renderer only. Before and after screenshots are in the session's scratch folder.
+
+- **The address holds what is open.** `?project=…&agent=…` or `&room=…` (and `view=list`) say
+  which building, which agent or room panel, and Map or List. `CityScreen` owns the one
+  `AgentPanel` for both views, so switching Map / List keeps the panel and what was typed in it;
+  the panel also survives a reload. `BuildingView` no longer keeps its own selection, and the
+  "open this agent once, then forget" `focusAgentId` is gone.
+- **Going back.** The header is a breadcrumb: a back arrow, "City", and the building's name, which
+  opens a menu of every building with its agent count (`CityBreadcrumb`). Esc steps back one level
+  at a time: a pick of several, then the open panel, then the building (`useEscapeKey`; Esc in a
+  field only leaves the field, and a popover closes itself first). On the city map the arrow keys
+  move a highlight between buildings and Enter goes in. The whole city now fills the view instead
+  of snapping to a small zoom step.
+- **Empty and gone states** have a title, a line of help and, for a building that is gone, a way
+  back (`EmptyState`). An empty building says how to start an agent. The floor's hint fades after
+  the first click; the "?" button still lists every control.
+- **Camera** (`OfficeScene`): three modes, `everyone`, `whole`, `free`, shown as a two-button
+  switch in `FloorControls` so the lit one is where you are. Zooming keeps the centre (it used to
+  jump to "You" in the phone booths), the wheel zooms about the pointer, and every re-frame glides
+  for about 0.3 s (none with reduced motion). A selected agent out of sight is brought into view.
+  The open room is outlined on the floor.
+- **Name tags** (`FloorOverlay`, `NameTag`, `RoomSign`): a tag and its line are one unit; units
+  are placed lowest person first and lifted clear of each other, and a room's sign now sits over
+  its room (it used to hang under it and read as the name of the room below) and lifts clear of
+  tags. A line shows only what says something: what needs you, the item it works on, or the next
+  one. Plain "Working" and "Done, take a look" are gone from the tags; the dot and the character
+  show those. A visitor's tag reads "Ada · from Add health check". Signs carry the count of people.
+- **State on the character**: a small pixel sign beside the head (three moving dots for working,
+  "!" for needs you, a check for done, a cross for failed, "z" for disconnected) and a grey tint
+  when disconnected (`Mood`, `drawMood`).
+- **Arriving and leaving**: a started agent fades in a few steps from its desk and walks to it; a
+  removed one walks a few steps towards the door and fades out. Nobody "arrives" while the city is
+  still loading (`useCity().agentsReady`, since `ready` never turns true in the local dev app:
+  it waits for remote hosts). Walks are paced so none takes longer than about 2.6 s.
+- **A full room**: more people than chairs stand beside their own desks (`standingSpots` in
+  `layoutWorld`) instead of taking a phone booth across the floor. Seats are dealt oldest first, so
+  reopening a building after someone new came does not shuffle the others.
+- **Dragging**: the carried tag stays on top, and the hint says "Back to its desk" when letting go
+  would only send them back.
+- **Checked:** 41 office tests (new: seat order, standing overflow, path head and tail), typecheck,
+  biome.
+- **Checked in the running app** (CDP 9333, renderer 3005, city-demo-api with 5 to 8 agents):
+  clicking Otto put `agent=` in the address and opened the panel; List showed Otto's row selected
+  with the panel still open; back on Map it was still open; Esc closed it, a second Esc went to the
+  city. Zoom in kept the view on the desks, the wheel zoomed in place, "Whole floor" disabled zoom
+  out, "Everyone" came back. Shift-click on two agents opened the group box and Esc cleared it
+  without leaving the building. Dragging Ada onto "Add health check" showed "Sit in Add health
+  check" and seated her. Removing Luna and Hugo: each walked off and faded. Starting agents: the
+  fifth in "Add health check" (Zara) first sat in a phone booth and pulled the view out; after the
+  fix she stands beside the room. No console errors.
+- **Not checked live:** an empty city (cannot be produced without removing the demo projects), the
+  failed and "needs you" signs on a character (no agent was in those states), reduced motion.

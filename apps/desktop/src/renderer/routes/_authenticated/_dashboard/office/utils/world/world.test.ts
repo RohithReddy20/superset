@@ -5,6 +5,8 @@ import {
 	findPath,
 	isWalkable,
 	layoutWorld,
+	pathHead,
+	pathTail,
 	storedDesks,
 	type WorldMap,
 } from "./world";
@@ -108,6 +110,29 @@ describe("layoutWorld", () => {
 			hints: new Map([["d", { roomId: "eng", near: { x: 45, y: 104 } }]]),
 		});
 		expect(seatOf(dropped, "d")).toBe(40);
+	});
+
+	test("with no earlier layout, those who came first keep their seats when a newcomer sorts before them", () => {
+		const seatOf = (layout: ReturnType<typeof layoutWorld>, id: string) =>
+			layout.homes.get(id)?.x;
+		const old = [
+			teammate("m", { joinedAt: 1 }),
+			teammate("z", { joinedAt: 2 }),
+		];
+		const before = layoutWorld({
+			map,
+			rooms,
+			teammates: old,
+			handoffs: [],
+		});
+		const after = layoutWorld({
+			map,
+			rooms,
+			teammates: [teammate("a", { joinedAt: 3 }), ...old],
+			handoffs: [],
+		});
+		expect(seatOf(after, "m")).toBe(seatOf(before, "m"));
+		expect(seatOf(after, "z")).toBe(seatOf(before, "z"));
 	});
 
 	describe("stored desks", () => {
@@ -219,7 +244,7 @@ describe("layoutWorld", () => {
 		]);
 	});
 
-	test("seats room members in the room's zone and overflow elsewhere", () => {
+	test("seats room members in the room's zone; one more than its chairs stands by it", () => {
 		const layout = layoutWorld({
 			map,
 			rooms,
@@ -228,7 +253,10 @@ describe("layoutWorld", () => {
 		});
 		expect(layout.targets.get("a")?.zoneId).toBe("a");
 		expect(layout.targets.get("b")?.zoneId).toBe("a");
-		expect(layout.targets.get("c")?.zoneId).toBe("meet");
+		expect(layout.targets.get("c")).toMatchObject({
+			zoneId: "a",
+			standing: true,
+		});
 	});
 
 	test("sends an active hand-off pair to the meeting room", () => {
@@ -272,5 +300,80 @@ describe("findPath", () => {
 			handoffs: [],
 		});
 		expect(findPath(layout, { x: 20, y: 140 }, { x: 20, y: 20 })).toEqual([]);
+	});
+});
+
+describe("a full area", () => {
+	test("more people than chairs stand beside their own area, not in another one", () => {
+		const two: WorldMap = {
+			image: { w: 640, h: 320 },
+			spawn: { x: 600, y: 300 },
+			blocked: [],
+			zones: [
+				{
+					id: "pod",
+					kind: "team",
+					rect: { x: 200, y: 40, w: 96, h: 120 },
+					seats: [
+						{ x: 224, y: 70, facing: "down" },
+						{ x: 272, y: 70, facing: "down" },
+					],
+				},
+				{
+					id: "lounge",
+					kind: "lounge",
+					rect: { x: 480, y: 40, w: 120, h: 120 },
+					seats: [{ x: 520, y: 80, facing: "down" }],
+				},
+			],
+		};
+		const layout = layoutWorld({
+			map: two,
+			rooms: [{ id: "eng", name: "Engineering", kind: "room", members: [] }],
+			teammates: ["a", "b", "c", "d", "e"].map((id, i) =>
+				teammate(id, { joinedAt: i }),
+			),
+			handoffs: [],
+		});
+		const standing = ["c", "d", "e"].map((id) => layout.homes.get(id));
+		for (const spot of standing) {
+			expect(spot).toMatchObject({ zoneId: "pod", standing: true });
+			const x = spot?.x ?? 0;
+			expect(x < 200 || x > 296).toBe(true);
+			expect(Math.min(Math.abs(x - 200), Math.abs(x - 296))).toBeLessThan(49);
+		}
+		expect(new Set(standing.map((s) => `${s?.x},${s?.y}`)).size).toBe(3);
+		expect(layout.homes.get("a")?.standing).toBeUndefined();
+	});
+});
+
+describe("pathTail and pathHead", () => {
+	const from = { x: 0, y: 0 };
+	const path = [
+		{ x: 100, y: 0 },
+		{ x: 100, y: 50 },
+	];
+
+	test("the tail starts `length` before the end, part way along a stretch", () => {
+		expect(pathTail(from, path, 80)).toEqual({
+			start: { x: 70, y: 0 },
+			path,
+		});
+		expect(pathTail(from, path, 30)).toEqual({
+			start: { x: 100, y: 20 },
+			path: [{ x: 100, y: 50 }],
+		});
+	});
+
+	test("a path shorter than `length` is kept whole", () => {
+		expect(pathTail(from, path, 500)).toEqual({ start: from, path });
+		expect(pathHead(from, path, 500)).toEqual(path);
+	});
+
+	test("the head stops `length` after the start", () => {
+		expect(pathHead(from, path, 120)).toEqual([
+			{ x: 100, y: 0 },
+			{ x: 100, y: 20 },
+		]);
 	});
 });

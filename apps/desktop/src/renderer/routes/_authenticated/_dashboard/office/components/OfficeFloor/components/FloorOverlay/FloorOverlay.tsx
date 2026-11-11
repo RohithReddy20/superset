@@ -1,10 +1,10 @@
 import { cn } from "@superset/ui/utils";
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
-import { LuListTodo, LuMail, LuMessageSquare } from "react-icons/lu";
-import type { Teammate } from "../../../../types";
+import type { Mood, Teammate } from "../../../../types";
 import type { PlacedRoom } from "../../../../utils/world";
-import { EngineMark } from "../../../EngineMark";
 import type { SceneFrame } from "../../scene";
+import { NameTag } from "./components/NameTag";
+import { RoomSign } from "./components/RoomSign";
 
 export interface FloorOverlayHandle {
 	setFrame: (frame: SceneFrame) => void;
@@ -21,6 +21,7 @@ interface FloorOverlayProps {
 	areas: AreaLabel[];
 	faces: Map<string, string>;
 	selectedId: string | null;
+	selectedRoomId?: string | null;
 	picked: string[];
 	meId: string | null;
 	/** `additive` is a Shift, Cmd or Ctrl click, which adds to or removes from the picked group. */
@@ -38,18 +39,45 @@ interface FloorOverlayProps {
 	icons?: ReadonlyMap<string, string>;
 	/** What each teammate's dot means, read out with its name. */
 	statusLabels?: ReadonlyMap<string, string>;
+	moods?: ReadonlyMap<string, Mood>;
 	/** Per teammate: items open on its own list, and messages waiting to reach it. */
 	counts?: ReadonlyMap<string, { open: number; waiting: number }>;
 }
 
-const PILL_GAP = 6;
-const PILL_ROW = 32;
-const COMPACT_PILL_ROW = 24;
-/** Room signs hang just under their area so they never cover the people sitting in it. */
-const SIGN_DROP = 4;
+interface Box {
+	left: number;
+	right: number;
+	top: number;
+	bottom: number;
+}
+
+const TAG_GAP = 6;
+/** Space kept between two tags, or a tag and a sign. */
+const CLEAR = 3;
+const SIGN_GAP = 4;
 /** Below this zoom name tags shrink to a face, so the whole office stays readable. */
 const COMPACT_BELOW = 1;
-const DRAG_START = 5;
+
+function overlaps(a: Box, b: Box): boolean {
+	return (
+		a.left < b.right + CLEAR &&
+		a.right > b.left - CLEAR &&
+		a.top < b.bottom + CLEAR &&
+		a.bottom > b.top - CLEAR
+	);
+}
+
+/** Moves a box straight up until it is clear of every placed one. */
+function liftClear(box: Box, placed: Box[]): Box {
+	let free = box;
+	for (let pass = 0; pass < placed.length; pass++) {
+		const hit = placed.find((other) => overlaps(free, other));
+		if (!hit) break;
+		const bottom = hit.top - CLEAR;
+		free = { ...free, bottom, top: bottom - (free.bottom - free.top) };
+	}
+	return free;
+}
 
 export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 	function FloorOverlay(
@@ -59,6 +87,7 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 			areas,
 			faces,
 			selectedId,
+			selectedRoomId,
 			picked,
 			meId,
 			onClickTeammate,
@@ -70,6 +99,7 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 			dots,
 			icons,
 			statusLabels,
+			moods,
 			counts,
 		},
 		ref,
@@ -79,51 +109,55 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 		const labelNodes = useRef(new Map<string, HTMLDivElement>());
 		const rootRef = useRef<HTMLDivElement>(null);
 		const dropRef = useRef<HTMLDivElement>(null);
-		const tagPress = useRef<{
-			id: string;
-			x: number;
-			y: number;
-			carrying: boolean;
-		} | null>(null);
-		const relative = (event: { clientX: number; clientY: number }) => {
-			const box = rootRef.current?.getBoundingClientRect();
-			return {
-				x: event.clientX - (box?.left ?? 0),
-				y: event.clientY - (box?.top ?? 0),
-			};
-		};
 
 		useImperativeHandle(ref, () => ({
 			setFrame(frame) {
-				const compact = frame.zoom < COMPACT_BELOW;
-				if (rootRef.current) rootRef.current.dataset.compact = String(compact);
-				const row = compact ? COMPACT_PILL_ROW : PILL_ROW;
-				const placed: { left: number; right: number; bottom: number }[] = [];
-				const ordered = [...frame.actors].sort((a, b) => a.y - b.y);
-				for (const actor of ordered) {
+				if (rootRef.current)
+					rootRef.current.dataset.compact = String(frame.zoom < COMPACT_BELOW);
+				const carried = new Set(frame.carried);
+				const placed: Box[] = [];
+				const lowestFirst = [...frame.actors].sort((a, b) => b.y - a.y);
+				for (const actor of lowestFirst) {
 					const node = actorNodes.current.get(actor.id);
-					if (!node) continue;
-					const width = node.firstElementChild?.clientWidth ?? 0;
-					const box = {
-						left: actor.x - width / 2,
-						right: actor.x + width / 2,
-						bottom: actor.headY - PILL_GAP,
+					const unit = node?.firstElementChild;
+					if (!node || !(unit instanceof HTMLElement)) continue;
+					const bottom = actor.headY - TAG_GAP;
+					const wanted: Box = {
+						left: actor.x - unit.offsetWidth / 2,
+						right: actor.x + unit.offsetWidth / 2,
+						top: bottom - unit.offsetHeight,
+						bottom,
 					};
-					for (const other of placed) {
-						const overlapsX =
-							box.left < other.right + 4 && box.right > other.left - 4;
-						const overlapsY = Math.abs(box.bottom - other.bottom) < row;
-						if (overlapsX && overlapsY) box.bottom = other.bottom - row;
-					}
-					placed.push(box);
-					node.style.transform = `translate(${actor.x}px, ${box.bottom}px)`;
+					const held = carried.has(actor.id);
+					const box = held ? wanted : liftClear(wanted, placed);
+					if (!held) placed.push(box);
+					node.style.transform = `translate(${actor.x}px, ${bottom}px)`;
+					node.style.zIndex = held ? "30" : "";
 					node.style.visibility = "visible";
+					unit.style.transform = `translate(-50%, calc(-100% - ${Math.round(bottom - box.bottom)}px))`;
 				}
 				for (const sign of frame.signs) {
 					const node = signNodes.current.get(sign.id);
-					if (!node) continue;
-					node.style.transform = `translate(${sign.x}px, ${sign.y + SIGN_DROP}px)`;
+					const unit = node?.firstElementChild;
+					if (!node || !(unit instanceof HTMLElement)) continue;
 					node.style.visibility = "visible";
+					if (!sign.above) {
+						node.style.transform = `translate(${sign.x}px, ${sign.y + SIGN_GAP}px)`;
+						unit.style.transform = "translate(-50%, 0)";
+						continue;
+					}
+					const bottom = sign.y - SIGN_GAP;
+					const box = liftClear(
+						{
+							left: sign.x - unit.offsetWidth / 2,
+							right: sign.x + unit.offsetWidth / 2,
+							top: bottom - unit.offsetHeight,
+							bottom,
+						},
+						placed,
+					);
+					node.style.transform = `translate(${sign.x}px, ${bottom}px)`;
+					unit.style.transform = `translate(-50%, calc(-100% - ${Math.round(bottom - box.bottom)}px))`;
 				}
 				const shown = new Set<string>();
 				for (const label of frame.labels) {
@@ -140,6 +174,7 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 					drop.style.visibility = frame.drop ? "visible" : "hidden";
 					if (frame.drop) {
 						drop.style.transform = `translate(${frame.drop.x}px, ${frame.drop.y}px)`;
+						drop.dataset.accept = String(frame.drop.accept);
 						const text = drop.firstElementChild;
 						if (text && text.textContent !== frame.drop.label)
 							text.textContent = frame.drop.label;
@@ -148,27 +183,15 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 			},
 		}));
 
-		const bindActor = useCallback(
-			(id: string) => (node: HTMLDivElement | null) => {
-				if (node) actorNodes.current.set(id, node);
-				else actorNodes.current.delete(id);
-			},
+		const bind = useCallback(
+			(nodes: { current: Map<string, HTMLDivElement> }, id: string) =>
+				(node: HTMLDivElement | null) => {
+					if (node) nodes.current.set(id, node);
+					else nodes.current.delete(id);
+				},
 			[],
 		);
-		const bindSign = useCallback(
-			(id: string) => (node: HTMLDivElement | null) => {
-				if (node) signNodes.current.set(id, node);
-				else signNodes.current.delete(id);
-			},
-			[],
-		);
-		const bindLabel = useCallback(
-			(id: string) => (node: HTMLDivElement | null) => {
-				if (node) labelNodes.current.set(id, node);
-				else labelNodes.current.delete(id);
-			},
-			[],
-		);
+		const several = picked.length > 1;
 
 		return (
 			<div
@@ -177,17 +200,17 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 			>
 				<div
 					ref={dropRef}
-					className="invisible absolute left-0 top-0 z-10 will-change-transform"
+					className="group/drop invisible absolute left-0 top-0 z-40 will-change-transform"
 				>
-					<div className="-translate-x-1/2 translate-y-1.5 whitespace-nowrap rounded-full bg-[#5ec8ff] px-2.5 py-1 text-[12px] font-medium text-black shadow-md" />
+					<div className="-translate-x-1/2 translate-y-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[12px] font-medium shadow-md group-data-[accept=false]/drop:border-border group-data-[accept=false]/drop:bg-popover group-data-[accept=false]/drop:text-muted-foreground group-data-[accept=true]/drop:border-transparent group-data-[accept=true]/drop:bg-[#5ec8ff] group-data-[accept=true]/drop:text-black" />
 				</div>
 				{areas.map((area) => (
 					<div
 						key={area.id}
-						ref={bindLabel(area.id)}
+						ref={bind(labelNodes, area.id)}
 						className="invisible absolute left-0 top-0 will-change-transform"
 					>
-						<div className="-translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded bg-background/60 px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+						<div className="-translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded bg-background/60 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
 							{area.label}
 						</div>
 					</div>
@@ -195,168 +218,56 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 				{rooms.map((room) => (
 					<div
 						key={room.id}
-						ref={bindSign(room.id)}
+						ref={bind(signNodes, room.id)}
 						className="invisible absolute left-0 top-0 will-change-transform"
 					>
-						<button
-							type="button"
-							onClick={() => onSelectRoom(room.id)}
-							title={`${room.name}: open its talk`}
-							className="pointer-events-auto flex max-w-[160px] -translate-x-1/2 items-center gap-1.5 rounded-md border border-border bg-popover/90 px-2 py-1 text-[12px] font-medium text-foreground shadow-sm backdrop-blur hover:bg-fill-hover group-data-[compact=true]/floor:gap-1 group-data-[compact=true]/floor:px-1.5 group-data-[compact=true]/floor:py-0.5 group-data-[compact=true]/floor:text-[10px]"
-						>
-							<LuMessageSquare className="size-3 shrink-0 text-muted-foreground group-data-[compact=true]/floor:size-2.5" />
-							<span className="min-w-0 truncate">{room.name}</span>
-						</button>
+						<div className="w-max motion-safe:transition-transform motion-safe:duration-150">
+							<RoomSign
+								name={room.name}
+								people={teammates.filter((t) => t.roomId === room.id).length}
+								selected={room.id === selectedRoomId}
+								onSelect={() => onSelectRoom(room.id)}
+							/>
+						</div>
 					</div>
 				))}
-				{teammates.map((t) => {
-					const isMe = t.id === meId;
-					const busy = t.presence === "focused" || t.presence === "in-meeting";
-					const line = busy && t.line ? t.line : "";
-					const away = t.presence === "away";
-					const count = counts?.get(t.id);
-					return (
-						<div
-							key={t.id}
-							ref={bindActor(t.id)}
-							className={cn(
-								"invisible absolute left-0 top-0 flex flex-col items-center will-change-transform",
-								away && "opacity-50",
-							)}
-						>
-							<div className="-translate-x-1/2 -translate-y-full flex flex-col items-center gap-1">
-								{line ? (
-									<div className="relative max-w-[220px] rounded-xl border border-border bg-popover px-3 py-1.5 text-[12px] leading-snug text-foreground shadow-md group-data-[compact=true]/floor:max-w-[140px] group-data-[compact=true]/floor:truncate group-data-[compact=true]/floor:rounded-md group-data-[compact=true]/floor:px-1.5 group-data-[compact=true]/floor:py-0.5 group-data-[compact=true]/floor:text-[10px]">
-										{line}
-										<span className="absolute -bottom-1 left-1/2 size-2 -translate-x-1/2 rotate-45 border-b border-r border-border bg-popover group-data-[compact=true]/floor:hidden" />
-									</div>
-								) : null}
-								<button
-									type="button"
-									onPointerDown={(event) => {
-										if (isMe || !canCarry || event.button !== 0) return;
-										tagPress.current = {
-											id: t.id,
-											x: event.clientX,
-											y: event.clientY,
-											carrying: false,
-										};
-										event.currentTarget.setPointerCapture(event.pointerId);
-									}}
-									onPointerMove={(event) => {
-										const press = tagPress.current;
-										if (!press || press.id !== t.id) return;
-										if (!press.carrying) {
-											const moved = Math.hypot(
-												event.clientX - press.x,
-												event.clientY - press.y,
-											);
-											if (moved < DRAG_START) return;
-											press.carrying = true;
-											onCarryStart(t.id);
-										}
-										const at = relative(event);
-										onCarryMove(at.x, at.y);
-									}}
-									onPointerUp={() => {
-										if (tagPress.current?.carrying) onCarryEnd();
-									}}
-									onPointerCancel={() => {
-										if (tagPress.current?.carrying) onCarryEnd();
-										tagPress.current = null;
-									}}
-									aria-label={
-										statusLabels?.get(t.id)
-											? `${isMe ? "You" : t.name}, ${statusLabels.get(t.id)}`
-											: undefined
-									}
-									onClick={(event) => {
-										const carried = tagPress.current?.carrying;
-										tagPress.current = null;
-										if (carried) return;
-										onClickTeammate(
-											t.id,
-											event.shiftKey || event.metaKey || event.ctrlKey,
-										);
-									}}
-									className={cn(
-										"pointer-events-auto flex touch-none items-center gap-1.5 rounded-full border py-0.5 pl-0.5 pr-2 text-[12px] font-medium shadow-md backdrop-blur transition-transform hover:scale-[1.03] group-data-[compact=true]/floor:gap-1 group-data-[compact=true]/floor:pr-1",
-										!isMe && canCarry && "cursor-grab active:cursor-grabbing",
-										isMe
-											? "border-foreground bg-foreground text-background"
-											: "border-border bg-popover/95 text-foreground",
-										t.id === selectedId &&
-											"ring-2 ring-ring ring-offset-1 ring-offset-background",
-										picked.includes(t.id) &&
-											"ring-2 ring-[#5ec8ff] ring-offset-1 ring-offset-background",
-									)}
-								>
-									{isMe ? null : (
-										<img
-											src={faces.get(t.id)}
-											alt=""
-											className="size-5 rounded-full bg-muted object-cover"
-											draggable={false}
-										/>
-									)}
-									{icons?.get(t.id) ? (
-										<img
-											src={icons.get(t.id)}
-											alt=""
-											className="size-3 object-contain group-data-[compact=true]/floor:hidden"
-											draggable={false}
-										/>
-									) : (
-										<EngineMark
-											engine={t.engine}
-											className="size-3 group-data-[compact=true]/floor:hidden"
-										/>
-									)}
-									<span
-										className={cn(
-											isMe
-												? "pl-1.5"
-												: "group-data-[compact=true]/floor:hidden",
-										)}
-									>
-										{isMe ? "You" : t.name}
-									</span>
-									{count && count.open > 0 ? (
-										<span
-											title={`${count.open} on its list`}
-											className="flex items-center gap-0.5 rounded-full bg-muted px-1 text-[10px] tabular-nums text-muted-foreground group-data-[compact=true]/floor:hidden"
-										>
-											<LuListTodo className="size-2.5" />
-											{count.open}
-										</span>
-									) : null}
-									{count && count.waiting > 0 ? (
-										<span
-											title={`${count.waiting} waiting to reach it`}
-											className="flex items-center gap-0.5 rounded-full bg-[#f5b942]/20 px-1 text-[10px] tabular-nums text-[#b07a0c] group-data-[compact=true]/floor:hidden"
-										>
-											<LuMail className="size-2.5" />
-											{count.waiting}
-										</span>
-									) : null}
-									<span
-										className="size-2 rounded-full"
-										style={{
-											background:
-												dots?.get(t.id) ??
-												(away
-													? "transparent"
-													: t.paused
-														? "#f5b942"
-														: "#39d353"),
-											boxShadow: away ? "0 0 0 1px currentColor" : undefined,
-										}}
-									/>
-								</button>
-							</div>
+				{teammates.map((t) => (
+					<div
+						key={t.id}
+						ref={bind(actorNodes, t.id)}
+						className={cn(
+							"invisible absolute left-0 top-0 will-change-transform hover:z-20",
+							t.id === selectedId && "z-10",
+						)}
+					>
+						<div className="w-max motion-safe:transition-transform motion-safe:duration-150">
+							<NameTag
+								teammate={t}
+								isMe={t.id === meId}
+								face={faces.get(t.id)}
+								icon={icons?.get(t.id)}
+								dot={dots?.get(t.id)}
+								statusLabel={statusLabels?.get(t.id)}
+								mood={moods?.get(t.id)}
+								count={counts?.get(t.id)}
+								marked={
+									t.id === selectedId || (several && picked.includes(t.id))
+								}
+								canCarry={canCarry}
+								onClick={(additive) => onClickTeammate(t.id, additive)}
+								onCarryStart={() => onCarryStart(t.id)}
+								onCarryMove={(clientX, clientY) => {
+									const box = rootRef.current?.getBoundingClientRect();
+									onCarryMove(
+										clientX - (box?.left ?? 0),
+										clientY - (box?.top ?? 0),
+									);
+								}}
+								onCarryEnd={onCarryEnd}
+							/>
 						</div>
-					);
-				})}
+					</div>
+				))}
 			</div>
 		);
 	},

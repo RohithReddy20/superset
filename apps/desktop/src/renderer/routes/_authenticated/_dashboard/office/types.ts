@@ -1,5 +1,15 @@
 export type EngineId = "claude" | "codex" | "agy";
 
+/** What a person on the floor is doing, shown on the character itself. */
+export type Mood =
+	| "idle"
+	| "working"
+	| "needs-you"
+	| "done"
+	| "failed"
+	| "lost"
+	| "reconnecting";
+
 /** Someone the floor draws at a desk. */
 export interface Teammate {
 	id: string;
@@ -7,6 +17,10 @@ export interface Teammate {
 	kind: "human" | "ai";
 	role: string;
 	roomId: string;
+	/** Where a visitor works, when they sit in a room that is not their own. */
+	from?: string;
+	/** When they came; seats are dealt oldest first, so a newcomer never takes someone's desk. */
+	joinedAt?: number;
 	engine?: EngineId;
 	presence: "away" | "in-office" | "focused" | "in-meeting";
 	line: string;

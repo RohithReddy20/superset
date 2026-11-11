@@ -74,19 +74,31 @@ describe("buildingSnapshot", () => {
 	});
 
 	test("agents that went to another building are not here; visitors say where they work", () => {
-		const names = new Map(snapshot.teammates.map((t) => [t.id, t.name]));
-		expect(names.has("t4")).toBe(false);
-		expect(names.get("t3")).toBe("Claude · Fix header");
-		expect(names.get("t1")).toBe("Claude");
+		const byId = new Map(snapshot.teammates.map((t) => [t.id, t]));
+		expect(byId.has("t4")).toBe(false);
+		expect(byId.get("t3")).toMatchObject({
+			name: "Claude",
+			from: "Fix header",
+		});
+		expect(byId.get("t1")?.from).toBeUndefined();
 	});
 
-	test("people say what state they are in; you start outside every room", () => {
+	test("a line says what needs you or what it is on, not plain working; you start outside every room", () => {
 		const working = snapshot.teammates.find((t) => t.id === "t1");
-		expect(working).toMatchObject({
+		expect(working).toMatchObject({ line: "", engine: "claude" });
+		const carrying = buildingSnapshot(
+			project,
+			present,
+			new Map([["t1", { doing: "Draft the check", next: null }]]),
+		);
+		expect(carrying.teammates.find((t) => t.id === "t1")).toMatchObject({
 			presence: "focused",
-			line: "Working",
-			engine: "claude",
+			line: "Draft the check",
 		});
+		const failed = buildingSnapshot(project, [agent("t5", "w1", "failed")]);
+		expect(failed.teammates.find((t) => t.id === "t5")?.line).toBe(
+			"Stopped with an error",
+		);
 		expect(snapshot.teammates.find((t) => t.id === "t2")?.line).toBe("");
 		const you = snapshot.teammates.find((t) => t.id === YOU_ID);
 		expect(snapshot.rooms.some((r) => r.id === you?.roomId)).toBe(false);

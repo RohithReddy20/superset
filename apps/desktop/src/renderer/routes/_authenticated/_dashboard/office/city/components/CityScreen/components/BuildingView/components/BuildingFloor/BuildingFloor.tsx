@@ -19,6 +19,7 @@ import {
 	lookKey,
 	renderFace,
 } from "../../../../../../../components/OfficeFloor/scene/pixel";
+import type { Mood } from "../../../../../../../types";
 import { layoutWorld, type SeatTarget } from "../../../../../../../utils/world";
 import { STATUS_COLORS, STATUS_LABELS } from "../../../../../../constants";
 import { useCityTeam } from "../../../../../../hooks/useCityTeam";
@@ -27,6 +28,7 @@ import {
 	buildingSnapshot,
 	YOU_ID,
 } from "../../../../../../utils/buildingSnapshot";
+import { FloorHint } from "./components/FloorHint";
 import { BUILDING_CONTROLS } from "./constants";
 
 const AREAS = WORLD_MAP.zones.flatMap((zone) =>
@@ -38,6 +40,9 @@ interface BuildingFloorProps {
 	/** Agents sitting in this building, its own and visitors. */
 	present: CityAgent[];
 	selectedId: string | null;
+	selectedRoomId: string | null;
+	/** The city's agents are loaded; before that, nobody who shows up is "arriving". */
+	ready: boolean;
 	/** Agents picked for a group message. */
 	picked: string[];
 	onPick: (terminalIds: string[]) => void;
@@ -52,6 +57,8 @@ export function BuildingFloor({
 	project,
 	present,
 	selectedId,
+	selectedRoomId,
+	ready,
 	picked,
 	onPick,
 	onSelectAgent,
@@ -64,6 +71,8 @@ export function BuildingFloor({
 	const latest = useRef<ScenePayload | null>(null);
 	const previousHomes = useRef<Map<string, SeatTarget> | undefined>(undefined);
 	const [view, setView] = useState<SceneView | null>(null);
+	const [touched, setTouched] = useState(false);
+	const settled = useRef(false);
 	const handlers = useRef({ onSelectAgent, onSelectWorkspace, onPick, onSeat });
 	handlers.current = { onSelectAgent, onSelectWorkspace, onPick, onSeat };
 	const dark = useIsDarkTheme();
@@ -124,6 +133,10 @@ export function BuildingFloor({
 	);
 	const statusLabels = useMemo(
 		() => new Map(agents.map((a) => [a.terminalId, STATUS_LABELS[a.status]])),
+		[agents],
+	);
+	const moods = useMemo(
+		() => new Map(agents.map((a) => [a.terminalId, moodOf(a)])),
 		[agents],
 	);
 	const icons = useMemo(() => {
@@ -189,23 +202,27 @@ export function BuildingFloor({
 			state: snapshot,
 			layout,
 			selectedId,
+			selectedRoomId,
+			moods,
+			walkIns: settled.current,
 			meId: YOU_ID,
 			picked,
 			canCarry: true,
 			seatOnly: true,
 		};
+		settled.current = ready;
 		sceneRef.current?.setState(latest.current);
-	}, [snapshot, layout, selectedId, picked]);
+	}, [snapshot, layout, selectedId, selectedRoomId, moods, picked, ready]);
 
 	return (
-		<div className="relative h-full w-full overflow-hidden">
+		<div className="@container/floor relative h-full w-full overflow-hidden">
 			<div
 				ref={hostRef}
 				role="application"
 				aria-label={`${project.name} building`}
-				onPointerDown={() => hostRef.current?.focus()}
-				onKeyDown={(event) => {
-					if (event.key === "Escape") onPick([]);
+				onPointerDown={() => {
+					hostRef.current?.focus();
+					setTouched(true);
 				}}
 				className="h-full w-full outline-none"
 			/>
@@ -216,12 +233,14 @@ export function BuildingFloor({
 				areas={AREAS}
 				faces={faces}
 				selectedId={selectedId}
+				selectedRoomId={selectedRoomId}
 				picked={picked}
 				meId={YOU_ID}
 				canCarry
 				dots={dots}
 				icons={icons}
 				statusLabels={statusLabels}
+				moods={moods}
 				counts={tagCounts}
 				onClickTeammate={(id, additive) => {
 					if (id === YOU_ID) return;
@@ -241,17 +260,12 @@ export function BuildingFloor({
 				onCarryMove={(x, y) => sceneRef.current?.carryToScreen(x, y)}
 				onCarryEnd={() => sceneRef.current?.endCarry()}
 			/>
-			<p className="pointer-events-none absolute bottom-3 left-1/2 w-max max-w-[calc(100%-24px)] -translate-x-1/2 rounded-2xl border border-border bg-background/90 px-3 py-1.5 text-center text-[12px] text-muted-foreground shadow-sm backdrop-blur">
-				<span className="font-medium text-foreground">Click someone</span> to
-				talk · drag them into a room to sit together (their work stays put) ·
-				click a room's sign for its talk
-			</p>
+			<FloorHint empty={agents.length === 0} hidden={touched} />
 			{view ? (
 				<FloorControls
 					view={view}
 					onZoomIn={() => sceneRef.current?.zoomIn()}
 					onZoomOut={() => sceneRef.current?.zoomOut()}
-					onFollowMe={() => sceneRef.current?.followMe()}
 					onShowWholeOffice={() => sceneRef.current?.showWholeOffice()}
 					onShowEveryone={() => sceneRef.current?.showEveryone()}
 					wholeLabel="Whole floor"
@@ -260,4 +274,12 @@ export function BuildingFloor({
 			) : null}
 		</div>
 	);
+}
+
+function moodOf(agent: CityAgent): Mood {
+	if (agent.lost) return agent.lost.reconnecting ? "reconnecting" : "lost";
+	if (agent.asking || agent.status === "permission") return "needs-you";
+	if (agent.status === "failed") return "failed";
+	if (agent.status === "working") return "working";
+	return agent.status === "review" ? "done" : "idle";
 }

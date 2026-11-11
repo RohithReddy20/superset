@@ -1,0 +1,1 @@
+export { NameTag } from "./NameTag";

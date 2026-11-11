@@ -16,6 +16,8 @@ export interface Rect {
 
 export interface Seat extends Point {
 	facing: Facing;
+	/** A place to stand beside a full area, not a chair. */
+	standing?: boolean;
 }
 
 export type ZoneKind = "team" | "lounge" | "meeting" | "booth";
@@ -75,6 +77,10 @@ export interface SeatHint {
 }
 
 export const CELL = 16;
+const STAND_GRID = 24;
+/** How far beside a desk area people may stand when its chairs are taken. */
+const STAND_ASIDE = 48;
+const STAND_CLEAR = 20;
 
 export function layoutWorld({
 	map,
@@ -115,8 +121,32 @@ export function layoutWorld({
 		if (zone) placed.push({ id: room.id, name: room.name, zone });
 	}
 
+	const cols = Math.ceil(map.image.w / CELL);
+	const rows = Math.ceil(map.image.h / CELL);
+	const blocked = new Uint8Array(cols * rows);
+	const doors = map.doors ?? [];
+	for (let cy = 0; cy < rows; cy++) {
+		for (let cx = 0; cx < cols; cx++) {
+			const px = cx * CELL + CELL / 2;
+			const py = cy * CELL + CELL / 2;
+			if (doors.some((d) => inRect(d, px, py))) continue;
+			if (map.blocked.some((b) => inRect(b, px, py)))
+				blocked[cy * cols + cx] = 1;
+		}
+	}
+	const walkable = (point: Point) => {
+		const c = cellOf(point);
+		return (
+			c.x >= 0 &&
+			c.y >= 0 &&
+			c.x < cols &&
+			c.y < rows &&
+			blocked[c.y * cols + c.x] === 0
+		);
+	};
+
 	const free = new Map<string, Seat[]>(
-		map.zones.map((z) => [z.id, [...z.seats]]),
+		map.zones.map((z) => [z.id, [...z.seats, ...standingSpots(z, walkable)]]),
 	);
 	const takeSeat = (
 		zone: Zone | undefined,
@@ -146,7 +176,9 @@ export function layoutWorld({
 	};
 
 	const homes = new Map<string, SeatTarget>();
-	const byStableOrder = [...teammates].sort((a, b) => a.id.localeCompare(b.id));
+	const byStableOrder = [...teammates].sort(
+		(a, b) => (a.joinedAt ?? 0) - (b.joinedAt ?? 0) || a.id.localeCompare(b.id),
+	);
 	const zoneOfRoom = new Map(placed.map((r) => [r.id, r.zone]));
 	for (const t of byStableOrder) {
 		const before = previous?.get(t.id);
@@ -194,20 +226,6 @@ export function layoutWorld({
 		}
 	}
 
-	const cols = Math.ceil(map.image.w / CELL);
-	const rows = Math.ceil(map.image.h / CELL);
-	const blocked = new Uint8Array(cols * rows);
-	const doors = map.doors ?? [];
-	for (let cy = 0; cy < rows; cy++) {
-		for (let cx = 0; cx < cols; cx++) {
-			const px = cx * CELL + CELL / 2;
-			const py = cy * CELL + CELL / 2;
-			if (doors.some((d) => inRect(d, px, py))) continue;
-			if (map.blocked.some((b) => inRect(b, px, py)))
-				blocked[cy * cols + cx] = 1;
-		}
-	}
-
 	return {
 		map,
 		cell: CELL,
@@ -219,6 +237,31 @@ export function layoutWorld({
 		homes,
 		targets,
 	};
+}
+
+/**
+ * Places to stand when an area's chairs are all taken, nearest its middle first: beside a desk
+ * area, inside any other. No area is ever full, so nobody is sent across the floor.
+ */
+function standingSpots(zone: Zone, open: (point: Point) => boolean): Seat[] {
+	const { x, y, w, h } = zone.rect;
+	const aside = zone.kind === "team" ? STAND_ASIDE : 0;
+	const middle = { x: x + w / 2, y: y + h / 2 };
+	const spots: Seat[] = [];
+	for (let py = y + STAND_GRID; py <= y + h - STAND_GRID / 2; py += STAND_GRID)
+		for (
+			let px = x - aside + STAND_GRID / 2;
+			px < x + w + aside;
+			px += STAND_GRID
+		) {
+			if (aside > 0 && px >= x && px <= x + w) continue;
+			if (!open({ x: px, y: py }) || !open({ x: px, y: py - CELL })) continue;
+			if (zone.seats.some((s) => Math.hypot(s.x - px, s.y - py) < STAND_CLEAR))
+				continue;
+			spots.push({ x: px, y: py, facing: "down", standing: true });
+		}
+	const far = (p: Point) => Math.hypot(p.x - middle.x, p.y - middle.y);
+	return spots.sort((a, b) => far(a) - far(b) || a.y - b.y || a.x - b.x);
 }
 
 /** The desks the office stored, the `previous` for a floor that has no layout yet. */
@@ -352,6 +395,52 @@ function clearLine(layout: WorldLayout, a: Point, b: Point): boolean {
 		if (!isWalkable(layout, p)) return false;
 	}
 	return true;
+}
+
+/** A path cut to its last `length` pixels: where that stretch starts, and the points left to walk. */
+export function pathTail(
+	from: Point,
+	path: Point[],
+	length: number,
+): { start: Point; path: Point[] } {
+	const points = [from, ...path];
+	let left = length;
+	for (let i = points.length - 1; i > 0; i--) {
+		const a = points[i - 1] as Point;
+		const b = points[i] as Point;
+		const span = Math.hypot(b.x - a.x, b.y - a.y);
+		if (span >= left) {
+			const t = span === 0 ? 0 : left / span;
+			return {
+				start: { x: b.x + (a.x - b.x) * t, y: b.y + (a.y - b.y) * t },
+				path: points.slice(i),
+			};
+		}
+		left -= span;
+	}
+	return { start: from, path };
+}
+
+/** A path cut to its first `length` pixels. */
+export function pathHead(from: Point, path: Point[], length: number): Point[] {
+	const head: Point[] = [];
+	let at = from;
+	let left = length;
+	for (const next of path) {
+		const span = Math.hypot(next.x - at.x, next.y - at.y);
+		if (span >= left) {
+			const t = span === 0 ? 0 : left / span;
+			head.push({
+				x: at.x + (next.x - at.x) * t,
+				y: at.y + (next.y - at.y) * t,
+			});
+			return head;
+		}
+		head.push(next);
+		left -= span;
+		at = next;
+	}
+	return head;
 }
 
 /** A desk area with no room in it yet, where a new room can be made. */

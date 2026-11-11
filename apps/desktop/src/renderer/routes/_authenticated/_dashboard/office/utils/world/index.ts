@@ -16,6 +16,8 @@ export {
 	layoutWorld,
 	type PlacedRoom,
 	type Point,
+	pathHead,
+	pathTail,
 	type Rect,
 	roomAt,
 	type Seat,

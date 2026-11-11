@@ -28,6 +28,8 @@ export function useCity(): {
 	nextName: string;
 	hostReady: boolean;
 	ready: boolean;
+	/** This machine's agents and their seats have loaded at least once. */
+	agentsReady: boolean;
 } {
 	const { activeHostUrl, machineId } = useLocalHostService();
 	useCityLive();
@@ -107,5 +109,6 @@ export function useCity(): {
 		handovers: rooms.data?.handovers ?? [],
 		hostReady: !!activeHostUrl,
 		ready: workspacesReady && projectsReady && bindings.isSuccess,
+		agentsReady: bindings.isSuccess && rooms.isSuccess,
 	};
 }

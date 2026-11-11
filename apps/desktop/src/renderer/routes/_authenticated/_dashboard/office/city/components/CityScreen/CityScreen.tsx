@@ -1,40 +1,44 @@
-import { cn } from "@superset/ui/utils";
 import { useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { LuChevronRight, LuList, LuMap } from "react-icons/lu";
+import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "renderer/routes/_authenticated/_dashboard/components/PageHeader";
 import { NeedsYouBar } from "../../../components/NeedsYouBar";
-import { STATUS_COLORS } from "../../constants";
 import { useCity } from "../../hooks/useCity";
-import type { AgentStatus } from "../../types";
+import { useEscapeKey } from "../../hooks/useEscapeKey";
 import { AgentList } from "./components/AgentList";
-import { AgentPanel } from "./components/AgentPanel";
+import { AgentPanel, type BuildingSelection } from "./components/AgentPanel";
 import { BuildingView } from "./components/BuildingView";
+import { CityBreadcrumb } from "./components/CityBreadcrumb";
 import { CityMap } from "./components/CityMap";
 import { EmptyState } from "./components/EmptyState";
 import { StartBar } from "./components/StartBar";
-
-export type CityViewMode = "map" | "list";
+import { type CityViewMode, ViewSwitch } from "./components/ViewSwitch";
 
 interface CityScreenProps {
 	projectId: string | null;
-	/** An agent to open, e.g. from the "Needs you" bar. */
+	/** The agent whose panel is open. */
 	agentId: string | null;
+	/** The room whose panel is open, when no agent is. */
+	roomId: string | null;
 	view: CityViewMode;
 }
 
-const SUMMARY: Array<[AgentStatus, string]> = [
-	["permission", "need you"],
-	["working", "working"],
-	["review", "done"],
-	["failed", "failed"],
-	["lost", "disconnected"],
-];
+interface CitySearch {
+	project?: string;
+	agent?: string;
+	room?: string;
+	view?: "list";
+}
 
-export function CityScreen({ projectId, agentId, view }: CityScreenProps) {
+export function CityScreen({
+	projectId,
+	agentId,
+	roomId,
+	view,
+}: CityScreenProps) {
 	const navigate = useNavigate();
-	const { projects, rooms, handovers, hostReady, ready } = useCity();
-	const [listSelected, setListSelected] = useState<string | null>(null);
+	const { projects, rooms, handovers, hostReady, ready, agentsReady } =
+		useCity();
+	const [picked, setPicked] = useState<string[]>([]);
 	const inside = projects.find((p) => p.id === projectId) ?? null;
 	const shown = inside ? [inside] : projects;
 	const agents = shown.flatMap((p) => p.workspaces.flatMap((w) => w.agents));
@@ -42,144 +46,138 @@ export function CityScreen({ projectId, agentId, view }: CityScreenProps) {
 		() => projects.flatMap((p) => p.workspaces.flatMap((w) => w.agents)),
 		[projects],
 	);
-	const buildings = projects;
-	const listAgent = everyone.find((a) => a.terminalId === listSelected);
-	const listProject = projects.find((p) => p.id === listAgent?.projectId);
+	const selectedAgent = everyone.find((a) => a.terminalId === agentId);
+	const panelProject =
+		inside ?? projects.find((p) => p.id === selectedAgent?.projectId) ?? null;
+	const selection: BuildingSelection | null = agentId
+		? { kind: "agent", id: agentId }
+		: roomId && inside
+			? { kind: "room", id: roomId }
+			: null;
+	const panelShown =
+		!!selection && !!panelProject && (view === "list" || !!inside);
 
-	const go = (search: { project?: string; agent?: string; view?: "list" }) =>
-		navigate({ to: "/office/city", search });
-	const enter = (id: string | null) => go({ ...(id ? { project: id } : {}) });
-	const setView = (next: CityViewMode) =>
-		go({
-			...(projectId ? { project: projectId } : {}),
-			...(next === "list" ? { view: "list" } : {}),
+	// biome-ignore lint/correctness/useExhaustiveDependencies: a pick belongs to one building
+	useEffect(() => setPicked([]), [projectId]);
+
+	const here = (): CitySearch => ({
+		...(projectId ? { project: projectId } : {}),
+		...(view === "list" ? { view: "list" } : {}),
+	});
+	const enter = (id: string | null) =>
+		navigate({
+			to: "/office/city",
+			search: {
+				...(id ? { project: id } : {}),
+				...(view === "list" ? { view: "list" as const } : {}),
+			},
 		});
+	const select = (next: BuildingSelection | null) =>
+		navigate({
+			to: "/office/city",
+			replace: true,
+			search: {
+				...here(),
+				...(next?.kind === "agent" ? { agent: next.id } : {}),
+				...(next?.kind === "room" ? { room: next.id } : {}),
+			},
+		});
+	const selectAgent = (id: string) => select({ kind: "agent", id });
+	const setView = (next: CityViewMode) =>
+		navigate({
+			to: "/office/city",
+			replace: true,
+			search: {
+				...(projectId ? { project: projectId } : {}),
+				...(next === "list" ? { view: "list" as const } : {}),
+				...(next === "list" || inside
+					? {
+							...(agentId ? { agent: agentId } : {}),
+							...(!agentId && roomId ? { room: roomId } : {}),
+						}
+					: {}),
+			},
+		});
+
+	useEscapeKey(() => {
+		if (picked.length > 1) setPicked([]);
+		else if (selection) {
+			setPicked([]);
+			void select(null);
+		} else if (projectId) void enter(null);
+	});
 
 	return (
 		<div className="flex h-full w-full flex-1 flex-col overflow-hidden">
 			<PageHeader
 				start={
-					<div className="flex min-w-0 items-center gap-1.5 text-sm">
-						<button
-							type="button"
-							onClick={() => enter(null)}
-							className={cn(
-								"font-medium",
-								inside
-									? "text-muted-foreground hover:text-foreground"
-									: "text-foreground",
-							)}
-						>
-							City
-						</button>
-						{inside ? (
-							<>
-								<LuChevronRight className="size-3.5 text-muted-foreground" />
-								<span className="truncate font-medium">{inside.name}</span>
-							</>
-						) : null}
-						<span className="ml-2 flex items-center gap-2 text-[12px] text-muted-foreground">
-							{inside
-								? plural(inside.workspaces.length, "workspace")
-								: plural(buildings.length, "building")}{" "}
-							· {plural(agents.length, "agent")}
-							{SUMMARY.map(([status, label]) => {
-								const count = agents.filter((a) => a.status === status).length;
-								return count > 0 ? (
-									<span key={status} className="flex items-center gap-1">
-										<span
-											className="size-1.5 rounded-full"
-											style={{ background: STATUS_COLORS[status] }}
-										/>
-										{count} {label}
-									</span>
-								) : null;
-							})}
-						</span>
-					</div>
+					<CityBreadcrumb
+						projects={projects}
+						inside={inside}
+						agents={agents}
+						onEnter={enter}
+					/>
 				}
-				end={
-					<fieldset
-						aria-label="Show as"
-						className="flex items-center rounded-md border border-border p-0.5"
-					>
-						{(
-							[
-								["map", "Map", LuMap],
-								["list", "List", LuList],
-							] as const
-						).map(([mode, label, Icon]) => (
-							<button
-								key={mode}
-								type="button"
-								aria-pressed={view === mode}
-								onClick={() => setView(mode)}
-								className={cn(
-									"flex items-center gap-1.5 rounded px-2 py-0.5 text-[12px]",
-									view === mode
-										? "bg-fill-selected text-foreground"
-										: "text-muted-foreground hover:text-foreground",
-								)}
-							>
-								<Icon className="size-3.5" />
-								{label}
-							</button>
-						))}
-					</fieldset>
-				}
+				end={<ViewSwitch view={view} onChange={setView} />}
 			/>
 			<NeedsYouBar />
 			{inside ? <StartBar key={inside.id} project={inside} /> : null}
-			<div className="relative min-h-0 flex-1">
-				{!hostReady ? (
-					<EmptyState text="Waiting for the local host…" />
-				) : !ready && projects.length === 0 ? (
-					<EmptyState text="Building the city…" />
-				) : projectId && !inside ? (
-					<EmptyState text="This building is gone: the project has no workspaces on this machine." />
-				) : view === "list" ? (
-					<div className="flex h-full w-full">
-						<div className="min-w-0 flex-1">
-							<AgentList
-								projects={shown}
-								allProjects={projects}
-								selectedId={listAgent ? listSelected : null}
-								onSelect={setListSelected}
-							/>
-						</div>
-						{listAgent && listProject ? (
-							<AgentPanel
-								project={listProject}
-								projects={projects}
-								everyone={everyone}
-								rooms={rooms}
-								handovers={handovers}
-								selection={{ kind: "agent", id: listAgent.terminalId }}
-								onSelectAgent={setListSelected}
-								onClose={() => setListSelected(null)}
-							/>
-						) : null}
-					</div>
-				) : inside ? (
-					<BuildingView
-						key={inside.id}
-						project={inside}
+			<div className="@container/city relative flex min-h-0 flex-1">
+				<div className="relative min-w-0 flex-1">
+					{!hostReady ? (
+						<EmptyState
+							busy
+							title="Waiting for this machine's host"
+							hint="The city shows once the local host answers."
+						/>
+					) : !ready && projects.length === 0 ? (
+						<EmptyState busy title="Building the city" />
+					) : projectId && !inside ? (
+						<EmptyState
+							title="This building is gone"
+							hint="The project has no workspaces on this machine any more."
+							action={{ label: "Back to the city", onClick: () => enter(null) }}
+						/>
+					) : view === "list" ? (
+						<AgentList
+							projects={shown}
+							allProjects={projects}
+							selectedId={agentId}
+							onSelect={selectAgent}
+						/>
+					) : inside ? (
+						<BuildingView
+							key={inside.id}
+							project={inside}
+							everyone={everyone}
+							selection={selection}
+							ready={agentsReady}
+							picked={picked}
+							onPick={setPicked}
+							onSelect={select}
+						/>
+					) : projects.length === 0 ? (
+						<EmptyState
+							title="No buildings yet"
+							hint="Every project with a workspace on this machine becomes a building. Create a workspace to see the first one."
+						/>
+					) : (
+						<CityMap projects={projects} onEnter={enter} />
+					)}
+				</div>
+				{panelShown && selection && panelProject ? (
+					<AgentPanel
+						project={panelProject}
 						projects={projects}
+						everyone={everyone}
 						rooms={rooms}
 						handovers={handovers}
-						focusAgentId={agentId}
-						onFocused={() => go({ project: inside.id })}
+						selection={selection}
+						onSelectAgent={selectAgent}
+						onClose={() => void select(null)}
 					/>
-				) : buildings.length === 0 ? (
-					<EmptyState text="No projects with a workspace on this machine yet." />
-				) : (
-					<CityMap projects={buildings} onEnter={enter} />
-				)}
+				) : null}
 			</div>
 		</div>
 	);
-}
-
-function plural(count: number, noun: string): string {
-	return `${count} ${noun}${count === 1 ? "" : "s"}`;
 }

@@ -43,6 +43,7 @@ export function CityMap({ projects, onEnter }: CityMapProps) {
 				onReady: (scene) => {
 					sceneRef.current = scene;
 					scene.setCity(latest.current.layout, latest.current.walls);
+					host.focus({ preventScroll: true });
 				},
 			});
 		});
@@ -62,7 +63,20 @@ export function CityMap({ projects, onEnter }: CityMapProps) {
 			<div
 				ref={hostRef}
 				role="application"
-				aria-label="City"
+				aria-label="City: the arrow keys pick a building, Enter goes inside"
+				// biome-ignore lint/a11y/noNoninteractiveTabindex: the map takes the arrow keys and Enter
+				tabIndex={0}
+				onKeyDown={(event) => {
+					const scene = sceneRef.current;
+					if (!scene || event.metaKey || event.ctrlKey || event.altKey) return;
+					if (event.key === "ArrowRight" || event.key === "ArrowDown")
+						scene.highlightNext(1);
+					else if (event.key === "ArrowLeft" || event.key === "ArrowUp")
+						scene.highlightNext(-1);
+					else if (event.key === "Enter") scene.enterHighlighted();
+					else return;
+					event.preventDefault();
+				}}
 				className="h-full w-full outline-none"
 			/>
 			<CitySigns ref={signsRef} projects={projects} onEnter={onEnter} />
@@ -99,9 +113,9 @@ export function CityMap({ projects, onEnter }: CityMapProps) {
 					</Button>
 				</div>
 			) : null}
-			<p className="pointer-events-none absolute bottom-3 left-1/2 w-max max-w-[calc(100%-24px)] -translate-x-1/2 rounded-2xl border border-border bg-background/90 px-3 py-1.5 text-center text-[12px] text-muted-foreground shadow-sm backdrop-blur">
+			<p className="pointer-events-none absolute bottom-3 left-1/2 w-max max-w-[calc(100%-24px)] -translate-x-1/2 rounded-full border border-border bg-background/90 px-3 py-1.5 text-center text-[12px] text-muted-foreground shadow-sm backdrop-blur">
 				<span className="font-medium text-foreground">Click a building</span> to
-				go inside · drag to look around · a lit window is an agent at work
+				go inside · drag to look around · a lit window is an agent
 			</p>
 		</div>
 	);

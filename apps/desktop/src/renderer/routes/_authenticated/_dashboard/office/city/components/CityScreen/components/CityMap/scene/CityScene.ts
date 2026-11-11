@@ -45,6 +45,9 @@ const LIGHT: Record<AgentStatus, number> = {
 	lost: 0x4a5160,
 };
 const ZOOMS = [0.5, 0.75, 1, 1.5, 2, 3];
+/** The whole city fills this much of the view, and is never blown up past its drawn size by more than this. */
+const FIT_SHARE = 0.94;
+const MAX_FIT_ZOOM = 2;
 const DRAG_START = 5;
 const WHEEL_STEP = 80;
 const HOVER_COLOR = 0xffffff;
@@ -149,6 +152,36 @@ export class CityScene extends Phaser.Scene {
 	showWholeCity(): void {
 		this.zoom = null;
 		this.frameCamera(true);
+	}
+
+	/** Moves the highlight to the next building in reading order, for the arrow keys. */
+	highlightNext(step: 1 | -1): void {
+		const buildings = [...(this.layout?.buildings ?? [])].sort(
+			(a, b) =>
+				a.body.y + a.body.h - (b.body.y + b.body.h) || a.body.x - b.body.x,
+		);
+		if (buildings.length === 0) return;
+		const at = buildings.findIndex((b) => b.id === this.hovered);
+		const next =
+			at === -1
+				? step === 1
+					? 0
+					: buildings.length - 1
+				: (at + step + buildings.length) % buildings.length;
+		const building = buildings[next];
+		if (!building) return;
+		this.hovered = building.id;
+		const camera = this.cameras.main;
+		const view = camera.worldView;
+		const center = {
+			x: building.body.x + building.body.w / 2,
+			y: building.body.y + building.body.h / 2,
+		};
+		if (!view.contains(center.x, center.y)) camera.centerOn(center.x, center.y);
+	}
+
+	enterHighlighted(): void {
+		if (this.hovered) this.callbacks.onEnter(this.hovered);
 	}
 
 	private buildGround(layout: CityLayout): void {
@@ -268,8 +301,7 @@ export class CityScene extends Phaser.Scene {
 			? { x: layout.w / 2, y: layout.h / 2 }
 			: { x: camera.worldView.centerX, y: camera.worldView.centerY };
 		const fit = Math.min(view.width / layout.w, view.height / layout.h);
-		const fitted =
-			ZOOMS.filter((z) => z <= fit * 0.98).at(-1) ?? (ZOOMS[0] as number);
+		const fitted = Math.min(MAX_FIT_ZOOM, fit * FIT_SHARE);
 		const zoom = Math.min(this.zoom ?? fitted, 2.5);
 		camera.setZoom(zoom);
 		const seenW = view.width / zoom;

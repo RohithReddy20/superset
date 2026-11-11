@@ -7,7 +7,6 @@ export const YOU_ID = "you";
 export const MEETING_ROOM = { id: "meeting", name: "Meeting room" };
 /** Not a room on the floor, so you start out in the lounge instead of at a workspace's desk. */
 const LOBBY = "lobby";
-const VISITOR_TAG_CHARS = 14;
 const LINE_CHARS = 72;
 const NEEDS_YOU = new Set(["permission", "failed", "lost"]);
 
@@ -81,7 +80,10 @@ function you(): Teammate {
 const short = (text: string) =>
 	text.length > LINE_CHARS ? `${text.slice(0, LINE_CHARS - 1)}…` : text;
 
-/** What needs the person comes first, then the item it works on, then the next one on its list. */
+/**
+ * What needs the person comes first, then the item it works on, then the next one on its list.
+ * Plain working and done say nothing: the character and its dot show those.
+ */
 function lineOf(
 	agent: CityAgent,
 	carries: { doing: string | null; next: string | null } | undefined,
@@ -91,7 +93,7 @@ function lineOf(
 	if (carries?.doing) return short(carries.doing);
 	if (carries?.next && agent.status === "idle")
 		return short(`Next: ${carries.next}`);
-	return STATUS_LINES[agent.status];
+	return "";
 }
 
 function person(
@@ -99,16 +101,14 @@ function person(
 	carries?: { doing: string | null; next: string | null },
 ): Teammate {
 	const line = lineOf(agent, carries);
-	const from =
-		agent.workspaceName.length > VISITOR_TAG_CHARS
-			? `${agent.workspaceName.slice(0, VISITOR_TAG_CHARS - 1)}…`
-			: agent.workspaceName;
 	return {
 		id: agent.terminalId,
-		name: isVisiting(agent) ? `${agent.name} · ${from}` : agent.name,
+		name: agent.name,
 		kind: "ai",
 		role: agent.agentId,
 		roomId: agent.place.roomId,
+		...(isVisiting(agent) ? { from: agent.workspaceName } : {}),
+		joinedAt: agent.startedAt,
 		...(agent.agentId === "claude" || agent.agentId === "codex"
 			? { engine: agent.agentId }
 			: {}),

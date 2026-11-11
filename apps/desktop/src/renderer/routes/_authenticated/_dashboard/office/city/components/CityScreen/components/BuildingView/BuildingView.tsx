@@ -1,37 +1,35 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import { useCityActions } from "../../../../hooks/useCityActions";
-import type { CityHandover, CityProject, CityRoom } from "../../../../types";
+import type { CityAgent, CityProject } from "../../../../types";
 import { presentIn } from "../../../../utils/buildingSnapshot";
-import { AgentPanel, type BuildingSelection } from "../AgentPanel";
+import type { BuildingSelection } from "../AgentPanel";
 import { BuildingFloor } from "./components/BuildingFloor";
 import { GroupBox } from "./components/GroupBox";
 
 interface BuildingViewProps {
 	project: CityProject;
-	projects: CityProject[];
-	rooms: CityRoom[];
-	handovers: CityHandover[];
-	/** An agent to open as soon as it shows up; `onFocused` is called once it is. */
-	focusAgentId: string | null;
-	onFocused: () => void;
+	/** Every agent in the city, so visitors sitting here are found. */
+	everyone: CityAgent[];
+	selection: BuildingSelection | null;
+	/** The city's agents are loaded. */
+	ready: boolean;
+	/** Agents picked for a group message. */
+	picked: string[];
+	onPick: (terminalIds: string[]) => void;
+	onSelect: (selection: BuildingSelection | null) => void;
 }
 
 export function BuildingView({
 	project,
-	projects,
-	rooms,
-	handovers,
-	focusAgentId,
-	onFocused,
+	everyone,
+	selection,
+	ready,
+	picked,
+	onPick,
+	onSelect,
 }: BuildingViewProps) {
 	const actions = useCityActions();
-	const [selection, setSelection] = useState<BuildingSelection | null>(null);
-	const [picked, setPicked] = useState<string[]>([]);
-	const selectAgent = (id: string) => setSelection({ kind: "agent", id });
-	const everyone = useMemo(
-		() => projects.flatMap((p) => p.workspaces.flatMap((w) => w.agents)),
-		[projects],
-	);
+	const selectAgent = (id: string) => onSelect({ kind: "agent", id });
 	const present = useMemo(
 		() => presentIn(project.id, everyone),
 		[project.id, everyone],
@@ -40,55 +38,34 @@ export function BuildingView({
 		() => present.filter((a) => picked.includes(a.terminalId)),
 		[present, picked],
 	);
-	const onFocusedRef = useRef(onFocused);
-	onFocusedRef.current = onFocused;
-	const focusFound = everyone.some((a) => a.terminalId === focusAgentId);
-	useEffect(() => {
-		if (!focusAgentId || !focusFound) return;
-		setSelection({ kind: "agent", id: focusAgentId });
-		setPicked([focusAgentId]);
-		onFocusedRef.current();
-	}, [focusAgentId, focusFound]);
 	const workspaceNames = useMemo(
 		() => new Map(everyone.map((a) => [a.workspaceId, a.workspaceName])),
 		[everyone],
 	);
 
 	return (
-		<div className="flex h-full w-full">
-			<div className="relative min-w-0 flex-1 bg-muted">
-				<BuildingFloor
-					project={project}
-					present={present}
-					selectedId={selection?.kind === "agent" ? selection.id : null}
-					picked={picked}
-					onPick={setPicked}
+		<div className="relative h-full w-full bg-muted">
+			<BuildingFloor
+				project={project}
+				present={present}
+				selectedId={selection?.kind === "agent" ? selection.id : null}
+				selectedRoomId={selection?.kind === "room" ? selection.id : null}
+				ready={ready}
+				picked={picked}
+				onPick={onPick}
+				onSelectAgent={selectAgent}
+				onSelectWorkspace={(id) => onSelect({ kind: "room", id })}
+				onSeat={async (ids, roomId) => {
+					for (const id of ids)
+						await actions.seat(id, { projectId: project.id, roomId });
+				}}
+			/>
+			{group.length > 1 ? (
+				<GroupBox
+					agents={group}
+					workspaceNames={workspaceNames}
 					onSelectAgent={selectAgent}
-					onSelectWorkspace={(id) => setSelection({ kind: "room", id })}
-					onSeat={async (ids, roomId) => {
-						for (const id of ids)
-							await actions.seat(id, { projectId: project.id, roomId });
-					}}
-				/>
-				{group.length > 1 ? (
-					<GroupBox
-						agents={group}
-						workspaceNames={workspaceNames}
-						onSelectAgent={selectAgent}
-						onClose={() => setPicked([])}
-					/>
-				) : null}
-			</div>
-			{selection ? (
-				<AgentPanel
-					project={project}
-					projects={projects}
-					everyone={everyone}
-					rooms={rooms}
-					handovers={handovers}
-					selection={selection}
-					onSelectAgent={selectAgent}
-					onClose={() => setSelection(null)}
+					onClose={() => onPick([])}
 				/>
 			) : null}
 		</div>

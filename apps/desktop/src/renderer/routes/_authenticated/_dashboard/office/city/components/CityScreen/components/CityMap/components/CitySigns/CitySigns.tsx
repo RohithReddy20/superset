@@ -2,6 +2,7 @@ import { cn } from "@superset/ui/utils";
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
 import { STATUS_COLORS } from "../../../../../../constants";
 import type { AgentStatus, CityBuildingSource } from "../../../../../../types";
+import { ProjectIcon } from "../../../ProjectIcon";
 import type { CityFrame } from "../../scene";
 
 export interface CitySignsHandle {
@@ -88,25 +89,17 @@ export const CitySigns = forwardRef<CitySignsHandle, CitySignsProps>(
 								)}
 							>
 								<span className="flex items-center gap-1.5 text-[12px] font-medium text-foreground group-data-[compact=true]/city:text-[10px]">
-									{project.iconUrl ? (
-										<img
-											src={project.iconUrl}
-											alt=""
-											className="size-4 rounded-sm object-cover group-data-[compact=true]/city:size-3"
-											draggable={false}
-										/>
-									) : (
-										<span className="flex size-4 items-center justify-center rounded-sm bg-muted text-[9px] uppercase text-muted-foreground group-data-[compact=true]/city:size-3">
-											{project.name.slice(0, 1)}
-										</span>
-									)}
+									<ProjectIcon
+										project={project}
+										className="group-data-[compact=true]/city:size-3"
+									/>
 									{project.name}
 								</span>
 								<span className="flex items-center gap-2 text-[11px] text-muted-foreground group-data-[compact=true]/city:hidden">
 									{busy.length === 0 ? (
 										<span>
 											{agents.length === 0
-												? "nobody in"
+												? "nobody here"
 												: `${agents.length} idle`}
 										</span>
 									) : (
