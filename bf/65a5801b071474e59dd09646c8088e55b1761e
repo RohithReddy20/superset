@@ -1,0 +1,43 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/RoomDetails/RoomDetails.tsx
+  s_5f8913573c0c91::t_dd6ff356a14c9c 8-14,24,30,39,46-48,61,123,126-138,140-143,145-147,158
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useCityTeam/useCityTeam.ts
+  s_5f8913573c0c91::t_454957f74c160d 5,48,55-57
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/NeedsYouBar/NeedsYouBar.tsx
+  s_5f8913573c0c91::t_c0dbf6e54ab6ec 7,47
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/NeedsYouBar/components/YourList/YourList.tsx
+  s_5f8913573c0c91::t_4babe1051efb07 1-119
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/NeedsYouBar/components/YourList/index.ts
+  s_5f8913573c0c91::t_cab0ea0674fc8b 1
+packages/cli/src/commands/office/who/command.ts
+  s_5f8913573c0c91::t_68e34436ddcc47 17,27
+packages/host-service/src/office/cityRooms.test.ts
+  s_5f8913573c0c91::t_ab4e18bbac3ad3 185-194
+packages/host-service/src/office/cityRooms.ts
+  s_5f8913573c0c91::t_1a1e33b90cd946 97-103,164-166,220-221,601-624,882,891
+packages/host-service/src/office/cityTeam.test.ts
+  s_5f8913573c0c91::t_bd319746d623f8 169-193
+packages/host-service/src/office/cityTeam.ts
+  s_5f8913573c0c91::t_bc68515067b723 2,53-54,79-80,129-131,213,266,270,276-296,298-307,318-320,468,540,549,613,748-755
+packages/host-service/src/office/createCityRooms.ts
+  s_5f8913573c0c91::t_5666d1067dcf5e 262-263
+packages/host-service/src/trpc/router/office/office.ts
+  s_5f8913573c0c91::t_d7d748dde4ea81 61-63,73
+plans/20261105-office-orchestration-notes.md
+  s_5f8913573c0c91::t_ef57f4cfda6487 759-781
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bf65a5801b071474e59dd09646c8088e55b1761e",
+  "prompts": {},
+  "sessions": {
+    "s_5f8913573c0c91": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ffe1d21c-40b7-4316-ace2-1908f5fdc59b",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
