@@ -26,8 +26,8 @@ export interface CityName {
 	name: string;
 	/** Set once the agent was told this name; a rename clears it. */
 	told?: boolean;
-	/** Set once the agent was told {@link teamCommands}. */
-	briefed?: boolean;
+	/** The {@link teamCommands} the agent was told last; it is told again when they change. */
+	briefed?: string | boolean;
 	missingSince?: number;
 }
 
@@ -161,9 +161,12 @@ export const MAX_NAME_CHARS = 24;
 /** The shell command agents and people reach the team with. */
 export const OFFICE_CLI = "superset office";
 
-/** How an agent works with the team; it is told once, with the first thing the city says to it. */
+/**
+ * How an agent works with the team. It is told with the first thing the city says to it, and again
+ * when the commands changed since.
+ */
 export const teamCommands = (cli: string): string =>
-	`You work with the person (@you) and the other agents as equals. Run these in your shell: \`${cli} who\` lists everyone and what each carries; \`${cli} say @name "..."\` writes to someone, \`say @room "..."\` to everyone sitting in your room; \`${cli} ask @name "..."\` asks for something and puts it on their list; \`${cli} todo add "..."\`, \`todo start <id>\`, \`todo finish <id>\`, \`todo drop <id>\` and \`todo list\` keep your own list. If your work belongs in another workspace, hand it on yourself with \`${cli} handover <workspace> "<brief: what was asked, what is done, what is left, what matters>"\`: a new agent starts there with your brief.`;
+	`You work with the person (@you) and the other agents as equals. Run these in your shell: \`${cli} who\` lists everyone and what each carries; \`${cli} say @name "..."\` writes to someone, \`say @room "..."\` to everyone sitting in your room; \`${cli} ask @name "..."\` asks for something and puts it on their list; \`${cli} todo add "..."\`, \`todo start <id>\`, \`todo finish <id>\`, \`todo drop <id>\` and \`todo list\` keep your own list. When the room agreed on something, write it down once for everyone with \`${cli} decide "<what was decided>" --give "@name: what they took"\` (repeat --give; a --give for yourself goes on your own list). If your work belongs in another workspace, hand it on yourself with \`${cli} handover <workspace> "<brief: what was asked, what is done, what is left, what matters>"\`: a new agent starts there with your brief.`;
 /** Handles that mean a group or the person, so no agent can be called that. */
 const RESERVED_HANDLES = new Set(["all", "everyone", "room", "you"]);
 /** Names given to agents in order, skipping any already in use. */
@@ -562,7 +565,7 @@ export class CityRooms {
 				workspaceId: handover.toWorkspaceId,
 				name: newName,
 				told: true,
-				briefed: true,
+				briefed: this.brief(),
 			});
 			handover.newTerminalId = terminalId;
 			handover.status = "done";
@@ -777,11 +780,19 @@ export class CityRooms {
 					...agent,
 					branch: this.deps.workspace?.(agent.workspaceId)?.branch,
 				});
-		const lead = [intro, entry?.briefed ? null : this.brief()].filter(Boolean);
+		const brief = this.brief();
+		const briefing =
+			entry?.briefed === brief
+				? null
+				: entry?.briefed
+					? `The team's commands changed. ${brief}`
+					: brief;
+		const lead = [intro, briefing].filter(Boolean);
 		await this.deps.send(agent, [...lead, text].join("\n\n"));
-		if (entry && !(entry.told && entry.briefed)) {
-			entry.told = true;
-			entry.briefed = true;
+		const now = this.state.names.find((n) => n.name === entry?.name);
+		if (now && lead.length > 0) {
+			now.told = true;
+			now.briefed = brief;
 			this.save();
 		}
 	}
@@ -831,7 +842,7 @@ export class CityRooms {
 			workspaceId: input.workspaceId,
 			name,
 			told: true,
-			briefed: true,
+			briefed: this.brief(),
 		});
 		this.save();
 		return { terminalId, name };

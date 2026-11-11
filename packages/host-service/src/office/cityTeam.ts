@@ -52,6 +52,8 @@ export interface CityNote {
 	expectsReply: boolean;
 	/** Set when it was written to everyone sitting in a room. */
 	room?: { projectId: string; roomId: string; name: string };
+	/** Set when it records what the team decided; the items are who took what. */
+	decision?: { todoIds: string[] };
 	at: number;
 }
 
@@ -227,7 +229,7 @@ export class CityTeam {
 					continue;
 				entries.push({
 					at: note.at,
-					text: `${note.fromName} ${note.expectsReply ? "asked" : "wrote to"} ${note.room ? `everyone in ${note.room.name}` : note.toIds.map(name).join(", ")}: ${note.text}`,
+					text: `${note.fromName} ${note.decision ? "wrote down a decision for" : note.expectsReply ? "asked" : "wrote to"} ${note.room ? `everyone in ${note.room.name}` : note.toIds.map(name).join(", ")}: ${note.text}`,
 				});
 			} else if (event.kind === "todo.added") {
 				todos.set(event.todo.id, event.todo);
@@ -395,6 +397,91 @@ export class CityTeam {
 				)
 			: [];
 		return { todo, waiting };
+	}
+
+	/**
+	 * Writes down what was agreed and puts on each teammate's list what they took. It goes to the
+	 * sender's room, or the given one, and to everyone who took something.
+	 */
+	async decide(input: {
+		fromId: string;
+		room?: { projectId: string; roomId: string };
+		text: string;
+		gives: Array<{ to: string; text: string }>;
+	}): Promise<{ note: CityNote; todos: CityTodo[]; waiting: string[] }> {
+		const agents = this.live();
+		const text = input.text.trim();
+		if (!text) throw new Error("A decision needs some text");
+		const room = input.room
+			? (this.deps.roomAt?.(input.room) ?? null)
+			: (this.deps.roomOf?.(input.fromId) ?? null);
+		if (input.room && !room) throw new Error("That room does not exist");
+		const from = this.nameOf(input.fromId, agents);
+		const gives = input.gives.map((give) => {
+			const what = give.text.trim();
+			if (!what) throw new Error("What someone took needs some text");
+			const handle = give.to.trim().replace(/^@/, "").toLowerCase();
+			const own = handle === "me" || handle === from.handle.toLowerCase();
+			const [toId] = own
+				? [input.fromId]
+				: this.targets([give.to], input.fromId, agents);
+			if (!toId) throw new Error(`Nobody here is @${handle}`);
+			return { toId, text: what };
+		});
+		const ids = new Set([
+			...(room?.memberIds ?? []),
+			...gives.map((g) => g.toId),
+		]);
+		ids.delete(input.fromId);
+		if (ids.size === 0 && gives.length === 0)
+			throw new Error(
+				"Nobody to tell: sit in a room with others, or give someone an item",
+			);
+		const at = this.now();
+		const todos = gives.map((give) => {
+			const [to] = this.reach([give.toId], agents);
+			const own = give.toId === input.fromId;
+			const todo: CityTodo = {
+				id: `D-${this.state.next}`,
+				ownerId: give.toId,
+				ownerName: to?.name ?? "You",
+				...(to ? { ownerWorkspaceId: to.workspaceId } : {}),
+				text: give.text,
+				state: "open",
+				...(own ? {} : { askedById: input.fromId, askedByName: from.name }),
+				createdAt: at,
+				updatedAt: at,
+			};
+			this.record({ kind: "todo.added", todo });
+			return todo;
+		});
+		const targets = [...ids];
+		const note = this.note(
+			input.fromId,
+			from,
+			targets,
+			text,
+			false,
+			room
+				? { projectId: room.projectId, roomId: room.roomId, name: room.name }
+				: undefined,
+			{ todoIds: todos.map((t) => t.id) },
+		);
+		const took = todos.map(
+			(t) =>
+				`- ${t.ownerId === YOU ? "The person" : t.ownerName} took ${t.id}: ${t.text}`,
+		);
+		const waiting = await this.deliver(
+			this.reach(targets, agents),
+			[
+				`${TAG} ${from.name} (@${from.handle}) wrote down what ${room ? `"${room.name}"` : "the team"} decided:\n${text}`,
+				took.length > 0 ? `Who took what:\n${took.join("\n")}` : "",
+				`(What you took is on your own list: ${this.cli} todo start <id>, then ${this.cli} todo finish <id>. If this is not what was agreed, say so: ${this.cli} say @${from.handle} "...")`,
+			]
+				.filter(Boolean)
+				.join("\n\n"),
+		);
+		return { note, todos, waiting };
 	}
 
 	addTodo(input: { callerId: string; text: string }): CityTodo {
@@ -582,6 +669,7 @@ export class CityTeam {
 		text: string,
 		expectsReply: boolean,
 		room?: CityNote["room"],
+		decision?: CityNote["decision"],
 	): CityNote {
 		const note: CityNote = {
 			id: `N-${this.state.notes.length + 1}`,
@@ -591,6 +679,7 @@ export class CityTeam {
 			text,
 			expectsReply,
 			...(room ? { room } : {}),
+			...(decision ? { decision } : {}),
 			at: this.now(),
 		};
 		this.record({ kind: "note", note });

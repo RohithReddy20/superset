@@ -8,6 +8,14 @@ export const MEETING_ROOM = { id: "meeting", name: "Meeting room" };
 /** Not a room on the floor, so you start out in the lounge instead of at a workspace's desk. */
 const LOBBY = "lobby";
 const VISITOR_TAG_CHARS = 14;
+const LINE_CHARS = 72;
+const NEEDS_YOU = new Set(["permission", "failed", "lost"]);
+
+/** What an agent carries on its own list, by terminal id. */
+export type Carrying = ReadonlyMap<
+	string,
+	{ doing: string | null; next: string | null }
+>;
 
 /**
  * A building as the office floor draws it: a room per workspace plus the meeting room, and a
@@ -17,13 +25,17 @@ const VISITOR_TAG_CHARS = 14;
 export function buildingSnapshot(
 	project: CityProject,
 	present: CityAgent[],
+	carrying?: Carrying,
 ): OfficeSnapshot {
 	const rooms = [
 		...project.workspaces.map((w) => ({ id: w.id, name: w.name })),
 		MEETING_ROOM,
 	];
 	return {
-		teammates: [you(), ...present.map(person)],
+		teammates: [
+			you(),
+			...present.map((a) => person(a, carrying?.get(a.terminalId))),
+		],
 		rooms: rooms.map((room) => ({
 			id: room.id,
 			name: room.name,
@@ -66,10 +78,27 @@ function you(): Teammate {
 	};
 }
 
-function person(agent: CityAgent): Teammate {
-	const line = agent.asking
-		? askingLine(agent.asking)
-		: STATUS_LINES[agent.status];
+const short = (text: string) =>
+	text.length > LINE_CHARS ? `${text.slice(0, LINE_CHARS - 1)}…` : text;
+
+/** What needs the person comes first, then the item it works on, then the next one on its list. */
+function lineOf(
+	agent: CityAgent,
+	carries: { doing: string | null; next: string | null } | undefined,
+): string {
+	if (agent.asking) return askingLine(agent.asking);
+	if (NEEDS_YOU.has(agent.status)) return STATUS_LINES[agent.status];
+	if (carries?.doing) return short(carries.doing);
+	if (carries?.next && agent.status === "idle")
+		return short(`Next: ${carries.next}`);
+	return STATUS_LINES[agent.status];
+}
+
+function person(
+	agent: CityAgent,
+	carries?: { doing: string | null; next: string | null },
+): Teammate {
+	const line = lineOf(agent, carries);
 	const from =
 		agent.workspaceName.length > VISITOR_TAG_CHARS
 			? `${agent.workspaceName.slice(0, VISITOR_TAG_CHARS - 1)}…`

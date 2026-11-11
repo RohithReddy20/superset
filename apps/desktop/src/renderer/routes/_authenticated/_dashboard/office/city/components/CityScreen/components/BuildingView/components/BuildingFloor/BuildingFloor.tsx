@@ -21,6 +21,7 @@ import {
 } from "../../../../../../../components/OfficeFloor/scene/pixel";
 import { layoutWorld, type SeatTarget } from "../../../../../../../utils/world";
 import { STATUS_COLORS, STATUS_LABELS } from "../../../../../../constants";
+import { useCityTeam } from "../../../../../../hooks/useCityTeam";
 import type { CityAgent, CityProject } from "../../../../../../types";
 import {
 	buildingSnapshot,
@@ -67,9 +68,39 @@ export function BuildingFloor({
 	handlers.current = { onSelectAgent, onSelectWorkspace, onPick, onSeat };
 	const dark = useIsDarkTheme();
 
+	const { todos, waiting } = useCityTeam();
+	const carrying = useMemo(() => {
+		const map = new Map<
+			string,
+			{ doing: string | null; next: string | null; open: number }
+		>();
+		for (const todo of todos) {
+			if (todo.state !== "open" && todo.state !== "doing") continue;
+			const entry = map.get(todo.ownerId) ?? {
+				doing: null,
+				next: null,
+				open: 0,
+			};
+			entry.open += 1;
+			if (todo.state === "doing") entry.doing ??= todo.text;
+			else entry.next ??= todo.text;
+			map.set(todo.ownerId, entry);
+		}
+		return map;
+	}, [todos]);
+	const tagCounts = useMemo(() => {
+		const map = new Map<string, { open: number; waiting: number }>();
+		for (const agent of present)
+			map.set(agent.terminalId, {
+				open: carrying.get(agent.terminalId)?.open ?? 0,
+				waiting: waiting.filter((d) => d.toId === agent.terminalId).length,
+			});
+		return map;
+	}, [present, carrying, waiting]);
+
 	const snapshot = useMemo(
-		() => buildingSnapshot(project, present),
-		[project, present],
+		() => buildingSnapshot(project, present, carrying),
+		[project, present, carrying],
 	);
 	const layout = useMemo(
 		() =>
@@ -191,6 +222,7 @@ export function BuildingFloor({
 				dots={dots}
 				icons={icons}
 				statusLabels={statusLabels}
+				counts={tagCounts}
 				onClickTeammate={(id, additive) => {
 					if (id === YOU_ID) return;
 					if (additive)

@@ -95,6 +95,29 @@ export const officeRouter = router({
 			}),
 		),
 
+	teamDecide: protectedProcedure
+		.input(
+			z.object({
+				caller,
+				room: place.optional(),
+				text: z.string().min(1),
+				gives: z
+					.array(z.object({ to: z.string().min(1), text: z.string().min(1) }))
+					.default([]),
+			}),
+		)
+		.mutation(({ ctx, input }) =>
+			badRequest(() => {
+				const team = teamOf(ctx.runtime);
+				return team.decide({
+					fromId: team.callerOf(input.caller),
+					...(input.room ? { room: input.room } : {}),
+					text: input.text,
+					gives: input.gives,
+				});
+			}),
+		),
+
 	teamHandover: protectedProcedure
 		.input(
 			z.object({

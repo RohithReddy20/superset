@@ -1,6 +1,6 @@
 import { cn } from "@superset/ui/utils";
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
-import { LuMessageSquare } from "react-icons/lu";
+import { LuListTodo, LuMail, LuMessageSquare } from "react-icons/lu";
 import type { Teammate } from "../../../../types";
 import type { PlacedRoom } from "../../../../utils/world";
 import { EngineMark } from "../../../EngineMark";
@@ -38,6 +38,8 @@ interface FloorOverlayProps {
 	icons?: ReadonlyMap<string, string>;
 	/** What each teammate's dot means, read out with its name. */
 	statusLabels?: ReadonlyMap<string, string>;
+	/** Per teammate: items open on its own list, and messages waiting to reach it. */
+	counts?: ReadonlyMap<string, { open: number; waiting: number }>;
 }
 
 const PILL_GAP = 6;
@@ -68,6 +70,7 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 			dots,
 			icons,
 			statusLabels,
+			counts,
 		},
 		ref,
 	) {
@@ -211,6 +214,7 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 					const busy = t.presence === "focused" || t.presence === "in-meeting";
 					const line = busy && t.line ? t.line : "";
 					const away = t.presence === "away";
+					const count = counts?.get(t.id);
 					return (
 						<div
 							key={t.id}
@@ -222,9 +226,9 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 						>
 							<div className="-translate-x-1/2 -translate-y-full flex flex-col items-center gap-1">
 								{line ? (
-									<div className="relative max-w-[220px] rounded-xl group-data-[compact=true]/floor:hidden border border-border bg-popover px-3 py-1.5 text-[12px] leading-snug text-foreground shadow-md">
+									<div className="relative max-w-[220px] rounded-xl border border-border bg-popover px-3 py-1.5 text-[12px] leading-snug text-foreground shadow-md group-data-[compact=true]/floor:max-w-[140px] group-data-[compact=true]/floor:truncate group-data-[compact=true]/floor:rounded-md group-data-[compact=true]/floor:px-1.5 group-data-[compact=true]/floor:py-0.5 group-data-[compact=true]/floor:text-[10px]">
 										{line}
-										<span className="absolute -bottom-1 left-1/2 size-2 -translate-x-1/2 rotate-45 border-b border-r border-border bg-popover" />
+										<span className="absolute -bottom-1 left-1/2 size-2 -translate-x-1/2 rotate-45 border-b border-r border-border bg-popover group-data-[compact=true]/floor:hidden" />
 									</div>
 								) : null}
 								<button
@@ -317,6 +321,24 @@ export const FloorOverlay = forwardRef<FloorOverlayHandle, FloorOverlayProps>(
 									>
 										{isMe ? "You" : t.name}
 									</span>
+									{count && count.open > 0 ? (
+										<span
+											title={`${count.open} on its list`}
+											className="flex items-center gap-0.5 rounded-full bg-muted px-1 text-[10px] tabular-nums text-muted-foreground group-data-[compact=true]/floor:hidden"
+										>
+											<LuListTodo className="size-2.5" />
+											{count.open}
+										</span>
+									) : null}
+									{count && count.waiting > 0 ? (
+										<span
+											title={`${count.waiting} waiting to reach it`}
+											className="flex items-center gap-0.5 rounded-full bg-[#f5b942]/20 px-1 text-[10px] tabular-nums text-[#b07a0c] group-data-[compact=true]/floor:hidden"
+										>
+											<LuMail className="size-2.5" />
+											{count.waiting}
+										</span>
+									) : null}
 									<span
 										className="size-2 rounded-full"
 										style={{

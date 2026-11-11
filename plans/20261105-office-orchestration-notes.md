@@ -844,3 +844,34 @@ The person's idea: keep the row of CLIs, but fill in the details and let them ed
   city-demo-api a click on Claude opened the box with Name "Mira", an empty first task and the
   focus on "Create Claude"; the name was changed to "Scribe" and Enter started a Claude called
   Scribe in "Add health check"; the box closed.
+
+## 2026-11-12: work on the name tags, decisions, commands told again, clean-up
+
+- **Name tags show the work.** On a building's floor the bubble over an agent now shows, in this
+  order: what needs the person (a screen question, permission, failed, disconnected), else the
+  item it marked as started, else "Next: …" for an idle agent with an open item, else its status.
+  The bubble stays at small zoom as one short line. The tag also carries the count of open items
+  on its list and, in amber, the count of messages waiting to reach it (`FloorOverlay` `counts`,
+  `buildingSnapshot` `carrying`).
+- **Decisions.** `CityTeam.decide` writes down what was agreed as one note (`CityNote.decision`)
+  for the sender's room, or a given one, and puts an item on the list of each one who took
+  something. An item for someone else names the writer as the one who asked; no ask is opened, so
+  nothing is passed back at turn end. Agents: `office decide "<text>" --give "@name: item"`
+  (repeatable, `@me` for the writer). The person: "Write down what we decided" in a room's panel,
+  with one field per person sitting there (`DecideBox`, `office.teamDecide`).
+- **Commands told again when they change.** `CityName.briefed` now holds the command text the
+  agent was told. When it differs from the current text, the next message to that agent starts
+  with "The team's commands changed." and the new text. A fix on the way: the saved entry was
+  looked up before the send and could be a stale copy after it, so it is looked up again.
+- **Dev CLI** runs `bun run --silent`, so agents no longer see a `$ dotenv …` line.
+- **Clean-up.** Removed the test agents (Milo, Iris, Ada, Nova, Otto, Scribe), dropped the
+  person's test items, and deleted the unused files in `paradev-dev-data/office/` (only
+  `city.json` is read). Mira was started by the person and stays.
+- **Checked:** unit tests (30 pass), typecheck of host-service, cli and desktop, lint.
+- **Checked in the running app:** `office decide` from the dev CLI put D-13 on Scribe's list and
+  D-14 on the person's; Scribe was disconnected, was started again, got the new commands with the
+  decision, started D-13, wrote "OK" to the person and finished it. Milo's saved entry held the
+  new command text after its next message. In city-demo-api the bubble over Scribe read "Draft the
+  health check n…" at small zoom, and the room panel opened the decision box with fields for You,
+  Nova and Scribe. Saving a decision from that box was not clicked through; it calls the same
+  route as the command.

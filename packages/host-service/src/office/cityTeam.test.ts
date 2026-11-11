@@ -192,6 +192,35 @@ describe("CityTeam", () => {
 		expect(sent.slice(1).map((s) => s.to)).toEqual(["t1", "t2"]);
 	});
 
+	test("a decision reaches the room and lands on the list of each one who took something", async () => {
+		const room = {
+			projectId: "p",
+			roomId: "meeting",
+			name: "Meeting room",
+			memberIds: ["t1", "t2"],
+		};
+		const { team, sent } = setup({ roomOf: () => room, roomAt: () => room });
+		const { note, todos } = await team.decide({
+			fromId: "t1",
+			text: "Ship the small fix first",
+			gives: [
+				{ to: "@ada", text: "Write the test" },
+				{ to: "@me", text: "Fix the bug" },
+				{ to: "@you", text: "Pick the release day" },
+			],
+		});
+		expect(todos.map((t) => [t.ownerId, t.askedByName])).toEqual([
+			["t2", "Milo"],
+			["t1", undefined],
+			[YOU, "Milo"],
+		]);
+		expect(note.decision?.todoIds).toEqual(["D-1", "D-2", "D-3"]);
+		expect(note.toIds).toEqual(["t2", YOU]);
+		expect(sent.map((s) => s.to)).toEqual(["t2"]);
+		expect(sent[0]?.text).toContain("- Ada took D-1: Write the test");
+		expect(sent[0]?.text).toContain("- The person took D-3");
+	});
+
 	test("a message to an agent that cannot be reached starts it again, once", async () => {
 		const woken: string[] = [];
 		const { team } = setup({

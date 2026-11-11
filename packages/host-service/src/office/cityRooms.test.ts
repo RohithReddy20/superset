@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -224,6 +224,41 @@ describe("names", () => {
 			"[Paradev office] You are Ada (@ada)",
 		);
 		expect(sent.at(-1)?.text).not.toContain(teamCommands(OFFICE_CLI));
+	});
+});
+
+describe("team commands", () => {
+	test("an agent told older commands is told the new ones once", async () => {
+		const statePath = join(mkdtempSync(join(tmpdir(), "city-")), "city.json");
+		writeFileSync(
+			statePath,
+			JSON.stringify({
+				names: [
+					{
+						terminalId: "t1",
+						workspaceId: "api",
+						name: "Ada",
+						told: true,
+						briefed: true,
+					},
+				],
+			}),
+		);
+		const sent: string[] = [];
+		const rooms = new CityRooms({
+			statePath,
+			agents: () => [agent("t1", "api")],
+			roomName: () => "ws api",
+			send: async (_to, text) => {
+				sent.push(text);
+			},
+		});
+		await rooms.tell("t1", "hi");
+		await rooms.tell("t1", "again");
+		expect(sent).toEqual([
+			`The team's commands changed. ${teamCommands(OFFICE_CLI)}\n\nhi`,
+			"again",
+		]);
 	});
 });
 

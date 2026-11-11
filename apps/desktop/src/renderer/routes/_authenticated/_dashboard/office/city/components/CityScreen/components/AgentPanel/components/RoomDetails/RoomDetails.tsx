@@ -17,6 +17,7 @@ import { AgentBar } from "../../../AgentBar";
 import { AgentIcon } from "../../../AgentIcon";
 import { MessageBox } from "../../../MessageBox";
 import { StatusBadge } from "../../../StatusBadge";
+import { DecideBox } from "./components/DecideBox";
 
 interface RoomDetailsProps {
 	project: CityProject;
@@ -36,7 +37,7 @@ export function RoomDetails({
 	onSelectAgent,
 }: RoomDetailsProps) {
 	const navigate = useNavigate();
-	const { notes, sayToRoom } = useCityTeam();
+	const { notes, todos, sayToRoom } = useCityTeam();
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const place = { projectId: project.id, roomId };
 	const workspace = project.workspaces.find((w) => w.id === roomId);
@@ -132,10 +133,24 @@ export function RoomDetails({
 							)}
 						>
 							<span className="text-[11px] text-muted-foreground">
-								{m.fromId === YOU ? "You" : m.fromName} → everyone here
+								{m.fromId === YOU ? "You" : m.fromName}
+								{m.decision ? " wrote down a decision" : " → everyone here"}
 							</span>
 							<LongText
-								text={m.text}
+								text={
+									m.decision && m.decision.todoIds.length > 0
+										? `${m.text}\n\n${m.decision.todoIds
+												.map((id) => todos.find((t) => t.id === id))
+												.flatMap((t) =>
+													t
+														? [
+																`${t.ownerId === YOU ? "You" : t.ownerName} took ${t.id}: ${t.text}`,
+															]
+														: [],
+												)
+												.join("\n")}`
+										: m.text
+								}
 								className={cn(
 									"max-w-[92%] rounded-lg px-2.5 py-1.5 text-[12px] leading-snug",
 									m.fromId === YOU
@@ -147,6 +162,7 @@ export function RoomDetails({
 					))
 				)}
 			</div>
+			<DecideBox place={place} people={people} handleOf={handleOf} />
 			<MessageBox
 				disabled={people.length === 0}
 				placeholder={

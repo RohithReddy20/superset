@@ -88,6 +88,7 @@ try {
 		"bun",
 		[
 			"run",
+			"--silent",
 			"--cwd",
 			join(root, "packages/cli"),
 			"dev",

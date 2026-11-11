@@ -55,6 +55,11 @@ export function useCityTeam() {
 		sayToRoom: (room: CityPlace, text: string) =>
 			then(client().teamSay.mutate({ room, text })),
 		addTodo: (text: string) => then(client().teamTodoAdd.mutate({ text })),
+		decide: (
+			room: CityPlace,
+			text: string,
+			gives: Array<{ to: string; text: string }>,
+		) => then(client().teamDecide.mutate({ room, text, gives })),
 		ask: (to: string, text: string) =>
 			then(client().teamAsk.mutate({ to, text })),
 		setTodo: (id: string, state: CityTodo["state"]) =>
