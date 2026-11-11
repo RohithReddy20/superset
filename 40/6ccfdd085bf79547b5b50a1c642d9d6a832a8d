@@ -1,0 +1,39 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/AgentDetails.tsx
+  s_5f8913573c0c91::t_01d7e8edccfdd7 25,112,123
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/components/LostNotice/LostNotice.tsx
+  s_5f8913573c0c91::t_ab2eb39f0e6630 2,13-17,19,21,23,25-26,29,33,37-45,61,64-73
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/components/RemoveAgent/RemoveAgent.tsx
+  s_5f8913573c0c91::t_000dad743b079c 1-69
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/components/RemoveAgent/index.ts
+  s_5f8913573c0c91::t_fd47df6cd62029 1
+packages/host-service/src/office/cityRooms.test.ts
+  s_5f8913573c0c91::t_4bffff8e81e477 172,177,183-184
+packages/host-service/src/office/cityRooms.ts
+  s_5f8913573c0c91::t_185567749c011a 317-323,325-333
+packages/host-service/src/office/cityTeam.test.ts
+  s_5f8913573c0c91::t_e31c5529b83477 194-232
+packages/host-service/src/office/cityTeam.ts
+  s_5f8913573c0c91::t_7b183bc67ff4c1 123-132,142-145,165-166,185,334,353,449,466,489,495-505,507,522,532-543,547,561,567,571-577,619-623,635-638
+packages/host-service/src/office/createCityRooms.ts
+  s_5f8913573c0c91::t_cd5061f87a307d 262-266
+packages/host-service/src/office/terminalWatch.ts
+  s_5f8913573c0c91::t_8244ff432e095e 31-36
+plans/20261105-office-orchestration-notes.md
+  s_5f8913573c0c91::t_624bd9469cc365 782-805
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "406ccfdd085bf79547b5b50a1c642d9d6a832a8d",
+  "prompts": {},
+  "sessions": {
+    "s_5f8913573c0c91": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ffe1d21c-40b7-4316-ace2-1908f5fdc59b",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
