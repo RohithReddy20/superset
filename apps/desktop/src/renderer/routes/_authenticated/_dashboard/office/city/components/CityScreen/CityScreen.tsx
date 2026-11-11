@@ -34,7 +34,7 @@ const SUMMARY: Array<[AgentStatus, string]> = [
 
 export function CityScreen({ projectId, agentId, view }: CityScreenProps) {
 	const navigate = useNavigate();
-	const { projects, rooms, handovers, maxRelays, hostReady, ready } = useCity();
+	const { projects, rooms, handovers, hostReady, ready } = useCity();
 	const { state: office } = useOffice();
 	const [listSelected, setListSelected] = useState<string | null>(null);
 	const inside = projects.find((p) => p.id === projectId) ?? null;
@@ -163,7 +163,6 @@ export function CityScreen({ projectId, agentId, view }: CityScreenProps) {
 								everyone={everyone}
 								rooms={rooms}
 								handovers={handovers}
-								maxRelays={maxRelays}
 								selection={{ kind: "agent", id: listAgent.terminalId }}
 								onSelectAgent={setListSelected}
 								onClose={() => setListSelected(null)}
@@ -177,7 +176,6 @@ export function CityScreen({ projectId, agentId, view }: CityScreenProps) {
 						projects={projects}
 						rooms={rooms}
 						handovers={handovers}
-						maxRelays={maxRelays}
 						focusAgentId={agentId}
 						onFocused={() => go({ project: inside.id })}
 					/>

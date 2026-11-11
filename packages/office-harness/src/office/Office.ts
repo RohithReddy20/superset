@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { checkDelivery, DEFAULT_LIMITS, type Limits } from "../guards/guards";
+import { checkDelivery } from "../guards/guards";
 import type {
 	Desk,
 	Handoff,
@@ -33,14 +33,9 @@ const shortId = () => Math.random().toString(36).slice(2, 10);
 
 export interface OfficeOptions {
 	statePath: string;
-	limits?: Partial<Limits>;
 	/** The AI teammate allowed to assign and close tasks like a person. */
 	leadId?: string;
-	/** Work plus review sessions one task may use before it is blocked. */
-	maxTaskRounds?: number;
 }
-
-const DEFAULT_TASK_ROUNDS = 6;
 
 /** Who may move a task to which status. */
 const OWNER_STATUSES: TaskStatus[] = ["doing", "review", "blocked"];
@@ -52,7 +47,6 @@ const VERIFIER_STATUSES: TaskStatus[] = ["verified", "doing", "blocked"];
  * (the inbox) and applies the guards; seats only read their inbox and post.
  */
 export class Office {
-	readonly limits: Limits;
 	private readonly state: OfficeState = {
 		teammates: [],
 		rooms: [],
@@ -65,7 +59,6 @@ export class Office {
 	private saveTimer: ReturnType<typeof setTimeout> | null = null;
 
 	constructor(private readonly options: OfficeOptions) {
-		this.limits = { ...DEFAULT_LIMITS, ...options.limits };
 		this.load();
 	}
 
@@ -84,10 +77,7 @@ export class Office {
 	}
 
 	upsertTeammate(
-		input: Omit<
-			Teammate,
-			"presence" | "line" | "lineSince" | "paused" | "budget"
-		> & { dailyTurns?: number },
+		input: Omit<Teammate, "presence" | "line" | "lineSince" | "paused">,
 	): Teammate {
 		const existing = this.teammate(input.id);
 		const teammate: Teammate = {
@@ -96,15 +86,9 @@ export class Office {
 				line: "",
 				lineSince: Date.now(),
 				paused: false,
-				budget: {
-					dailyTurns: input.dailyTurns ?? this.limits.dailyTurns,
-					usedToday: 0,
-					day: today(),
-				},
 			}),
 			...input,
 		};
-		if (input.dailyTurns) teammate.budget.dailyTurns = input.dailyTurns;
 		if (existing) Object.assign(existing, teammate);
 		else this.state.teammates.push(teammate);
 		this.emit({ type: "teammate", teammate: structuredClone(teammate) });
@@ -260,17 +244,6 @@ export class Office {
 		this.save();
 	}
 
-	/** Counts one turn against today's budget; false when the budget is spent. */
-	spendTurn(id: string): boolean {
-		const teammate = this.teammate(id);
-		if (!teammate) return false;
-		this.startDay(teammate);
-		if (teammate.budget.usedToday >= teammate.budget.dailyTurns) return false;
-		teammate.budget.usedToday += 1;
-		this.emit({ type: "teammate", teammate: structuredClone(teammate) });
-		return true;
-	}
-
 	/** Adds one turn's tokens and reported cost to the teammate's day and, for task sessions, to the task. */
 	recordUsage(
 		teammateId: string,
@@ -291,9 +264,8 @@ export class Office {
 	}
 
 	private startDay(teammate: Teammate): void {
-		if (teammate.budget.day === today()) return;
-		teammate.budget.day = today();
-		teammate.budget.usedToday = 0;
+		if (teammate.usageDay === today()) return;
+		teammate.usageDay = today();
 		teammate.usage = undefined;
 	}
 
@@ -355,10 +327,6 @@ export class Office {
 			roomId: input.roomId,
 			threadId,
 			notes: [],
-			rounds: {
-				used: 0,
-				max: this.options.maxTaskRounds ?? DEFAULT_TASK_ROUNDS,
-			},
 			createdAt: now,
 			updatedAt: now,
 		};
@@ -414,16 +382,6 @@ export class Office {
 		if (!task) return;
 		task.check = check;
 		this.save();
-	}
-
-	/** Counts one work or review session; false when the task has used its rounds. */
-	spendTaskRound(id: string): boolean {
-		const task = this.task(id);
-		if (!task) return false;
-		if (task.rounds.used >= task.rounds.max) return false;
-		task.rounds.used += 1;
-		this.save();
-		return true;
 	}
 
 	/**
@@ -590,14 +548,7 @@ export class Office {
 			if (!reason) continue;
 
 			const depth = author.kind === "human" ? 0 : message.depth + 1;
-			const verdict = checkDelivery({
-				limits: this.limits,
-				author,
-				target,
-				message,
-				depth,
-				thread,
-			});
+			const verdict = checkDelivery(target);
 			const handoff: Handoff | null =
 				author.kind === "ai"
 					? {

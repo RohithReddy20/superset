@@ -1,4 +1,5 @@
-import { join } from "node:path";
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { createNodeWebSocket } from "@hono/node-ws";
 import { trpcServer } from "@hono/trpc-server";
 import { Octokit } from "@octokit/rest";
@@ -364,7 +365,10 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 		return officeRuntime;
 	};
 
+	// A dev checkout's terminals have the installed CLI on PATH, which lacks this checkout's commands.
+	const devCli = join(dirname(resolveAppHomeDir()), "scripts", "dev-cli.ts");
 	const city = createCityRooms({
+		...(existsSync(devCli) ? { officeCli: `bun ${devCli} office` } : {}),
 		db,
 		eventBus,
 		terminalAgentStore,
@@ -389,6 +393,7 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 		office,
 		city: () => city.rooms,
 		cityTasks: () => city.tasks,
+		cityTeam: () => city.team,
 		filesystem,
 		pullRequests: pullRequestRuntime,
 		pageWatch,

@@ -26,7 +26,7 @@ function statusText(task: CityTask): string {
 	switch (task.status) {
 		case "working":
 			return task.round > 1
-				? `Working on it again (round ${task.round} of ${task.maxRounds})`
+				? `Working on it again (round ${task.round})`
 				: "Working on it";
 		case "checking":
 			return `Running ${task.checkCommand ?? "its check"}`;

@@ -11,7 +11,6 @@ interface BuildingViewProps {
 	projects: CityProject[];
 	rooms: CityRoom[];
 	handovers: CityHandover[];
-	maxRelays: number;
 	/** An agent to open as soon as it shows up; `onFocused` is called once it is. */
 	focusAgentId: string | null;
 	onFocused: () => void;
@@ -22,7 +21,6 @@ export function BuildingView({
 	projects,
 	rooms,
 	handovers,
-	maxRelays,
 	focusAgentId,
 	onFocused,
 }: BuildingViewProps) {
@@ -88,7 +86,6 @@ export function BuildingView({
 					everyone={everyone}
 					rooms={rooms}
 					handovers={handovers}
-					maxRelays={maxRelays}
 					selection={selection}
 					onSelectAgent={selectAgent}
 					onClose={() => setSelection(null)}

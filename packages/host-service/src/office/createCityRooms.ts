@@ -32,6 +32,7 @@ import {
 	MEETING_ROOM,
 } from "./cityRooms";
 import { CityTasks } from "./cityTasks";
+import { CityTeam } from "./cityTeam";
 import { TerminalWatch } from "./terminalWatch";
 
 const REPLY_CHARS = 12_000;
@@ -50,6 +51,7 @@ export function createCityRooms({
 	runAgent,
 	resumeAgent,
 	office,
+	officeCli,
 }: {
 	db: HostDb;
 	eventBus: EventBus;
@@ -68,7 +70,8 @@ export function createCityRooms({
 	}) => Promise<{ resumed: true; terminalId: string } | { resumed: false }>;
 	/** The office, so agents can sit in its rooms next to its own teammates. */
 	office?: CityRoomsDeps["office"];
-}): { rooms: CityRooms; tasks: CityTasks } {
+	officeCli?: string;
+}): { rooms: CityRooms; tasks: CityTasks; team: CityTeam } {
 	mkdirSync(dirname(statePath), { recursive: true });
 	const workspaceRows = () =>
 		db
@@ -212,6 +215,7 @@ export function createCityRooms({
 			return { terminalId: result.terminalId };
 		},
 		...(office ? { office } : {}),
+		...(officeCli ? { officeCli } : {}),
 		successorOf,
 		roomName: (projectId, roomId) => {
 			if (roomId === MEETING_ROOM)
@@ -270,6 +274,17 @@ export function createCityRooms({
 		},
 	});
 
+	const team = new CityTeam({
+		statePath: join(dirname(statePath), "city-team.json"),
+		agents: () => rooms.namedAgents(),
+		send: (agent, text) => rooms.tell(agent.terminalId, text),
+		lastReply,
+		successorOf,
+		passedOnInRoom: (fromId, toId, reply) =>
+			rooms.passesOn(fromId, toId, reply),
+		...(officeCli ? { officeCli } : {}),
+	});
+
 	eventBus.onAgentLifecycle((event) => {
 		rooms.onAgentEvent(event).catch((error: unknown) => {
 			console.warn("[city] relay failed", { error });
@@ -277,6 +292,9 @@ export function createCityRooms({
 		tasks.onAgentEvent(event).catch((error: unknown) => {
 			console.warn("[city] task step failed", { error });
 		});
+		team.onAgentEvent(event).catch((error: unknown) => {
+			console.warn("[city] ask relay failed", { error });
+		});
 	});
-	return { rooms, tasks };
+	return { rooms, tasks, team };
 }

@@ -1,11 +1,5 @@
 {
 	"port": 4747,
-	"limits": {
-		"maxDepth": 3,
-		"maxAiRoundsWithoutHuman": 6,
-		"maxAsksPerTurn": 3,
-		"dailyTurns": 60
-	},
 	"rooms": [
 		{
 			"id": "engineering",

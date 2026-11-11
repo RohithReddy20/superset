@@ -106,9 +106,7 @@ export class OfficeRuntime {
 		this.config = this.loadConfig();
 		this.office = new Office({
 			statePath: join(options.homeDir, "state.json"),
-			limits: this.config.limits,
 			leadId: this.config.lead,
-			maxTaskRounds: this.config.limits?.taskRounds,
 		});
 		this.guests = new OfficeGuests({
 			office: this.office,
@@ -366,14 +364,6 @@ export class OfficeRuntime {
 		if (!task?.ownerId || this.taskSessions.has(taskId)) return;
 		const owner = this.office.teammate(task.ownerId);
 		if (!owner || owner.paused) return;
-		if (!this.office.spendTaskRound(taskId)) {
-			this.force(
-				task,
-				"blocked",
-				`used all ${task.rounds.max} rounds; a person decides what happens next`,
-			);
-			return;
-		}
 		let seat: Seat | null = null;
 		try {
 			const cwd = await this.workspaceFor(task);
@@ -384,7 +374,6 @@ export class OfficeRuntime {
 				this.workPrompt(this.office.task(taskId) ?? task, cwd),
 				{
 					depth: 0,
-					asks: 0,
 					replyTo: replyTarget(task.roomId, task.threadId),
 					taskId,
 				},
@@ -447,14 +436,6 @@ ${check.output.slice(-600)}`
 			null;
 		if (!verifierId || verifierId === task.ownerId) return;
 		this.office.setTaskVerifier(taskId, verifierId);
-		if (!this.office.spendTaskRound(taskId)) {
-			this.force(
-				task,
-				"blocked",
-				`used all ${task.rounds.max} rounds before a review; a person decides`,
-			);
-			return;
-		}
 		let seat: Seat | null = null;
 		try {
 			seat = await this.taskSeat(
@@ -467,7 +448,6 @@ ${check.output.slice(-600)}`
 				this.reviewPrompt(this.office.task(taskId) ?? task),
 				{
 					depth: 0,
-					asks: 0,
 					replyTo: replyTarget(task.roomId, task.threadId),
 					taskId,
 				},
@@ -544,7 +524,7 @@ ${check.output.slice(-600)}`
 				? `3. Run the tests before you report: ${project.testCommand}`
 				: `3. Check your own work before you report.`,
 			`4. When finished call update_task("${task.id}", "review", what changed and how you tested it). If you cannot finish, update_task("${task.id}", "blocked", what you need).`,
-			`5. A question for the person goes to say(reply_to: "${replyTarget(task.roomId, task.threadId)}", ...). Do not pull other teammates in.`,
+			`5. A question for the person goes to say(reply_to: "${replyTarget(task.roomId, task.threadId)}", ...).`,
 			notes ? `\nNotes so far:\n${notes}` : ``,
 		].join("\n");
 	}
@@ -782,7 +762,6 @@ ${check.output.slice(-600)}`
 				engine: seat.engine,
 				model: seat.model,
 				instructions: seat.instructions,
-				dailyTurns: seat.dailyTurns,
 			});
 		}
 		this.applyRooms();

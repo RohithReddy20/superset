@@ -19,20 +19,9 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
+// The script's own checkout, so the CLI works from any folder, such as an agent's workspace.
 function repoRoot(): string {
-	try {
-		return execFileSync("git", ["rev-parse", "--show-toplevel"], {
-			encoding: "utf-8",
-		}).trim();
-	} catch {
-		// Fall back to walking up from this file to the first dir with a package.json.
-		let dir = dirname(new URL(import.meta.url).pathname);
-		for (let i = 0; i < 8; i++) {
-			if (existsSync(join(dir, "package.json"))) return dir;
-			dir = dirname(dir);
-		}
-		return resolve(".");
-	}
+	return resolve(dirname(new URL(import.meta.url).pathname), "..");
 }
 
 function isAlive(pid: number): boolean {

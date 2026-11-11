@@ -22,7 +22,6 @@ interface AgentPanelProps {
 	everyone: CityAgent[];
 	rooms: CityRoom[];
 	handovers: CityHandover[];
-	maxRelays: number;
 	selection: BuildingSelection;
 	onSelectAgent: (terminalId: string) => void;
 	onClose: () => void;
@@ -34,7 +33,6 @@ export function AgentPanel({
 	everyone,
 	rooms,
 	handovers,
-	maxRelays,
 	selection,
 	onSelectAgent,
 	onClose,
@@ -90,7 +88,6 @@ export function AgentPanel({
 							a.place.projectId === project.id &&
 							a.place.roomId === selection.id,
 					)}
-					maxRelays={maxRelays}
 					onSelectAgent={onSelectAgent}
 				/>
 			) : (

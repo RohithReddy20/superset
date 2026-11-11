@@ -105,13 +105,12 @@ export function TaskBoard({
 								</>
 							) : null}
 							<span className="ml-auto font-mono text-[10px]">
-								{task.rounds.used}/{task.rounds.max}
-								{task.usage ? ` · ${formatUsage(task.usage)}` : ""}
-								{task.check
-									? task.check.ok
-										? " · checks ✓"
-										: " · checks ✗"
-									: ""}
+								{[
+									task.usage ? formatUsage(task.usage) : null,
+									task.check ? (task.check.ok ? "checks ✓" : "checks ✗") : null,
+								]
+									.filter(Boolean)
+									.join(" · ")}
 							</span>
 						</div>
 						{task.branch ? (

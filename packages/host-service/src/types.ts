@@ -8,6 +8,7 @@ import type { HostDb } from "./db";
 import type { EventBus } from "./events";
 import type { CityRooms } from "./office/cityRooms";
 import type { CityTasks } from "./office/cityTasks";
+import type { CityTeam } from "./office/cityTeam";
 import type { OfficeRuntime } from "./office/officeRuntime";
 import type { PageWatchManager } from "./page-watch/index.ts";
 import type { ApiAuthProvider } from "./providers/auth/types";
@@ -36,6 +37,7 @@ export interface HostServiceRuntime {
 	office?: () => OfficeRuntime;
 	city?: () => CityRooms;
 	cityTasks?: () => CityTasks;
+	cityTeam?: () => CityTeam;
 }
 
 export interface HostServiceContext {

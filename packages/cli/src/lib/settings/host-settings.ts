@@ -72,7 +72,7 @@ function findManifest(): HostServiceManifest {
 // recycled pid, wedged process) must fail fast instead of hanging the CLI.
 const HOST_REQUEST_TIMEOUT_MS = 5000;
 
-function hostClient() {
+export function hostClient() {
 	const manifest = findManifest();
 	return createTRPCClient<HostServiceRouter>({
 		links: [
@@ -92,7 +92,7 @@ function hostClient() {
 }
 
 /** Map transport/auth failures to actionable errors instead of raw tRPC dumps. */
-async function callHost<T>(run: () => Promise<T>): Promise<T> {
+export async function callHost<T>(run: () => Promise<T>): Promise<T> {
 	try {
 		return await run();
 	} catch (error) {

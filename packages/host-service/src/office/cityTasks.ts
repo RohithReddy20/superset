@@ -46,7 +46,6 @@ export interface CityTask {
 	baseRef?: string;
 	status: CityTaskStatus;
 	round: number;
-	maxRounds: number;
 	report?: string;
 	check?: { command: string; ok: boolean; output: string; at: number };
 	verdict?: { ok: boolean; text: string; at: number };
@@ -95,7 +94,6 @@ export interface CityTasksDeps {
 	bootMs?: number;
 }
 
-export const MAX_ROUNDS = 3;
 const KEPT_FINISHED = 50;
 const CHECK_TAIL = 1500;
 const VERDICT_TAIL = 4000;
@@ -165,7 +163,6 @@ export class CityTasks {
 			baseRef: (await this.deps.headOf(workspace.path)) ?? undefined,
 			status: "working",
 			round: 1,
-			maxRounds: MAX_ROUNDS,
 			events: [{ at, text: `Given to ${agent.name}` }],
 			createdAt: at,
 			updatedAt: at,
@@ -195,7 +192,6 @@ export class CityTasks {
 				.join("\n\n"),
 		);
 		task.round += 1;
-		task.maxRounds = task.round + MAX_ROUNDS - 1;
 		task.status = "working";
 		this.event(task, `Sent back: ${note.trim() || "try again"}`);
 		return task;
@@ -400,10 +396,6 @@ export class CityTasks {
 		agent: TaskAgent,
 		problem: string,
 	): Promise<void> {
-		if (task.round >= task.maxRounds) {
-			this.block(task, `Still failing after ${task.round} rounds`);
-			return;
-		}
 		try {
 			await this.reach(
 				agent,

@@ -29,8 +29,8 @@ export interface Teammate {
 	line: string;
 	lineSince: number;
 	paused: boolean;
-	budget: { dailyTurns: number; usedToday: number; day: string };
-	/** Spent on budget.day. */
+	/** The day `usage` counts for. */
+	usageDay?: string;
 	usage?: Usage;
 	desk?: Desk;
 	acpSessionId?: string;
@@ -111,8 +111,6 @@ export interface Task {
 	workspacePath?: string;
 	check?: TaskCheck;
 	notes: TaskNote[];
-	/** Work and review sessions spent on this task, against the cap. */
-	rounds: { used: number; max: number };
 	usage?: Usage;
 	createdAt: number;
 	updatedAt: number;

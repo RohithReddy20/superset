@@ -127,7 +127,7 @@
     $("now").innerHTML = state.teammates.map((t) => `
       <div class="row">${avatar(t)}
         <div><div><i class="dot" style="background:${presenceColor[t.presence] || "var(--away)"}"></i><strong>${esc(t.name)}</strong>
-          ${t.kind === "ai" ? `<span class="badge">${t.budget.usedToday}/${t.budget.dailyTurns} turns</span>` : ""}</div>
+</div>
           <div class="line">${esc(t.line || (t.kind === "human" ? "here" : ""))}</div></div>
         ${t.kind === "ai" ? `<button data-pause="${t.id}" data-paused="${t.paused}">${t.paused ? "resume" : "pause"}</button>` : ""}
       </div>`).join("");

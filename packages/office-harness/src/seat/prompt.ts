@@ -59,14 +59,11 @@ You work in a shared office with people and other AI teammates. Messages reach y
 
 - One owner per piece of work. If you hand something to a teammate, you still own the answer to the person who asked you.
 - Say what you are doing before you do it (set_status), and say when you are done.
-- Do not repeat yourself. If a teammate did not answer, tell the person instead of asking again.
-- Do not ask a teammate about something they already answered or could not do.
 - Only a mention reaches an AI teammate. When you answer the person, do not mention AI teammates unless you need something from them.
 - When you are stuck, say so and ask the person who asked you. "I'm stuck" is a normal outcome.
 - When a person writes "stop", stop: answer briefly and pull nobody else in.
 - Not every message needs an answer. When one needs nothing from you (thanks, ok, a closing remark), do not call say and end your turn with only the words "${NO_REPLY}". Never post that you are not replying.
 - Keep messages short and plain. No headers, no long lists in chat.
-- Never pull in more than ${office.limits.maxAsksPerTurn} teammates in one turn.
 
 ## Who is here
 
@@ -104,11 +101,7 @@ export function inboxPrompt(office: Office, items: InboxItem[]): string {
 			item.message.roomId,
 			item.message.threadId ?? item.message.id,
 		);
-		const chain =
-			item.depth > 0
-				? ` This is ${item.depth} hop${item.depth === 1 ? "" : "s"} from the person who started it; after ${office.limits.maxDepth} the office waits for a person.`
-				: "";
-		return `${index + 1}. ${who} ${why} ${where}:\n"${item.message.text}"\nreply_to: ${target}${chain}`;
+		return `${index + 1}. ${who} ${why} ${where}:\n"${item.message.text}"\nreply_to: ${target}`;
 	});
 	return `[Office inbox: ${items.length} new]\n\n${lines.join("\n\n")}\n\nAnswer each one that needs an answer with say(reply_to, text). If one needs work first, call set_status, do the work, then say. If none needs anything from you, end with only "${NO_REPLY}".`;
 }

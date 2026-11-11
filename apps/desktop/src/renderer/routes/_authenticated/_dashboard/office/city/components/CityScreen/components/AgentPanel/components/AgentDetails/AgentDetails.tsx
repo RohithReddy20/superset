@@ -18,6 +18,7 @@ import { StatusBadge } from "../../../StatusBadge";
 import { Conversation } from "./components/Conversation";
 import { HandoverBox } from "./components/HandoverBox";
 import { KeyButtons } from "./components/KeyButtons";
+import { ListBox } from "./components/ListBox";
 import { LostNotice } from "./components/LostNotice";
 import { ScreenQuestion } from "./components/ScreenQuestion";
 import { SeatRow } from "./components/SeatRow";
@@ -111,6 +112,7 @@ export function AgentDetails({
 				onReconnected={onSelectAgent}
 				onRemoved={onRemoved}
 			/>
+			<ListBox agent={agent} />
 			<TaskBox agent={agent} />
 			<SeatRow agent={agent} projects={projects} />
 			<HandoverBox

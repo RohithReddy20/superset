@@ -39,16 +39,6 @@ export function officeToolsServer(office: Office, seat: Seat): McpServer {
 					);
 				const turn = seat.currentTurn;
 				const me = seat.teammate;
-				const aiMentions = [...args.text.matchAll(/@([\w-]+)/g)]
-					.map((m) => office.teammateByName(m[1] ?? ""))
-					.filter((t) => t && t.kind === "ai" && t.id !== me.id);
-				if (turn && aiMentions.length > 0) {
-					if (turn.asks + aiMentions.length > office.limits.maxAsksPerTurn)
-						throw new Error(
-							`You may pull in at most ${office.limits.maxAsksPerTurn} teammates in one turn. Answer the person instead.`,
-						);
-					turn.asks += aiMentions.length;
-				}
 				const { message, held } = office.post({
 					authorId: me.id,
 					roomId: target.roomId,
@@ -144,7 +134,6 @@ export function officeToolsServer(office: Office, seat: Seat): McpServer {
 		branch: t.branch,
 		workspace: t.workspacePath,
 		check: t.check ? { ok: t.check.ok, command: t.check.command } : undefined,
-		rounds: `${t.rounds.used}/${t.rounds.max}`,
 		last_note: t.notes.at(-1)?.text,
 	});
 

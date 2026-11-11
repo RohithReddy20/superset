@@ -8,6 +8,8 @@ import {
 	LuCircleCheck,
 	LuEye,
 	LuHand,
+	LuMessageCircle,
+	LuMessageCircleQuestion,
 	LuUnplug,
 } from "react-icons/lu";
 import type { NeedsYouItem, NeedsYouReason } from "../../../../utils/needsYou";
@@ -25,6 +27,16 @@ const REASONS: Record<
 		label: "Stopped with an error",
 		icon: LuCircleAlert,
 		tone: "text-red-500 border-red-500/40 bg-red-500/10",
+	},
+	asked: {
+		label: "Asks you for something",
+		icon: LuMessageCircleQuestion,
+		tone: "text-orange-500 border-orange-500/40 bg-orange-500/10",
+	},
+	wrote: {
+		label: "Wrote to you",
+		icon: LuMessageCircle,
+		tone: "text-sky-500 border-sky-500/40 bg-sky-500/10",
 	},
 	handover: {
 		label: "Asks to hand over its work",

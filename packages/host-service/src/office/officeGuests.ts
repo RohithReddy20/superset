@@ -31,7 +31,7 @@ const CONTEXT_CHARS = 400;
 /**
  * CLI agents sitting in office rooms. A guest is an office teammate whose inbox types into its
  * terminal: it hears what @mentions it or continues a thread it is in, and its answer, when its turn
- * ends, is posted back into that thread as its own message, under the office's usual limits.
+ * ends, is posted back into that thread as its own message.
  */
 export class OfficeGuests {
 	private readonly guests = new Map<string, Guest>();
@@ -137,7 +137,6 @@ export class OfficeGuests {
 		const guest = this.guests.get(terminalId);
 		if (!guest) return;
 		const office = this.deps.office;
-		if (!office.spendTurn(guest.id)) return;
 		guest.waiting.push(item);
 		const message = item.message;
 		const room = office.room(message.roomId);

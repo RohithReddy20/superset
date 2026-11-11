@@ -21,7 +21,6 @@ export function useCity(): {
 	projects: CityProject[];
 	rooms: CityRoom[];
 	handovers: CityHandover[];
-	maxRelays: number;
 	hostReady: boolean;
 	ready: boolean;
 } {
@@ -99,7 +98,6 @@ export function useCity(): {
 		projects: city,
 		rooms: rooms.data?.rooms ?? [],
 		handovers: rooms.data?.handovers ?? [],
-		maxRelays: rooms.data?.maxRelays ?? 0,
 		hostReady: !!activeHostUrl,
 		ready: workspacesReady && projectsReady && bindings.isSuccess,
 	};

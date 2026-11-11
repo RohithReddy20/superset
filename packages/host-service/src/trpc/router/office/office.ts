@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import type { CityRooms, CitySnapshot } from "../../../office/cityRooms";
 import type { CityTasks, CityTasksSnapshot } from "../../../office/cityTasks";
+import type { CityTeam, CityTeamSnapshot } from "../../../office/cityTeam";
 import type { OfficeRuntime } from "../../../office/officeRuntime";
 import type { OfficeSnapshot } from "../../../office/types";
 import { protectedProcedure, router } from "../../index";
@@ -39,6 +40,17 @@ function tasksOf(runtime: { cityTasks?: () => CityTasks }): CityTasks {
 	return tasks;
 }
 
+function teamOf(runtime: { cityTeam?: () => CityTeam }): CityTeam {
+	const team = runtime.cityTeam?.();
+	if (!team) {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message: "The team is not available on this host.",
+		});
+	}
+	return team;
+}
+
 async function badRequest<T>(run: () => Promise<T> | T): Promise<T> {
 	try {
 		return await run();
@@ -57,10 +69,93 @@ const place = z.object({
 
 const taskId = z.object({ id: z.string().min(1) });
 
+/** The terminal a command was run from; unset or unknown means the person. */
+const caller = z.string().min(1).optional();
+
 export const officeRouter = router({
 	cityState: protectedProcedure.query(
 		({ ctx }): CitySnapshot => cityOf(ctx.runtime).snapshot(),
 	),
+
+	team: protectedProcedure.query(
+		({ ctx }): CityTeamSnapshot => teamOf(ctx.runtime).snapshot(),
+	),
+
+	teamSay: protectedProcedure
+		.input(
+			z.object({
+				caller,
+				to: z.array(z.string().min(1)).min(1),
+				text: z.string().min(1),
+			}),
+		)
+		.mutation(({ ctx, input }) =>
+			badRequest(() => {
+				const team = teamOf(ctx.runtime);
+				return team.say({
+					fromId: team.callerOf(input.caller),
+					to: input.to,
+					text: input.text,
+				});
+			}),
+		),
+
+	teamAsk: protectedProcedure
+		.input(
+			z.object({
+				caller,
+				to: z.string().min(1),
+				text: z.string().min(1),
+			}),
+		)
+		.mutation(({ ctx, input }) =>
+			badRequest(() => {
+				const team = teamOf(ctx.runtime);
+				return team.ask({
+					fromId: team.callerOf(input.caller),
+					to: input.to,
+					text: input.text,
+				});
+			}),
+		),
+
+	teamRead: protectedProcedure
+		.input(z.object({ fromId: z.string().min(1) }))
+		.mutation(({ ctx, input }) => {
+			teamOf(ctx.runtime).markRead(input.fromId);
+			return { ok: true as const };
+		}),
+
+	teamTodoAdd: protectedProcedure
+		.input(z.object({ caller, text: z.string().min(1) }))
+		.mutation(({ ctx, input }) =>
+			badRequest(() => {
+				const team = teamOf(ctx.runtime);
+				return team.addTodo({
+					callerId: team.callerOf(input.caller),
+					text: input.text,
+				});
+			}),
+		),
+
+	teamTodoSet: protectedProcedure
+		.input(
+			z.object({
+				caller,
+				id: z.string().min(1),
+				state: z.enum(["open", "doing", "finished", "dropped"]),
+			}),
+		)
+		.mutation(({ ctx, input }) =>
+			badRequest(() => {
+				const team = teamOf(ctx.runtime);
+				return team.setTodo({
+					callerId: team.callerOf(input.caller),
+					id: input.id,
+					state: input.state,
+				});
+			}),
+		),
 
 	cityTasks: protectedProcedure.query(
 		({ ctx }): CityTasksSnapshot => tasksOf(ctx.runtime).snapshot(),
@@ -238,11 +333,6 @@ export const officeRouter = router({
 				return { ok: true as const };
 			}),
 		),
-
-	cityResume: protectedProcedure.input(place).mutation(({ ctx, input }) => {
-		cityOf(ctx.runtime).resume(input.projectId, input.roomId);
-		return { ok: true as const };
-	}),
 
 	state: protectedProcedure.query(({ ctx }): OfficeSnapshot => {
 		const office = officeOf(ctx.runtime);

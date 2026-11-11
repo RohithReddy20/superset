@@ -11,7 +11,6 @@ import { startOfficeServer } from "./web/server";
 interface OfficeConfig {
 	port?: number;
 	home?: string;
-	limits?: Partial<Office["limits"]>;
 	rooms: Array<{
 		id: string;
 		name: string;
@@ -28,7 +27,6 @@ interface OfficeConfig {
 		engine: EngineId;
 		model?: string;
 		instructions?: string;
-		dailyTurns?: number;
 		extraArgs?: string[];
 	}>;
 }
@@ -43,7 +41,6 @@ const onlySeats = process.argv.includes("--no-seats")
 
 const office = new Office({
 	statePath: join(home, "state.json"),
-	limits: config.limits,
 });
 
 for (const human of config.humans) {
@@ -65,7 +62,6 @@ for (const seat of config.seats) {
 		engine: seat.engine,
 		model: seat.model,
 		instructions: seat.instructions,
-		dailyTurns: seat.dailyTurns,
 	});
 }
 for (const room of config.rooms) {

@@ -26,6 +26,8 @@ export interface CityName {
 	name: string;
 	/** Set once the agent was told this name; a rename clears it. */
 	told?: boolean;
+	/** Set once the agent was told {@link teamCommands}. */
+	briefed?: boolean;
 	missingSince?: number;
 }
 
@@ -70,8 +72,6 @@ export interface CityRoomMessage {
 }
 
 interface RoomState {
-	relayed: number;
-	paused: boolean;
 	messages: CityRoomMessage[];
 }
 
@@ -111,8 +111,6 @@ export interface CityRoomSnapshot {
 	roomId: string;
 	name: string;
 	members: Array<{ terminalId: string; handle: string }>;
-	relayed: number;
-	paused: boolean;
 	messages: CityRoomMessage[];
 }
 
@@ -121,7 +119,6 @@ export interface CitySnapshot {
 	/** Each running agent's name and the @handle it answers to. */
 	names: Array<{ terminalId: string; name: string; handle: string }>;
 	rooms: CityRoomSnapshot[];
-	maxRelays: number;
 	handovers: CityHandover[];
 	/** Rooms of the office an agent can sit in, as the place `{ projectId: "office", roomId }`. */
 	officeRooms: Array<{ id: string; name: string }>;
@@ -178,6 +175,8 @@ export interface CityRoomsDeps {
 	resumeAgent?: (agent: LostAgent) => Promise<{ terminalId: string }>;
 	/** Ends an agent and closes its terminal. */
 	stopAgent?: (terminalId: string, workspaceId: string) => Promise<void>;
+	/** Defaults to {@link OFFICE_CLI}. */
+	officeCli?: string;
 	now?: () => number;
 	/** Wait after a turn ends before reading its answer, so the agent has written it down. */
 	settleMs?: number;
@@ -186,7 +185,6 @@ export interface CityRoomsDeps {
 export const MEETING_ROOM = "meeting";
 /** The `projectId` of a place in the office rather than in a project's building. */
 export const OFFICE = "office";
-export const MAX_RELAYS = 8;
 /** A seat whose agent stopped running is kept this long, in case it comes back in a new terminal. */
 export const SEAT_KEPT_MS = 24 * 60 * 60 * 1000;
 /** How long a reconnected agent shows as reconnecting before its new terminal reports in. */
@@ -196,6 +194,12 @@ export const NO_REPLY = "no reply";
 export const HANDOVER_REQUEST = "HANDOVER REQUEST:";
 const HANDOVER_BRIEF = "HANDOVER BRIEF";
 export const MAX_NAME_CHARS = 24;
+/** The shell command agents and people reach the team with. */
+export const OFFICE_CLI = "superset office";
+
+/** How an agent works with the team; it is told once, with the first thing the city says to it. */
+export const teamCommands = (cli: string): string =>
+	`You work with the person (@you) and the other agents as equals. Run these in your shell: \`${cli} who\` lists everyone and what each carries; \`${cli} say @name "..."\` writes to someone; \`${cli} ask @name "..."\` asks for something and puts it on their list; \`${cli} todo add "..."\`, \`todo start <id>\`, \`todo finish <id>\`, \`todo drop <id>\` and \`todo list\` keep your own list.`;
 /** Handles that mean everyone in a room, so no agent can be called that. */
 const RESERVED_HANDLES = new Set(["all", "everyone"]);
 /** Names given to agents in order, skipping any already in use. */
@@ -250,12 +254,11 @@ export const AGENT_NAMES = [
 	"Ulla",
 ];
 const KEPT_MESSAGES = 100;
-const MAX_RELAY_CHARS = 4000;
 
 /**
  * Where CLI agents sit in the city, and the talk between agents sitting in the same room: an agent
  * that starts a line with a roommate's @handle has its reply typed into that roommate's terminal.
- * Seating never changes an agent's workspace. Relays stop after MAX_RELAYS until a person speaks.
+ * Seating never changes an agent's workspace.
  */
 export class CityRooms {
 	private state: CityState;
@@ -295,8 +298,6 @@ export class CityRooms {
 					terminalId,
 					handle,
 				})),
-				relayed: room?.relayed ?? 0,
-				paused: room?.paused ?? false,
 				messages: room?.messages ?? [],
 			});
 		}
@@ -311,7 +312,6 @@ export class CityRooms {
 				handle: handleOf(a),
 			})),
 			rooms,
-			maxRelays: MAX_RELAYS,
 			handovers: this.state.handovers,
 			officeRooms: this.deps.office?.rooms() ?? [],
 			lost,
@@ -419,7 +419,7 @@ export class CityRooms {
 		await this.seat(terminalId, agent.projectId, agent.workspaceId);
 	}
 
-	/** A person's message to everyone in a room; it also lets paused talk go on. */
+	/** A person's message to everyone in a room. */
 	async say(projectId: string, roomId: string, text: string): Promise<void> {
 		const name = this.nameOf(projectId, roomId);
 		if (!name) throw new Error("That room does not exist");
@@ -428,8 +428,6 @@ export class CityRooms {
 		const members = agents.filter((a) => handles.has(a.terminalId));
 		if (members.length === 0) throw new Error("Nobody is in that room");
 		const room = this.room(keyOf({ projectId, roomId }));
-		room.relayed = 0;
-		room.paused = false;
 		this.post(room, {
 			fromId: "you",
 			toIds: members.map((m) => m.terminalId),
@@ -605,6 +603,7 @@ export class CityRooms {
 				projectName: target.projectName,
 				branch: target.branch,
 			}),
+			this.brief(),
 			`You take over work from ${agent.name} (${agent.label}), who worked in "${agent.workspaceName}" (project ${agent.projectName}). You work in folder ${target.path}; stay in your own folder.`,
 			`Their brief:\n${handover.brief}`,
 			handover.note
@@ -621,6 +620,7 @@ export class CityRooms {
 				workspaceId: handover.toWorkspaceId,
 				name: newName,
 				told: true,
+				briefed: true,
 			});
 			handover.newTerminalId = terminalId;
 			handover.status = "done";
@@ -653,13 +653,6 @@ export class CityRooms {
 			handover.error = error instanceof Error ? error.message : String(error);
 			this.save();
 		}
-	}
-
-	resume(projectId: string, roomId: string): void {
-		const room = this.room(keyOf({ projectId, roomId }));
-		room.relayed = 0;
-		room.paused = false;
-		this.save();
 	}
 
 	/** On a finished turn, passes the agent's answer to the roommates it @mentioned. */
@@ -735,28 +728,9 @@ export class CityRooms {
 			text: reply,
 			kind: "chat",
 		});
-		if (room.paused) {
-			this.save();
-			return;
-		}
-		if (room.relayed >= MAX_RELAYS) {
-			room.paused = true;
-			this.post(room, {
-				fromId: "you",
-				toIds: [],
-				text: `Paused after ${MAX_RELAYS} messages between agents. Say something here, or let them continue.`,
-				kind: "system",
-			});
-			this.save();
-			return;
-		}
-		room.relayed += 1;
 		this.save();
 		const handle = handles.get(agent.terminalId) ?? agent.agentId;
-		const body =
-			reply.length > MAX_RELAY_CHARS
-				? `${reply.slice(0, MAX_RELAY_CHARS)}…`
-				: reply;
+		const body = reply;
 		await this.deliver(
 			place,
 			name,
@@ -990,6 +964,10 @@ export class CityRooms {
 		return `[Paradev office] You are ${who.name} (@${slug(who.name)})${what} working in workspace "${who.workspaceName}"${branch} of project ${who.projectName}. When someone asks who you are, use this name.`;
 	}
 
+	private brief(): string {
+		return teamCommands(this.deps.officeCli ?? OFFICE_CLI);
+	}
+
 	/** Sends to an agent, led by who it is when it has not been told its current name. */
 	private async sendAs(agent: NamedAgent, text: string): Promise<void> {
 		const entry = this.state.names.find(
@@ -1001,11 +979,28 @@ export class CityRooms {
 					...agent,
 					branch: this.deps.workspace?.(agent.workspaceId)?.branch,
 				});
-		await this.deps.send(agent, intro ? `${intro}\n\n${text}` : text);
-		if (entry && !entry.told) {
+		const lead = [intro, entry?.briefed ? null : this.brief()].filter(Boolean);
+		await this.deps.send(agent, [...lead, text].join("\n\n"));
+		if (entry && !(entry.told && entry.briefed)) {
 			entry.told = true;
+			entry.briefed = true;
 			this.save();
 		}
+	}
+
+	/** True when this answer names that roommate, so the room talk passes it on. */
+	passesOn(
+		fromTerminalId: string,
+		toTerminalId: string,
+		reply: string,
+	): boolean {
+		const agents = this.liveAgents();
+		const agent = agents.find((a) => a.terminalId === fromTerminalId);
+		if (!agent || saysNoReply(reply)) return false;
+		const place = this.placeOf(agent);
+		if (place.projectId === OFFICE) return false;
+		const handles = this.handles(place.projectId, place.roomId, agents);
+		return mentioned(reply, handles, fromTerminalId).includes(toTerminalId);
 	}
 
 	/** A person's direct message to one agent. */
@@ -1032,6 +1027,7 @@ export class CityRooms {
 		const task = input.prompt.trim();
 		const prompt = [
 			this.identity({ ...target, name, workspaceName: target.name }),
+			this.brief(),
 			task ||
 				"Nothing to do yet. Reply with one short line saying who you are, then wait.",
 		].join("\n\n");
@@ -1048,6 +1044,7 @@ export class CityRooms {
 			workspaceId: input.workspaceId,
 			name,
 			told: true,
+			briefed: true,
 		});
 		this.save();
 		return { terminalId, name };
@@ -1092,7 +1089,7 @@ export class CityRooms {
 	private room(key: string): RoomState {
 		let room = this.state.rooms[key];
 		if (!room) {
-			room = { relayed: 0, paused: false, messages: [] };
+			room = { messages: [] };
 			this.state.rooms[key] = room;
 		}
 		return room;

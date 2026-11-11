@@ -19,7 +19,6 @@ interface RoomDetailsProps {
 	/** The room's talk, absent until someone has sat or spoken here. */
 	room: CityRoom | undefined;
 	people: CityAgent[];
-	maxRelays: number;
 	onSelectAgent: (terminalId: string) => void;
 }
 
@@ -29,7 +28,6 @@ export function RoomDetails({
 	roomId,
 	room,
 	people,
-	maxRelays,
 	onSelectAgent,
 }: RoomDetailsProps) {
 	const navigate = useNavigate();
@@ -161,21 +159,6 @@ export function RoomDetails({
 					)
 				)}
 			</div>
-			{room?.paused ? (
-				<div className="flex items-center gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-[12px]">
-					<span className="min-w-0 flex-1">
-						Paused after {maxRelays} messages between agents.
-					</span>
-					<Button
-						size="sm"
-						variant="outline"
-						className="h-6 px-2 text-[11px]"
-						onClick={() => void actions.resume(place)}
-					>
-						Let them continue
-					</Button>
-				</div>
-			) : null}
 			<MessageBox
 				disabled={people.length === 0}
 				placeholder={

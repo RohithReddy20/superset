@@ -13,8 +13,9 @@ export interface OfficeTeammate {
 	line: string;
 	lineSince: number;
 	paused: boolean;
-	budget: { dailyTurns: number; usedToday: number; day: string };
-	/** Spent on budget.day; costUsd counts only engines that report a price. */
+	/** The day `usage` counts for. */
+	usageDay?: string;
+	/** costUsd counts only engines that report a price. */
 	usage?: OfficeUsage;
 	/** The floor's last seat for this teammate, so it sits at the same desk after a restart. */
 	desk?: OfficeDesk;
@@ -94,7 +95,6 @@ export interface OfficeTask {
 		status: OfficeTaskStatus;
 		at: number;
 	}>;
-	rounds: { used: number; max: number };
 	usage?: OfficeUsage;
 	createdAt: number;
 	updatedAt: number;
@@ -126,18 +126,9 @@ export interface OfficeSeatConfig {
 	engine: OfficeEngine;
 	model?: string;
 	instructions?: string;
-	dailyTurns?: number;
 }
 
 export interface OfficeConfig {
-	limits?: {
-		maxDepth?: number;
-		maxAiRoundsWithoutHuman?: number;
-		maxAsksPerTurn?: number;
-		dailyTurns?: number;
-		/** Work plus review sessions one task may use. */
-		taskRounds?: number;
-	};
 	/** The AI teammate that may assign and close tasks like a person. */
 	lead?: string;
 	/** Who reviews finished tasks when the task names nobody. */

@@ -1,4 +1,3 @@
-export { DEFAULT_LIMITS, type Limits } from "./guards/guards";
 export { Office, type OfficeOptions } from "./office/Office";
 export * from "./office/types";
 export {

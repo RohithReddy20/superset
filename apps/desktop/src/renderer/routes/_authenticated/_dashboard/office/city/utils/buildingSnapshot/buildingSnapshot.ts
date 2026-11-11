@@ -9,8 +9,6 @@ export const MEETING_ROOM = { id: "meeting", name: "Meeting room" };
 const LOBBY = "lobby";
 const VISITOR_TAG_CHARS = 14;
 
-const NO_BUDGET = { dailyTurns: 0, usedToday: 0, day: "" };
-
 /**
  * A building as the office floor draws it: a room per workspace plus the meeting room, and a
  * person per agent sitting in this building, its own or visiting. Visitors carry their workspace in
@@ -71,7 +69,6 @@ function you(): Teammate {
 		line: "",
 		lineSince: 0,
 		paused: false,
-		budget: NO_BUDGET,
 	};
 }
 
@@ -96,6 +93,5 @@ function person(agent: CityAgent): Teammate {
 		line,
 		lineSince: agent.lastEventAt,
 		paused: false,
-		budget: NO_BUDGET,
 	};
 }

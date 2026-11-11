@@ -9,7 +9,6 @@ function office(leadId?: string) {
 	const o = new Office({
 		statePath: join(dir, "state.json"),
 		leadId,
-		maxTaskRounds: 2,
 	});
 	o.upsertTeammate({
 		id: "you",
@@ -182,7 +181,7 @@ describe("tasks", () => {
 		expect(o.task(task.id)?.ownerId).toBe("scout");
 	});
 
-	test("a verifier can only verify a task that is in review, and rounds run out", () => {
+	test("a verifier can only verify a task that is in review", () => {
 		const o = office();
 		const task = o.createTask({
 			title: "x",
@@ -195,9 +194,6 @@ describe("tasks", () => {
 		expect(() =>
 			o.updateTask(task.id, { status: "verified", note: "ok" }, "scout"),
 		).toThrow(/not in review/);
-		expect(o.spendTaskRound(task.id)).toBe(true);
-		expect(o.spendTaskRound(task.id)).toBe(true);
-		expect(o.spendTaskRound(task.id)).toBe(false);
 	});
 
 	test("adds each turn's tokens and reported cost to the teammate's day and the task", () => {

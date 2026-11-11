@@ -8,11 +8,12 @@ import {
 	handlesFor,
 	type LostAgent,
 	lastAnswer,
-	MAX_RELAYS,
 	mentioned,
 	OFFICE,
+	OFFICE_CLI,
 	SEAT_KEPT_MS,
 	saysNoReply,
+	teamCommands,
 } from "./cityRooms";
 
 function agent(
@@ -181,20 +182,18 @@ describe("CityRooms", () => {
 		expect(saysNoReply("I will reply soon")).toBe(false);
 	});
 
-	test("pauses a room after too many relays until a person speaks", async () => {
+	test("passes every message on, however long agents talk", async () => {
 		const { rooms, sent, replies } = setup([
 			agent("t1", "api"),
 			agent("t2", "api", "codex"),
 		]);
-		for (let i = 0; i < MAX_RELAYS + 2; i++) {
+		for (let i = 0; i < 20; i++) {
 			const [from, to] = i % 2 === 0 ? ["t1", "milo"] : ["t2", "ada"];
 			replies.set(from, `@${to} round ${i}`);
 			await rooms.onAgentEvent({ terminalId: from, eventType: "Stop" });
 		}
-		expect(sent).toHaveLength(MAX_RELAYS);
-		expect(rooms.snapshot().rooms[0]?.paused).toBe(true);
+		expect(sent).toHaveLength(20);
 		await rooms.say("p1", "api", "carry on");
-		expect(rooms.snapshot().rooms[0]?.paused).toBe(false);
 		expect(
 			sent
 				.slice(-2)
@@ -322,7 +321,7 @@ describe("names", () => {
 		await rooms.tell("t1", "hi");
 		await rooms.tell("t1", "again");
 		expect(sent.map((m) => m.text)).toEqual([
-			'[Paradev office] You are Big Bo (@big-bo), a Claude agent working in workspace "ws api" of project p1. When someone asks who you are, use this name.\n\nhi',
+			`[Paradev office] You are Big Bo (@big-bo), a Claude agent working in workspace "ws api" of project p1. When someone asks who you are, use this name.\n\n${teamCommands(OFFICE_CLI)}\n\nhi`,
 			"again",
 		]);
 		rooms.rename("t1", "Ada");
@@ -330,6 +329,7 @@ describe("names", () => {
 		expect(sent.at(-1)?.text).toStartWith(
 			"[Paradev office] You are Ada (@ada)",
 		);
+		expect(sent.at(-1)?.text).not.toContain(teamCommands(OFFICE_CLI));
 	});
 });
 

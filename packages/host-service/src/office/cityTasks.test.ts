@@ -82,7 +82,7 @@ describe("CityTasks", () => {
 		expect(tasks.snapshot().checkCommands).toEqual({ p: "bun test" });
 	});
 
-	test("a failing check goes back to the agent until the rounds run out", async () => {
+	test("a failing check goes back to the agent every time", async () => {
 		const { tasks, sent, say } = setup({
 			runCheck: async () => ({ ok: false, output: "1 test failed" }),
 		});
@@ -99,8 +99,8 @@ describe("CityTasks", () => {
 
 		await say("w1", "TASK DONE: fixed again");
 		await say("w1", "TASK DONE: really fixed");
-		expect(task.status).toBe("blocked");
-		expect(task.blockedReason).toBe("Still failing after 3 rounds");
+		expect(task.status).toBe("working");
+		expect(task.round).toBe(4);
 	});
 
 	test("the checker's problems go back to the agent", async () => {

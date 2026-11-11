@@ -87,5 +87,13 @@ export const OPEN_TASK_STATUSES: CityTaskStatus[] = [
 	"pr",
 	"blocked",
 ];
+export type CityTodo =
+	inferRouterOutputs<AppRouter>["office"]["team"]["todos"][number];
+export type CityNote =
+	inferRouterOutputs<AppRouter>["office"]["team"]["notes"][number];
+/** The person's id on lists; every other owner is an agent's terminal. */
+export const YOU = "you";
+export const isOpenTodo = (todo: Pick<CityTodo, "state">): boolean =>
+	todo.state === "open" || todo.state === "doing";
 /** The `projectId` of a place in the office rather than a project's building. */
 export const OFFICE_PLACE = "office";

@@ -28,7 +28,6 @@ interface ConfigOption {
 
 export interface TurnContext {
 	depth: number;
-	asks: number;
 	replyTo: string;
 	/** The task a task session works on; its usage is added to the task. */
 	taskId?: string;
@@ -285,19 +284,6 @@ export class Seat {
 	private async runTurn(items: InboxItem[]): Promise<void> {
 		const { office } = this.options;
 		if (!this.client || !this.sessionId) return;
-		if (!office.spendTurn(this.id)) {
-			this.log("no budget left today; inbox items dropped");
-			const first = items[0];
-			if (first)
-				office.post({
-					authorId: this.id,
-					roomId: first.message.roomId,
-					threadId: first.message.threadId ?? first.message.id,
-					text: `(held) ${this.teammate.name} has no attention budget left today.`,
-					kind: "system",
-				});
-			return;
-		}
 		const first = items[0];
 		if (!first) return;
 		const replyTo = first.message.threadId
@@ -305,7 +291,6 @@ export class Seat {
 			: `room:${first.message.roomId}/thread:${first.message.id}`;
 		this.turn = {
 			depth: Math.max(...items.map((i) => i.depth)),
-			asks: 0,
 			replyTo,
 		};
 		this.statusSetThisTurn = false;

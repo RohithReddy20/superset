@@ -86,19 +86,12 @@ export function TeammateCard({
 					</div>
 					<div className="truncate text-foreground">{t.line || t.presence}</div>
 				</div>
-				{t.kind === "ai" ? (
+				{t.kind === "ai" && t.usage ? (
 					<div className="rounded-md bg-muted/50 px-2 py-1.5">
 						<div className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
 							today
 						</div>
-						<div className="text-foreground">
-							{t.budget.usedToday} / {t.budget.dailyTurns} turns
-						</div>
-						{t.usage ? (
-							<div className="text-[11px] text-muted-foreground">
-								{formatUsage(t.usage)}
-							</div>
-						) : null}
+						<div className="text-foreground">{formatUsage(t.usage)}</div>
 					</div>
 				) : null}
 			</div>

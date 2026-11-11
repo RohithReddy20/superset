@@ -16,7 +16,6 @@ const teammate = (
 	line: "",
 	lineSince: 0,
 	paused: extra.paused ?? false,
-	budget: { dailyTurns: 0, usedToday: 0, day: "" },
 });
 
 describe("officeBuilding", () => {

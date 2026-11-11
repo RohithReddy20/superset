@@ -25,11 +25,9 @@ configured model is unknown (Claude: `haiku`, `sonnet`, ...; agy: `gemini-3.8-fl
 
 - Only a mention reaches an AI teammate. A reply to a person never wakes another AI.
 - Every AI-to-AI message is a hand-off record with a hop depth from the person who
-  started the chain. Past `maxDepth` (default 3) the message is held and the thread
-  waits for a person.
-- Repeated identical asks, more than `maxAiRoundsWithoutHuman` AI posts in a thread,
-  a paused teammate, or a spent daily turn budget hold the message with a visible reason.
-- An AI may pull in at most `maxAsksPerTurn` teammates per turn.
+  started the chain.
+- There is no limit on turns, hops, asks or spend. A paused teammate holds the message
+  with a visible reason.
 - A person writing `stop` in a thread cancels its open hand-offs and interrupts the seats.
 
 ## Layout

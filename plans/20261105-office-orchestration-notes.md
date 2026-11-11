@@ -579,3 +579,106 @@ to carry on", Nova re-ran its cut-off step, TASK DONE, ready.
 **Found on the way.** TanStack polling stops while the app window is unfocused, so CDP
 screenshots of a background window are stale; `focusManager.setFocused(true)` through the
 renderer's own module refreshes it.
+
+## 2026-11-11: no limits
+
+The person's rule: an agent runs as long as it wants; no message, tool or prompt holds it back.
+
+- **Removed (office harness):** the daily turn budget per teammate, the hop cap, the cap on AI posts
+  in a thread without a person, the cap on teammates pulled in per turn, the drop of repeated
+  identical asks, and the round cap on tasks. `guards.ts` now holds only "a paused teammate does
+  not get the message". `Teammate.budget` is gone; `usageDay` says which day `usage` counts for.
+  `Task.rounds` is gone. `office.json` no longer reads `limits` or a seat's `dailyTurns`.
+- **Removed (city):** the room pause after 8 passed messages (`MAX_RELAYS`, `cityResume`, "Let them
+  continue"), the 3-round cap on tasks (`MAX_ROUNDS`; a failing check or a FAIL goes back every
+  time), and the 4000-character cut on a message passed between agents.
+- **Removed (prompts):** "do not repeat yourself", "do not ask a teammate again", "never pull in
+  more than N", the "after N hops the office waits for a person" line, and "do not pull other
+  teammates in" in a task's work prompt.
+- **Kept:** Pause per teammate, a person's `stop` in a thread, Cancel on a task, the token and cost
+  display (it shows, it blocks nothing), and "no reply" for staying quiet.
+- **Checked:** unit tests of office-harness (7), host-service office (37) and the desktop office
+  route (40) pass; typecheck of the three packages and biome are clean. Not run in the app yet.
+
+## 2026-11-11: one core, as equals (design, not built)
+
+Rules from the person: no limits; no lead (the person is a companion, no agent is a fixed lead);
+no role chosen before the work ("you open a CLI and talk to it"); "done" is not a stage, each
+teammate has its own responsibilities and its own to-do list; local machine only for now.
+
+Read for this: OpenBot (`nightly-labs/openbot` at `39634e4`, PolyForm Noncommercial; this fork is
+a personal experiment and is not going upstream, so its code may be copied). What it does that we
+do not:
+
+- Agents act through tools, never through parsed text: `send_message { recipientAgentIds, text,
+  paths, replyToMessageId, expectsReply }` (`src/backend/openbot-tools.ts`,
+  `agent/openbot-tool-router.ts`). When the receiver ends its turn without answering, its final
+  answer is relayed to the asker (`TurnLifecycle.#relayAgentResult`). A failed request gets a
+  "blocked" answer so the asker never hangs.
+- A mailbox: one message, one delivery per receiver, states queued / starting / running /
+  completed / failed / interrupted / cancelled, an idempotency key per delivery, one lane per
+  conversation, cancel / edit / reorder / steer into a running turn (`mailbox-store.ts`,
+  `agent/drain-scheduler.ts`, `agent/queue-controls.ts`).
+- One SQLite file, event-sourced: `orchestration_events` plus `projection_*` tables written in one
+  transaction (`openbot-database.ts`, `openbot-database-schema.ts`). The UI is pushed revisioned
+  "changed" events and re-reads (`packages/contracts/src/ipc-agent-events.ts`).
+- Loop safety is structural, not numeric, for direct messages: no message to yourself, a relayed
+  answer expects no reply, and a chain does not return to the agent that started it.
+- It keeps things we are dropping: a lead agent that routes channel messages, the person as the
+  only approver, and caps on channel assignments.
+
+Target shape here:
+
+1. **One model** in `packages/host-service/src/office/`: teammate (a running CLI agent or the
+   person; name, kind, workspace, what it is doing), room, message, delivery, to-do item
+   (`{ id, ownerId, text, askedBy, state: open | doing | dropped | finished, messageId }`, owned
+   and changed only by its owner), hand-over. `Office` + `Seat` + `OfficeGuests` (fixed-role ACP
+   seats, T-n tasks, lead, verifier) and `CityTasks` (C-n tasks, checker, "ready for the person")
+   go away; `CityRooms` is split into seats, names, talk and hand-over.
+2. **Tools instead of phrases.** `superset office <verb>` in the CLI, identified by
+   `SUPERSET_TERMINAL_ID`, calling new host procedures: `say`, `ask` (expects a reply),
+   `todo add|start|finish|drop|list`, `status`, `who`, `inbox`, `handover`. The same verbs work for
+   the person from any terminal with `--as you`. `TASK DONE`, `VERDICT`, `HANDOVER REQUEST`,
+   `HANDOVER BRIEF` and @mention parsing of last answers are removed; a turn that ends without an
+   answer to an `ask` has its last answer relayed, as OpenBot does.
+3. **Mailbox + event log** in the host's SQLite: every message, delivery and to-do change is an
+   event; rooms, inboxes and lists are projections. This gives the per-teammate timeline.
+4. **Push.** One `office.events` subscription carrying `{ kind, id, revision }`; the six polling
+   queries go.
+5. **UI.** The city stays the home. Each teammate's panel shows its to-do list and timeline; the
+   "Needs you" bar becomes the person's own list. No Tasks tab, no Hire dialog.
+
+Order: 2 first on top of today's city (additive, old paths keep working), then 3 and 4, then 1
+(delete the Office seats and both task systems), then 5.
+
+## 2026-11-11: step 1 built — commands and own lists
+
+- **Host: `office/cityTeam.ts`** (state in `<app home>/office/city-team.json`), wired in
+  `createCityRooms.ts`. The team is the person (`you`) and every running CLI agent. `say` writes to
+  one or more by @handle; `ask` puts an item (`D-<n>`) on the other's list and types the ask into
+  its terminal; `addTodo` / `setTodo` keep a list, and only the owner moves an item. An ask is
+  answered when the other writes back, finishes or drops the item, or ends a turn it began after
+  the ask reached it; in the last case its last words go to the asker (the OpenBot pattern), unless
+  the room talk already passed them on (`CityRooms.passesOn`). Lists and asks follow an agent into
+  the terminal it continued in. tRPC: `office.team`, `teamSay`, `teamAsk`, `teamTodoAdd`,
+  `teamTodoSet`, `teamRead`.
+- **CLI: `superset office who | say | ask | todo add|start|finish|drop|list`**
+  (`packages/cli/src/commands/office`). The caller is `SUPERSET_TERMINAL_ID`; anything else is the
+  person. They reach this machine's host through its manifest, so no cloud login is needed.
+- **Agents learn the commands once**, with the first thing the city says to them
+  (`teamCommands`, `CityName.briefed`). A dev checkout's terminals have the installed CLI on PATH,
+  so there the host tells agents `bun <checkout>/scripts/dev-cli.ts office`; `dev-cli.ts` now finds
+  its checkout from its own path, so it works from an agent's folder.
+- **Renderer.** The agent panel shows the agent's open items, what it asked you (Finished / Not
+  mine) and the last three things it wrote to you (`ListBox`). The "Needs you" bar has "Asks you"
+  and "Wrote to you" chips; opening the agent marks its messages read.
+- **Old paths still work**: @mentions in rooms, `TASK DONE`, hand-over phrases.
+- **Checked in the running app** (CDP 9333, renderer 3005): two fresh Claudes, Ada (city-demo-api)
+  and Milo (city-demo-web). `office ask @ada` from a plain shell: Ada asked Milo (D-2), Milo
+  answered with the command, Ada wrote the file names to the person and finished D-1. The chip
+  "Wrote to you · Ada" opened her panel with both messages and then cleared. Milo asked the person
+  (D-3): the chip "Asks you" opened Milo, "Finished" closed the item and Milo was told. After a
+  host restart Milo was reconnected from its panel and kept its name and list.
+- **Open.** An answer to an agent's ask has to be typed in the message box; "Finished" only closes
+  the item. The dev CLI prints its own `$ dotenv …` line into the agent's output. Every host
+  restart still disconnects running agents.

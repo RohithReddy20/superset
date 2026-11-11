@@ -167,4 +167,31 @@ describe("needsYou with city tasks", () => {
 			terminalId: "worker",
 		});
 	});
+
+	test("what an agent asked of you needs you until you finish or drop it", () => {
+		const projects = city([agent("t1", "idle", 1)]);
+		const todo = {
+			id: "D-1",
+			ownerId: "you",
+			text: "Pick a port",
+			askedById: "t1",
+			askedByName: "t1",
+			createdAt: 3,
+		};
+		const open = needsYou({
+			projects,
+			handovers: [],
+			todos: [{ ...todo, state: "open" }],
+		});
+		expect(open).toMatchObject([
+			{ reason: "asked", note: "Asks you: Pick a port", title: "t1" },
+		]);
+		expect(
+			needsYou({
+				projects,
+				handovers: [],
+				todos: [{ ...todo, state: "finished" }],
+			}),
+		).toEqual([]);
+	});
 });

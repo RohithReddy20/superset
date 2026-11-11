@@ -2,15 +2,19 @@ import { askingLine } from "../../city/constants";
 import type {
 	CityAgent,
 	CityHandover,
+	CityNote,
 	CityProject,
 	CityTask,
+	CityTodo,
 } from "../../city/types";
-import { OFFICE_PLACE } from "../../city/types";
+import { isOpenTodo, OFFICE_PLACE, YOU } from "../../city/types";
 import type { Task } from "../../types";
 
 export type NeedsYouReason =
 	| "permission"
 	| "failed"
+	| "asked"
+	| "wrote"
 	| "handover"
 	| "lost"
 	| "blocked"
@@ -35,6 +39,8 @@ export interface NeedsYouItem {
 const ORDER: NeedsYouReason[] = [
 	"permission",
 	"failed",
+	"asked",
+	"wrote",
 	"handover",
 	"lost",
 	"blocked",
@@ -55,6 +61,8 @@ export function needsYou({
 	handovers,
 	tasks = [],
 	cityTasks = [],
+	todos = [],
+	unread = [],
 }: {
 	projects: CityProject[];
 	handovers: CityHandover[];
@@ -70,6 +78,18 @@ export function needsYou({
 		| "agentName"
 		| "blockedReason"
 	>[];
+	todos?: Pick<
+		CityTodo,
+		| "id"
+		| "ownerId"
+		| "state"
+		| "text"
+		| "askedById"
+		| "askedByName"
+		| "createdAt"
+	>[];
+	/** What teammates wrote to the person and the person has not read. */
+	unread?: Pick<CityNote, "id" | "fromId" | "text" | "at">[];
 }): NeedsYouItem[] {
 	const projectName = new Map(projects.map((p) => [p.id, p.name]));
 	const agents = projects.flatMap((p) => p.workspaces.flatMap((w) => w.agents));
@@ -107,6 +127,36 @@ export function needsYou({
 			title: agent.name,
 			where: whereOf(agent, projectName),
 			since: handover.createdAt,
+			target: agentTarget(agent),
+		});
+	}
+
+	for (const todo of todos) {
+		if (todo.ownerId !== YOU || !isOpenTodo(todo) || !todo.askedById) continue;
+		const agent = byTerminal.get(todo.askedById);
+		if (!agent) continue;
+		items.push({
+			id: `todo:${todo.id}`,
+			reason: "asked",
+			note: `Asks you: ${todo.text}`,
+			title: agent.name,
+			where: whereOf(agent, projectName),
+			since: todo.createdAt,
+			target: agentTarget(agent),
+		});
+	}
+
+	const latest = new Map(unread.map((n) => [n.fromId, n]));
+	for (const note of latest.values()) {
+		const agent = byTerminal.get(note.fromId);
+		if (!agent) continue;
+		items.push({
+			id: `note:${note.id}`,
+			reason: "wrote",
+			note: `Wrote to you: ${note.text.split("\n")[0]}`,
+			title: agent.name,
+			where: whereOf(agent, projectName),
+			since: note.at,
 			target: agentTarget(agent),
 		});
 	}
