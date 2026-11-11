@@ -1,8 +1,8 @@
 import {
+	type CityRoomRef,
 	handleOf,
 	type NamedAgent,
 	OFFICE_CLI,
-	saysNoReply,
 } from "./cityRooms";
 
 /** The person's id on lists and messages; their handle is the same word. */
@@ -50,6 +50,8 @@ export interface CityNote {
 	toIds: string[];
 	text: string;
 	expectsReply: boolean;
+	/** Set when it was written to everyone sitting in a room. */
+	room?: { projectId: string; roomId: string; name: string };
 	at: number;
 }
 
@@ -74,6 +76,8 @@ export interface CityTeammate {
 	label?: string;
 	workspaceName?: string;
 	projectName?: string;
+	/** The room it sits in. */
+	room?: string;
 	/** The item it marked as being worked on. */
 	doing: string | null;
 	open: number;
@@ -122,8 +126,9 @@ export interface CityTeamDeps {
 	send: (agent: NamedAgent, text: string) => Promise<void>;
 	lastReply: (agent: NamedAgent) => Promise<string | null>;
 	successorOf?: (terminalId: string, workspaceId: string) => string | undefined;
-	/** True when the room talk already passes this answer on to that teammate. */
-	passedOnInRoom?: (fromId: string, toId: string, reply: string) => boolean;
+	/** The room an agent sits in, with everyone sitting there. */
+	roomOf?: (terminalId: string) => CityRoomRef | null;
+	roomAt?: (place: { projectId: string; roomId: string }) => CityRoomRef | null;
 	/** Called after anything in the team changed. */
 	onChange?: () => void;
 	/** Defaults to {@link OFFICE_CLI}. */
@@ -205,7 +210,7 @@ export class CityTeam {
 					continue;
 				entries.push({
 					at: note.at,
-					text: `${note.fromName} ${note.expectsReply ? "asked" : "wrote to"} ${note.toIds.map(name).join(", ")}: ${note.text}`,
+					text: `${note.fromName} ${note.expectsReply ? "asked" : "wrote to"} ${note.room ? `everyone in ${note.room.name}` : note.toIds.map(name).join(", ")}: ${note.text}`,
 				});
 			} else if (event.kind === "todo.added") {
 				todos.set(event.todo.id, event.todo);
@@ -258,17 +263,48 @@ export class CityTeam {
 		this.record({ kind: "read", fromId, at: this.now() });
 	}
 
+	/** Writes to teammates by @handle, to a room, or to `@room`: everyone sitting where the sender sits. */
 	async say(input: {
 		fromId: string;
 		to: string[];
+		room?: { projectId: string; roomId: string };
 		text: string;
 	}): Promise<{ note: CityNote; waiting: string[] }> {
 		const agents = this.live();
-		const targets = this.targets(input.to, input.fromId, agents);
 		const text = input.text.trim();
 		if (!text) throw new Error("A message needs some text");
+		const named = input.to.filter((h) => !isRoomHandle(h));
+		const wantsRoom = !!input.room || named.length < input.to.length;
+		const room = input.room
+			? (this.deps.roomAt?.(input.room) ?? null)
+			: wantsRoom
+				? (this.deps.roomOf?.(input.fromId) ?? null)
+				: null;
+		if (wantsRoom && !room)
+			throw new Error(
+				input.room ? "That room does not exist" : "You do not sit in a room",
+			);
+		const ids = new Set([
+			...(room?.memberIds ?? []),
+			...(named.length > 0 ? this.targets(named, input.fromId, agents) : []),
+		]);
+		ids.delete(input.fromId);
+		if (ids.size === 0)
+			throw new Error(
+				room ? `Nobody else sits in ${room.name}` : "Nobody to write to",
+			);
+		const targets = [...ids];
 		const from = this.nameOf(input.fromId, agents);
-		const note = this.note(input.fromId, from, targets, text, false);
+		const note = this.note(
+			input.fromId,
+			from,
+			targets,
+			text,
+			false,
+			room
+				? { projectId: room.projectId, roomId: room.roomId, name: room.name }
+				: undefined,
+		);
 		for (const ask of this.state.asks) {
 			if (
 				!ask.answered &&
@@ -279,7 +315,9 @@ export class CityTeam {
 		}
 		const waiting = await this.deliver(
 			agents.filter((a) => targets.includes(a.terminalId)),
-			`${TAG} ${from.name} (@${from.handle}) writes:\n${text}\n\n(No answer is needed. To write back: ${this.cli} say @${from.handle} "...")`,
+			room
+				? `${TAG} ${from.name} (@${from.handle}) writes to everyone in "${room.name}":\n${text}\n\n(No answer is needed. To write back to the room: ${this.cli} say @room "..."; to ${from.name} only: ${this.cli} say @${from.handle} "...")`
+				: `${TAG} ${from.name} (@${from.handle}) writes:\n${text}\n\n(No answer is needed. To write back: ${this.cli} say @${from.handle} "...")`,
 		);
 		return { note, waiting };
 	}
@@ -427,9 +465,7 @@ export class CityTeam {
 		for (const ask of due) {
 			if (ask.answered) continue;
 			this.record({ kind: "ask.answered", id: ask.id });
-			if (!reply || saysNoReply(reply)) continue;
-			if (this.deps.passedOnInRoom?.(agent.terminalId, ask.fromId, reply))
-				continue;
+			if (!reply) continue;
 			const who = this.nameOf(agent.terminalId, agents);
 			this.note(agent.terminalId, who, [ask.fromId], reply, false);
 			await this.deliver(
@@ -501,6 +537,7 @@ export class CityTeam {
 		toIds: string[],
 		text: string,
 		expectsReply: boolean,
+		room?: CityNote["room"],
 	): CityNote {
 		const note: CityNote = {
 			id: `N-${this.state.notes.length + 1}`,
@@ -509,6 +546,7 @@ export class CityTeam {
 			toIds,
 			text,
 			expectsReply,
+			...(room ? { room } : {}),
 			at: this.now(),
 		};
 		this.record({ kind: "note", note });
@@ -572,6 +610,7 @@ export class CityTeam {
 			label: agent.label,
 			workspaceName: agent.workspaceName,
 			projectName: agent.projectName,
+			...roomName(this.deps.roomOf?.(agent.terminalId)),
 			...this.carrying(agent.terminalId),
 		};
 	}
@@ -704,6 +743,14 @@ export function memoryTeamLog(events: CityTeamEvent[] = []): CityTeamLog {
 		},
 		all: () => events,
 	};
+}
+
+function isRoomHandle(handle: string): boolean {
+	return handle.trim().replace(/^@/, "").toLowerCase() === "room";
+}
+
+function roomName(room: CityRoomRef | null | undefined): { room?: string } {
+	return room ? { room: room.name } : {};
 }
 
 function workspaceOf<K extends string>(

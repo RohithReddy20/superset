@@ -58,7 +58,9 @@ export const officeRouter = router({
 		.input(
 			z.object({
 				caller,
-				to: z.array(z.string().min(1)).min(1),
+				to: z.array(z.string().min(1)).default([]),
+				/** Everyone sitting in this room. */
+				room: place.optional(),
 				text: z.string().min(1),
 			}),
 		)
@@ -68,6 +70,7 @@ export const officeRouter = router({
 				return team.say({
 					fromId: team.callerOf(input.caller),
 					to: input.to,
+					...(input.room ? { room: input.room } : {}),
 					text: input.text,
 				});
 			}),
@@ -182,19 +185,6 @@ export const officeRouter = router({
 		.mutation(({ ctx, input }) =>
 			badRequest(async () => {
 				await cityOf(ctx.runtime).sendHome(input.terminalId);
-				return { ok: true as const };
-			}),
-		),
-
-	citySay: protectedProcedure
-		.input(place.extend({ text: z.string().min(1).max(4000) }))
-		.mutation(({ ctx, input }) =>
-			badRequest(async () => {
-				await cityOf(ctx.runtime).say(
-					input.projectId,
-					input.roomId,
-					input.text,
-				);
 				return { ok: true as const };
 			}),
 		),

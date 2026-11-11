@@ -231,7 +231,6 @@ export function createCityRooms({
 			const result = await runAgent({ workspaceId, agent, prompt });
 			return { terminalId: result.sessionId };
 		},
-		lastReply,
 	});
 
 	const events: CityTeamEvent[] = db
@@ -260,15 +259,12 @@ export function createCityRooms({
 		send: (agent, text) => rooms.tell(agent.terminalId, text),
 		lastReply,
 		successorOf,
-		passedOnInRoom: (fromId, toId, reply) =>
-			rooms.passesOn(fromId, toId, reply),
+		roomOf: (terminalId) => rooms.roomOf(terminalId),
+		roomAt: (place) => rooms.roomAt(place),
 		...(officeCli ? { officeCli } : {}),
 	});
 
 	eventBus.onAgentLifecycle((event) => {
-		rooms.onAgentEvent(event).catch((error: unknown) => {
-			console.warn("[city] relay failed", { error });
-		});
 		team.onAgentEvent(event).catch((error: unknown) => {
 			console.warn("[city] ask relay failed", { error });
 		});

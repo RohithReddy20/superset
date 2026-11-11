@@ -4,6 +4,7 @@ import { LuBellRing } from "react-icons/lu";
 import { useNeedsYou } from "../../hooks/useNeedsYou";
 import type { NeedsYouTarget } from "../../utils/needsYou";
 import { NeedsYouChip } from "./components/NeedsYouChip";
+import { YourList } from "./components/YourList";
 
 /** One line under the header with everything that waits on you; a click opens it. */
 export function NeedsYouBar() {
@@ -43,6 +44,7 @@ export function NeedsYouBar() {
 					</li>
 				))}
 			</ul>
+			<YourList />
 		</section>
 	);
 }

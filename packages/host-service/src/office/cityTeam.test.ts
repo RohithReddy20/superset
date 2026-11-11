@@ -166,4 +166,29 @@ describe("CityTeam", () => {
 			"Ada started D-1: Run it",
 		]);
 	});
+
+	test("@room reaches everyone sitting with the sender, and the note keeps the room", async () => {
+		const room = {
+			projectId: "p",
+			roomId: "meeting",
+			name: "Meeting room",
+			memberIds: ["t1", "t2"],
+		};
+		const { team, sent } = setup({ roomOf: () => room, roomAt: () => room });
+		const { note } = await team.say({
+			fromId: "t1",
+			to: ["@room"],
+			text: "hi",
+		});
+		expect(sent.map((s) => s.to)).toEqual(["t2"]);
+		expect(sent[0]?.text).toContain('everyone in "Meeting room"');
+		expect(note.room?.roomId).toBe("meeting");
+		await team.say({
+			fromId: YOU,
+			to: [],
+			room: { projectId: "p", roomId: "meeting" },
+			text: "all",
+		});
+		expect(sent.slice(1).map((s) => s.to)).toEqual(["t1", "t2"]);
+	});
 });

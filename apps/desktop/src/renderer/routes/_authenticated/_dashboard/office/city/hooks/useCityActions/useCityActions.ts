@@ -27,8 +27,6 @@ export function useCityActions() {
 			then(client().citySeat.mutate({ terminalId, ...place })),
 		sendHome: (terminalId: string) =>
 			then(client().cityHome.mutate({ terminalId })),
-		say: (place: CityPlace, text: string) =>
-			then(client().citySay.mutate({ ...place, text })),
 		handOver: (input: {
 			terminalId: string;
 			toWorkspaceId: string;

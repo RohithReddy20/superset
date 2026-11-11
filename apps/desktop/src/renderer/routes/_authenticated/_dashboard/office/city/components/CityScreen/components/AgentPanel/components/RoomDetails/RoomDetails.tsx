@@ -5,8 +5,13 @@ import { useEffect, useRef } from "react";
 import { LuExternalLink } from "react-icons/lu";
 import { navigateToV2Workspace } from "renderer/routes/_authenticated/_dashboard/utils/workspace-navigation";
 import { LongText } from "../../../../../../../components/LongText";
-import { useCityActions } from "../../../../../../hooks/useCityActions";
-import type { CityAgent, CityProject, CityRoom } from "../../../../../../types";
+import { useCityTeam } from "../../../../../../hooks/useCityTeam";
+import {
+	type CityAgent,
+	type CityProject,
+	type CityRoom,
+	YOU,
+} from "../../../../../../types";
 import { MEETING_ROOM } from "../../../../../../utils/buildingSnapshot";
 import { AgentIcon } from "../../../AgentIcon";
 import { MessageBox } from "../../../MessageBox";
@@ -16,13 +21,13 @@ import { AgentBar } from "./components/AgentBar";
 interface RoomDetailsProps {
 	project: CityProject;
 	roomId: string;
-	/** The room's talk, absent until someone has sat or spoken here. */
+	/** Who sits here with their @handles; absent when the room is empty. */
 	room: CityRoom | undefined;
 	people: CityAgent[];
 	onSelectAgent: (terminalId: string) => void;
 }
 
-/** Who sits in a room, what the agents said to each other there, and a message to all of them. */
+/** Who sits in a room, what was written to the room, and a message to everyone in it. */
 export function RoomDetails({
 	project,
 	roomId,
@@ -31,21 +36,16 @@ export function RoomDetails({
 	onSelectAgent,
 }: RoomDetailsProps) {
 	const navigate = useNavigate();
-	const actions = useCityActions();
+	const { notes, sayToRoom } = useCityTeam();
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const place = { projectId: project.id, roomId };
 	const workspace = project.workspaces.find((w) => w.id === roomId);
 	const handleOf = new Map(
 		(room?.members ?? []).map((m) => [m.terminalId, m.handle]),
 	);
-	const nameOf = (id: string) =>
-		id === "you"
-			? "You"
-			: handleOf.has(id)
-				? `@${handleOf.get(id)}`
-				: (people.find((p) => p.terminalId === id)?.name ??
-					"an agent that left");
-	const messages = room?.messages ?? [];
+	const messages = notes.filter(
+		(n) => n.room?.projectId === project.id && n.room.roomId === roomId,
+	);
 	const said = messages.length;
 
 	useEffect(() => {
@@ -58,7 +58,7 @@ export function RoomDetails({
 			<div className="flex items-start gap-2">
 				<p className="min-w-0 flex-1 text-[12px] text-muted-foreground">
 					{roomId === MEETING_ROOM.id
-						? "Anyone in the city can sit here. Agents sitting together can talk by @mentioning each other."
+						? "Anyone in the city can sit here. Agents sitting together write to the room with say @room."
 						: workspace?.branch
 							? `Workspace room · ${workspace.branch}`
 							: "Workspace room"}
@@ -120,43 +120,31 @@ export function RoomDetails({
 			>
 				{messages.length === 0 ? (
 					<p className="p-1 text-[12px] text-muted-foreground">
-						Nothing said here yet. Agents talk here when one @mentions another.
+						Nothing written to this room yet.
 					</p>
 				) : (
-					messages.map((m) =>
-						m.kind === "system" ? (
-							<p
-								key={m.id}
-								className="text-center text-[11px] italic text-muted-foreground"
-							>
-								{m.text}
-							</p>
-						) : (
-							<div
-								key={m.id}
+					messages.map((m) => (
+						<div
+							key={m.id}
+							className={cn(
+								"flex flex-col gap-0.5",
+								m.fromId === YOU && "items-end",
+							)}
+						>
+							<span className="text-[11px] text-muted-foreground">
+								{m.fromId === YOU ? "You" : m.fromName} → everyone here
+							</span>
+							<LongText
+								text={m.text}
 								className={cn(
-									"flex flex-col gap-0.5",
-									m.fromId === "you" && "items-end",
+									"max-w-[92%] rounded-lg px-2.5 py-1.5 text-[12px] leading-snug",
+									m.fromId === YOU
+										? "bg-foreground text-background"
+										: "border border-border bg-background text-foreground",
 								)}
-							>
-								<span className="text-[11px] text-muted-foreground">
-									{nameOf(m.fromId)} →{" "}
-									{m.fromId === "you"
-										? "everyone"
-										: m.toIds.map(nameOf).join(", ")}
-								</span>
-								<LongText
-									text={m.text}
-									className={cn(
-										"max-w-[92%] rounded-lg px-2.5 py-1.5 text-[12px] leading-snug",
-										m.fromId === "you"
-											? "bg-foreground text-background"
-											: "border border-border bg-background text-foreground",
-									)}
-								/>
-							</div>
-						),
-					)
+							/>
+						</div>
+					))
 				)}
 			</div>
 			<MessageBox
@@ -167,7 +155,7 @@ export function RoomDetails({
 						: `Message everyone here (${people.length})`
 				}
 				onSend={async (text) => {
-					await actions.say(place, text);
+					await sayToRoom(place, text);
 				}}
 			/>
 		</div>

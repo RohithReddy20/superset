@@ -756,3 +756,26 @@ Order: 2 first on top of today's city (additive, old paths keep working), then 3
 - **Still phrases:** talk between agents sitting in one room (@mentions in their answers and
   "no reply"). Not built: a view of the person's own whole list (items the person added
   themselves show only through `superset office todo list`).
+
+## 2026-11-11: room talk by command, and the person's own list
+
+- **Room talk is `say @room`.** `superset office say @room "..."` writes to everyone sitting where
+  the sender sits; the person's box in a room's panel does the same for that room
+  (`office.teamSay` with `room`). The message is a team note carrying its room
+  (`CityNote.room`), so it is in the saved history and each member's timeline, and it waits for
+  members who cannot be reached. `office who` says where each agent sits.
+- **Gone from `CityRooms`:** reading an agent's last answer when its turn ends, @mention parsing
+  (`mentioned`), the "no reply" convention (`saysNoReply`, `NO_REPLY`), the per-room message log
+  and its system lines, the room introduction typed with a first message, `say`, `office.citySay`.
+  `CityRooms` now holds only seats, names, lost agents and hand-overs; `roomOf` / `roomAt` say who
+  sits where. No phrase in an agent's answer is parsed any more; the only thing still read from a
+  finished turn is the last answer to an open ask, passed back to the asker.
+- **Your list.** The "Needs you" bar has "Your list": the person's open items (asked by a
+  teammate or added by themselves) with Start, Finished and Drop, and a field to add one
+  (`office.teamTodoAdd`).
+- **Checked in the running app:** Milo and Iris sat in "Version badge". Milo ran `say @room
+  "hello-room"`: Iris got it, and the room's panel showed "Milo → everyone here: hello-room". A
+  message from the room's box reached both. "Your list" showed two items after adding one with
+  Enter (D-12).
+- **Left over from testing:** items D-5 ("live update probe") and D-12 on the person's list, and
+  the agents Milo, Iris, Ada and Nova in the city.

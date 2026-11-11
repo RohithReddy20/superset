@@ -72,7 +72,6 @@ export interface CityBuildingSource {
 export type CityRoomsSnapshot =
 	inferRouterOutputs<AppRouter>["office"]["cityState"];
 export type CityRoom = CityRoomsSnapshot["rooms"][number];
-export type CityRoomMessage = CityRoom["messages"][number];
 export type CityHandover = CityRoomsSnapshot["handovers"][number];
 export type CityTodo =
 	inferRouterOutputs<AppRouter>["office"]["team"]["todos"][number];

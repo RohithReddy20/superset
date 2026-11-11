@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { getHostServiceClientByUrl } from "renderer/lib/host-service-client";
 import { useLocalHostService } from "renderer/routes/_authenticated/providers/LocalHostServiceProvider";
-import { type CityNote, type CityTodo, YOU } from "../../types";
+import { type CityNote, type CityPlace, type CityTodo, YOU } from "../../types";
 import { CITY_FALLBACK_POLL_MS, CITY_QUERY_ROOT } from "../useCityLive";
 
 const NO_TODOS: CityTodo[] = [];
@@ -45,12 +45,16 @@ export function useCityTeam() {
 
 	return {
 		todos: query.data?.todos ?? NO_TODOS,
+		notes,
 		toYou,
 		unread,
 		waiting: query.data?.waiting ?? NO_WAITING,
 		markRead: (fromId: string) => then(client().teamRead.mutate({ fromId })),
 		say: (to: string, text: string) =>
 			then(client().teamSay.mutate({ to: [to], text })),
+		sayToRoom: (room: CityPlace, text: string) =>
+			then(client().teamSay.mutate({ room, text })),
+		addTodo: (text: string) => then(client().teamTodoAdd.mutate({ text })),
 		ask: (to: string, text: string) =>
 			then(client().teamAsk.mutate({ to, text })),
 		setTodo: (id: string, state: CityTodo["state"]) =>

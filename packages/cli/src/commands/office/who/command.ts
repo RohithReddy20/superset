@@ -14,6 +14,7 @@ export default command({
 			kind: t.kind === "person" ? "person" : (t.label ?? "agent"),
 			workspace: t.workspaceName ?? null,
 			project: t.projectName ?? null,
+			room: t.room ?? null,
 			doing: t.doing,
 			open: t.open,
 			me: t.id === me,
@@ -23,7 +24,7 @@ export default command({
 			message: rows
 				.map(
 					(r) =>
-						`${r.handle}${r.me ? " (you)" : ""} · ${r.kind}${r.workspace ? ` · ${r.workspace}` : ""} · ${r.doing ?? "nothing marked"} · ${r.open} open`,
+						`${r.handle}${r.me ? " (you)" : ""} · ${r.kind}${r.workspace ? ` · ${r.workspace}` : ""}${r.room && r.room !== r.workspace ? ` · sits in ${r.room}` : ""} · ${r.doing ?? "nothing marked"} · ${r.open} open`,
 				)
 				.join("\n"),
 		};
