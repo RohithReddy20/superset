@@ -1,0 +1,27 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/CityScreen.tsx
+  s_5f8913573c0c91::t_9acfd9f2a59530 15,102-128,132
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentBar/AgentBar.tsx
+  s_5f8913573c0c91::t_105c0dda1fbc3d 31-32,44,111-145
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/StartBar/StartBar.tsx
+  s_5f8913573c0c91::t_e6fd1f823be42c 5-9,11-13,16-46
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/StartBar/index.ts
+  s_5f8913573c0c91::t_4f8b93cf8c6ea1 1
+plans/20261105-office-orchestration-notes.md
+  s_5f8913573c0c91::t_68b9f4d27c5332 818-831
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1bf5643b5d1f52d141dc3d3154bceaab4ef159ab",
+  "prompts": {},
+  "sessions": {
+    "s_5f8913573c0c91": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ffe1d21c-40b7-4316-ace2-1908f5fdc59b",
+        "model": "unknown"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
