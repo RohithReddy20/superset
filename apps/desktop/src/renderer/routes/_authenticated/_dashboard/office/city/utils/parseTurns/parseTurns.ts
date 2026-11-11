@@ -4,6 +4,8 @@ export interface Turn {
 }
 
 const TURN = /(?:^|\n\n)(User|Assistant): /g;
+/** The wrapper a CLI puts around text that was pasted into it; the text inside is what was said. */
+const PASTE_TAG = /<\/?pasted_content\b[^>\n]*>\n?/g;
 
 /**
  * Splits an agent's own conversation record ("User: …" and "Assistant: …" turns, blank lines
@@ -17,7 +19,7 @@ export function parseTurns(text: string): Turn[] {
 	marks.forEach((mark, i) => {
 		const start = (mark.index ?? 0) + mark[0].length;
 		const end = marks[i + 1]?.index ?? text.length;
-		const body = text.slice(start, end).trim();
+		const body = text.slice(start, end).replace(PASTE_TAG, "").trim();
 		if (body)
 			turns.push({ who: mark[1] === "User" ? "you" : "agent", text: body });
 	});

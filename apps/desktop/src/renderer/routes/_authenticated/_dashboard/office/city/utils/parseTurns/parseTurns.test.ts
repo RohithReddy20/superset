@@ -12,6 +12,15 @@ describe("parseTurns", () => {
 		]);
 	});
 
+	test("drops the wrapper a CLI puts around a pasted message", () => {
+		const text =
+			'User: <pasted_content id="ef0a">\n[office] The person asks you:\nList the files.\n</pasted_content id="ef0a">\n\nAssistant: Done.';
+		expect(parseTurns(text)).toEqual([
+			{ who: "you", text: "[office] The person asks you:\nList the files." },
+			{ who: "agent", text: "Done." },
+		]);
+	});
+
 	test("keeps the cut-off start of a long record as the agent's", () => {
 		expect(parseTurns("…end of a long answer\n\nUser: next")).toEqual([
 			{ who: "agent", text: "…end of a long answer" },

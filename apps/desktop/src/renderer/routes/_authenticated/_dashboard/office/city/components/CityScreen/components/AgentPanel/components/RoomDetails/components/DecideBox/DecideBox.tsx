@@ -1,6 +1,5 @@
 import { Button } from "@superset/ui/button";
 import { useState } from "react";
-import { LuGavel } from "react-icons/lu";
 import { useCityTeam } from "../../../../../../../../hooks/useCityTeam";
 import {
 	type CityAgent,
@@ -12,19 +11,20 @@ interface DecideBoxProps {
 	place: CityPlace;
 	people: CityAgent[];
 	handleOf: ReadonlyMap<string, string>;
+	/** Called once it is written down, with what to tell the person. */
+	onDone: (receipt: string) => void;
 }
 
 const FIELD =
-	"min-w-0 flex-1 rounded border border-border bg-background px-1.5 py-1 outline-none focus-visible:ring-1 focus-visible:ring-ring";
+	"min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-1 outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 
 /** Writes down what the room agreed, and puts on each one's list what they took. */
-export function DecideBox({ place, people, handleOf }: DecideBoxProps) {
+export function DecideBox({ place, people, handleOf, onDone }: DecideBoxProps) {
 	const { decide } = useCityTeam();
-	const [open, setOpen] = useState(false);
 	const [text, setText] = useState("");
 	const [took, setTook] = useState<Record<string, string>>({});
 	const [busy, setBusy] = useState(false);
-	const [note, setNote] = useState<string | null>(null);
+	const [error, setError] = useState<string | null>(null);
 	const takers = [
 		{ id: YOU, name: "You", to: "@me" },
 		...people.flatMap((agent) => {
@@ -39,7 +39,7 @@ export function DecideBox({ place, people, handleOf }: DecideBoxProps) {
 		const decided = text.trim();
 		if (!decided || busy) return;
 		setBusy(true);
-		setNote(null);
+		setError(null);
 		decide(
 			place,
 			decided,
@@ -48,14 +48,11 @@ export function DecideBox({ place, people, handleOf }: DecideBoxProps) {
 				return item ? [{ to: taker.to, text: item }] : [];
 			}),
 		)
-			.then(({ todos, waiting }) => {
-				setText("");
-				setTook({});
-				setOpen(false);
-				setNote(
+			.then(({ todos, waiting }) =>
+				onDone(
 					[
 						todos.length > 0
-							? `${todos.map((t) => t.id).join(", ")} put on lists.`
+							? `Written down. ${todos.map((t) => t.id).join(", ")} put on lists.`
 							: "Written down.",
 						waiting.length > 0
 							? `${waiting.join(", ")} cannot be reached now and will get it when back.`
@@ -63,79 +60,65 @@ export function DecideBox({ place, people, handleOf }: DecideBoxProps) {
 					]
 						.filter(Boolean)
 						.join(" "),
-				);
-			})
+				),
+			)
 			.catch((cause: unknown) =>
-				setNote(cause instanceof Error ? cause.message : String(cause)),
+				setError(cause instanceof Error ? cause.message : String(cause)),
 			)
 			.finally(() => setBusy(false));
 	};
 
-	if (!open)
-		return (
-			<div className="flex items-center gap-2 text-[12px]">
-				<Button
-					variant="outline"
-					size="sm"
-					className="gap-1.5 text-xs"
-					disabled={people.length === 0}
-					onClick={() => setOpen(true)}
-				>
-					<LuGavel className="size-3.5" />
-					Write down what we decided
-				</Button>
-				{note ? <span className="text-muted-foreground">{note}</span> : null}
-			</div>
-		);
-
 	return (
-		<div className="flex flex-col gap-1.5 rounded-md border border-border p-2 text-[12px]">
+		<div className="flex flex-col gap-1.5 text-[12px]">
 			<textarea
-				// biome-ignore lint/a11y/noAutofocus: the box opens because the person asked to type here
+				// biome-ignore lint/a11y/noAutofocus: the form opens because the person chose to write a decision
 				autoFocus
 				value={text}
 				onChange={(event) => setText(event.target.value)}
 				rows={2}
 				placeholder="What did you all decide?"
-				className={`${FIELD} resize-none`}
+				aria-label="What was decided"
+				className={`${FIELD} resize-none text-[13px]`}
 			/>
 			<p className="text-[11px] text-muted-foreground">
-				Who took what (leave empty for none). Each goes on that one's own list.
+				Who took what. Each goes on that one's own list; leave empty for none.
 			</p>
-			{takers.map((taker) => (
-				<label key={taker.id} className="flex items-center gap-1.5">
-					<span className="w-20 shrink-0 truncate">{taker.name}</span>
-					<input
-						value={took[taker.id] ?? ""}
-						onChange={(event) =>
-							setTook((all) => ({ ...all, [taker.id]: event.target.value }))
-						}
-						onKeyDown={(event) => {
-							if (event.key === "Enter") save();
-						}}
-						className={FIELD}
-					/>
-				</label>
-			))}
-			<div className="flex items-center justify-end gap-1.5">
+			<div className="flex max-h-36 flex-col gap-1 overflow-y-auto">
+				{takers.map((taker) => (
+					<label key={taker.id} className="flex items-center gap-1.5">
+						<span className="w-20 shrink-0 truncate" title={taker.name}>
+							{taker.name}
+						</span>
+						<input
+							value={took[taker.id] ?? ""}
+							onChange={(event) =>
+								setTook((all) => ({ ...all, [taker.id]: event.target.value }))
+							}
+							onKeyDown={(event) => {
+								if (event.key === "Enter") save();
+							}}
+							className={FIELD}
+						/>
+					</label>
+				))}
+			</div>
+			<div className="flex items-center gap-2">
+				{error ? (
+					<p role="alert" className="min-w-0 flex-1 text-[11px] text-red-500">
+						{error}
+					</p>
+				) : (
+					<span className="flex-1" />
+				)}
 				<Button
-					variant="ghost"
 					size="sm"
-					className="h-6 px-2 text-[11px]"
-					onClick={() => setOpen(false)}
-				>
-					Cancel
-				</Button>
-				<Button
-					size="sm"
-					className="h-6 px-2 text-[11px]"
+					className="h-7 px-2.5 text-[12px]"
 					disabled={!text.trim() || busy}
 					onClick={save}
 				>
 					Write it down
 				</Button>
 			</div>
-			{note ? <p className="text-red-500">{note}</p> : null}
 		</div>
 	);
 }

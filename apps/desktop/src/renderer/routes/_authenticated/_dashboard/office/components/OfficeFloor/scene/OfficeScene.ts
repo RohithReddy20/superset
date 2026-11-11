@@ -175,6 +175,8 @@ const FADE_OUT_MS = 220;
 const CAMERA_MS = 320;
 const WHEEL_MS = 140;
 const RESIZE_MS = 220;
+/** Height at the top of the view that the floor's controls cover; people are framed under it. */
+const CONTROLS_INSET = 72;
 /** A selected teammate closer than this to the edge of the view is brought into it. */
 const EDGE_MARGIN = 72;
 const SELECTED_ROOM_COLOR = 0xffffff;
@@ -493,19 +495,23 @@ export class OfficeScene extends Phaser.Scene {
 		const whole = this.wholeZoom();
 		const people = this.mode === "everyone" ? this.peopleBox() : null;
 		let next: CameraPose;
-		if (people)
-			next = {
-				zoom: Math.min(
-					EVERYONE_MAX_ZOOM,
-					Math.max(
-						whole,
-						Math.min(view.width / people.w, view.height / people.h),
+		if (people) {
+			const zoom = Math.min(
+				EVERYONE_MAX_ZOOM,
+				Math.max(
+					whole,
+					Math.min(
+						view.width / people.w,
+						(view.height - CONTROLS_INSET) / people.h,
 					),
 				),
+			);
+			next = {
+				zoom,
 				x: people.x + people.w / 2,
-				y: people.y + people.h / 2,
+				y: people.y + people.h / 2 - CONTROLS_INSET / 2 / zoom,
 			};
-		else if (this.mode === "free")
+		} else if (this.mode === "free")
 			next = {
 				zoom: Math.max(this.freeZoom, whole),
 				x: center?.x ?? this.pose.x,

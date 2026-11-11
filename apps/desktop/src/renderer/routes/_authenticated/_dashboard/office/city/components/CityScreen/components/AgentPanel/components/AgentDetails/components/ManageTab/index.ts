@@ -1,0 +1,1 @@
+export { ManageTab } from "./ManageTab";

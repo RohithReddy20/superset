@@ -56,7 +56,7 @@ const TAG_GAP = 6;
 const CLEAR = 3;
 const SIGN_GAP = 4;
 /** Below this zoom name tags shrink to a face, so the whole office stays readable. */
-const COMPACT_BELOW = 1;
+const COMPACT_BELOW = 0.85;
 
 function overlaps(a: Box, b: Box): boolean {
 	return (

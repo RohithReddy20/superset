@@ -34,10 +34,11 @@ export function GroupBox({
 			throw new Error(
 				`Not delivered to ${failed.map((a) => a.name).join(", ")}: no agent is running in that terminal any more.`,
 			);
+		return `Sent to all ${agents.length}`;
 	};
 
 	return (
-		<div className="absolute bottom-3 left-3 flex max-h-[min(460px,calc(100%-24px))] w-[min(380px,calc(100%-24px))] flex-col overflow-hidden rounded-xl border border-border bg-popover/95 shadow-lg backdrop-blur">
+		<div className="absolute bottom-3 left-3 z-10 flex max-h-[min(460px,calc(100%-24px))] w-[min(380px,calc(100%-24px))] flex-col overflow-hidden rounded-xl border border-border bg-popover/95 shadow-lg backdrop-blur motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-200">
 			<div className="flex items-center gap-2 border-b border-border px-2.5 py-2 text-[12px]">
 				<span className="min-w-0 flex-1 truncate font-medium text-foreground">
 					Message {agents.length} agents

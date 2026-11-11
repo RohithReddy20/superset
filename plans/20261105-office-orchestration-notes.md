@@ -930,3 +930,39 @@ No new capability; renderer only. Before and after screenshots are in the sessio
   fix she stands beside the room. No console errors.
 - **Not checked live:** an empty city (cannot be produced without removing the demo projects), the
   failed and "needs you" signs on a character (no agent was in those states), reduced motion.
+
+## 2026-11-12: UI/UX pass, step 2 — the side panel
+
+Same capabilities, laid out for what is done most. Renderer only.
+
+- **Agent panel** (`AgentDetails`): a header (CLI mark, name with rename, status, where it works,
+  a terminal button, close), then only what waits on you (a question on its screen, "asks you"
+  with an answer field, a disconnected notice, messages that wait to reach it), then tabs, then
+  one box at the bottom that is always there.
+  - **Talk** is the conversation and gets all the height. The agent's answers render as markdown
+    (`CommentMarkdown`), long messages typed into it fold, the wrapper a CLI puts around pasted
+    text is dropped (`parseTurns`), and the view only follows new text while you are at the end;
+    scrolled up, a "New below" button appears instead.
+  - **List** is its own list and what it wrote to you. A panel opened with unread notes starts
+    here. **History** is the team timeline, newest first. **Manage** holds the seat, the hand-over
+    and Remove, each with one line saying what it does.
+  - **The box** (`Composer` on `MessageBox`): a switch between "Message" and "Ask for something"
+    (the old separate ask form), a keyboard button for the ↑ ↓ Enter Esc keys (opens by itself
+    when the agent needs an OK), a spinner while sending, and a receipt next to the button
+    ("Sent", "D-17 is on Iris's list"). What you typed is kept per agent while the panel is open.
+- **Room panel** (`RoomDetails`): the same header, who sits there, the room's talk, and the same
+  box with a "Message" / "Decision" switch; the decision form replaces the box while it is used
+  and decisions show in amber in the talk.
+- **Width**: the panel is 300 to 460 px (38% of the screen area) and lies over the floor only
+  when that area is narrower than 640 px. The floor frames people below its controls.
+- Name tags keep their names down to zoom 0.85 (was 1), now that tags no longer overlap.
+- **Checked:** 42 office tests (new: pasted-text wrapper), typecheck, biome.
+- **Checked in the running app:** messaged Iris "Reply with only the word pong." — receipt "Sent",
+  then "pong" in Talk. Asked Iris to list its files — receipt "D-17 is on Iris's list", the List
+  tab showed what Iris wrote back and History showed the four steps. In the "Write docs" room: a
+  message to the room got "Here" and "Ready" back from Iris and Otto; a decision "The docs ship on
+  Friday." with an item for Iris showed in amber with "Iris took D-18", and Iris's tag showed the
+  item. At 940 x 640 the panel sat beside the floor; at 760 x 560 it still did, with the controls
+  as icons. No console errors.
+- **Not checked live:** the "asks you" card and a screen question (no agent asked), the
+  disconnected notice, "New below" (no conversation was long enough to scroll).

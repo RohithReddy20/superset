@@ -1,5 +1,4 @@
-import { Button } from "@superset/ui/button";
-import { LuX } from "react-icons/lu";
+import { useState } from "react";
 import type {
 	CityAgent,
 	CityHandover,
@@ -8,7 +7,7 @@ import type {
 } from "../../../../types";
 import { MEETING_ROOM } from "../../../../utils/buildingSnapshot";
 import { AgentDetails } from "./components/AgentDetails";
-import { AgentName } from "./components/AgentName";
+import { GonePanel } from "./components/GonePanel";
 import { RoomDetails } from "./components/RoomDetails";
 
 export type BuildingSelection =
@@ -27,6 +26,7 @@ interface AgentPanelProps {
 	onClose: () => void;
 }
 
+/** The side panel for the agent or the room that is open. In a narrow window it lies over the floor. */
 export function AgentPanel({
 	project,
 	projects,
@@ -37,6 +37,7 @@ export function AgentPanel({
 	onSelectAgent,
 	onClose,
 }: AgentPanelProps) {
+	const [drafts, setDrafts] = useState<Record<string, string>>({});
 	const agent =
 		selection.kind === "agent"
 			? everyone.find((a) => a.terminalId === selection.id)
@@ -47,39 +48,32 @@ export function AgentPanel({
 				? MEETING_ROOM.name
 				: project.workspaces.find((w) => w.id === selection.id)?.name
 			: undefined;
+	const draftKey = `${selection.kind}:${selection.id}`;
+	const setDraft = (text: string) =>
+		setDrafts((all) => ({ ...all, [draftKey]: text }));
 
 	return (
-		<aside className="flex h-full w-[380px] shrink-0 flex-col border-l border-border bg-background">
-			<div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
-				{agent ? (
-					<AgentName key={agent.terminalId} agent={agent} />
-				) : (
-					<span className="truncate text-sm font-medium">
-						{roomName ?? "Gone"}
-					</span>
-				)}
-				<Button
-					variant="ghost"
-					size="icon-sm"
-					aria-label="Close"
-					onClick={onClose}
-				>
-					<LuX />
-				</Button>
-			</div>
+		<aside
+			aria-label={agent?.name ?? roomName ?? "Details"}
+			className="absolute inset-y-0 right-0 z-20 flex w-[min(100%,380px)] shrink-0 flex-col border-l border-border bg-background shadow-xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-3 motion-safe:duration-200 @[640px]/city:static @[640px]/city:w-[clamp(300px,38cqw,460px)] @[640px]/city:shadow-none"
+		>
 			{agent ? (
 				<AgentDetails
 					key={agent.terminalId}
 					agent={agent}
 					projects={projects}
 					handovers={handovers}
+					draft={drafts[draftKey] ?? ""}
+					onDraft={setDraft}
 					onSelectAgent={onSelectAgent}
-					onRemoved={onClose}
+					onClose={onClose}
 				/>
 			) : selection.kind === "room" && roomName ? (
 				<RoomDetails
+					key={selection.id}
 					project={project}
 					roomId={selection.id}
+					roomName={roomName}
 					room={rooms.find(
 						(r) => r.projectId === project.id && r.roomId === selection.id,
 					)}
@@ -88,12 +82,16 @@ export function AgentPanel({
 							a.place.projectId === project.id &&
 							a.place.roomId === selection.id,
 					)}
+					draft={drafts[draftKey] ?? ""}
+					onDraft={setDraft}
 					onSelectAgent={onSelectAgent}
+					onClose={onClose}
 				/>
 			) : (
-				<p className="p-3 text-sm text-muted-foreground">
-					This agent has left: its terminal closed.
-				</p>
+				<GonePanel
+					what={selection.kind === "agent" ? "agent" : "room"}
+					onClose={onClose}
+				/>
 			)}
 		</aside>
 	);
