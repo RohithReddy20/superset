@@ -28,6 +28,12 @@ export class TerminalWatch {
 		return entry && entry.times >= 2 ? entry.since : undefined;
 	}
 
+	/** A terminal that was just found dead, such as by a message that could not be typed into it. */
+	markGone(terminalId: string): void {
+		const since = this.missing.get(terminalId)?.since ?? this.now();
+		this.missing.set(terminalId, { since, times: 2 });
+	}
+
 	/** Checks `terminalIds` again when the last check is older than the interval. */
 	refresh(terminalIds: string[]): Promise<void> {
 		if (this.checking) return this.checking;

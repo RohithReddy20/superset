@@ -779,3 +779,27 @@ Order: 2 first on top of today's city (additive, old paths keep working), then 3
   Enter (D-12).
 - **Left over from testing:** items D-5 ("live update probe") and D-12 on the person's list, and
   the agents Milo, Iris, Ada and Nova in the city.
+
+## 2026-11-11: agents reconnect on demand
+
+The person's idea: an agent whose terminal stopped should come back by itself when it is needed.
+
+- **A message wakes it.** When a delivery cannot be typed in, or its agent is not running at all,
+  `CityTeam` calls `wake` once a minute at most: the host marks the terminal gone
+  (`TerminalWatch.markGone`, so it need not wait for two checks) and continues the agent in a new
+  terminal (`CityRooms.reconnect`). The queued messages follow it there (`moved`) and are typed in
+  at its first sign of life. This covers a direct message, an ask, an answer passed back, and a
+  room message, since each is a delivery.
+- **Agents that are away can be addressed.** `@handle` also finds a named agent whose binding has
+  ended but can continue (`CityRooms.away`), so writing to it starts it again.
+- **Opening it wakes it.** The agent panel reconnects a disconnected agent as soon as it is
+  opened (`LostNotice`), once; "Try again" shows only when that failed.
+- **Remove is for every agent now** (`RemoveAgent`, `CityRooms.remove` takes a running agent
+  too), since a disconnected agent no longer stays disconnected long enough to remove it.
+- **Not done on purpose:** reconnecting every agent when the city opens. That would start every
+  CLI at once; an agent nobody clicks or writes to stays disconnected and costs nothing.
+- **Checked in the running app** after a host restart left all agents dead: `office say @iris`
+  from a shell answered "waits for Iris"; with no click the log showed delivery.failed → moved →
+  delivery.done, and Iris wrote "woke-ok" to the person about 12 s later. Clicking Milo's
+  "Disconnected" chip reconnected it without pressing anything; it showed Idle. Nova and Ada,
+  untouched, stayed disconnected.

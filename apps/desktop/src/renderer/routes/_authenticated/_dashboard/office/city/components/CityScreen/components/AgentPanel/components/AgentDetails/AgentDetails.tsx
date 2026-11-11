@@ -22,6 +22,7 @@ import { HistoryBox } from "./components/HistoryBox";
 import { KeyButtons } from "./components/KeyButtons";
 import { ListBox } from "./components/ListBox";
 import { LostNotice } from "./components/LostNotice";
+import { RemoveAgent } from "./components/RemoveAgent";
 import { ScreenQuestion } from "./components/ScreenQuestion";
 import { SeatRow } from "./components/SeatRow";
 
@@ -108,11 +109,7 @@ export function AgentDetails({
 					</span>
 				) : null}
 			</div>
-			<LostNotice
-				agent={agent}
-				onReconnected={onSelectAgent}
-				onRemoved={onRemoved}
-			/>
+			<LostNotice agent={agent} onReconnected={onSelectAgent} />
 			<ListBox agent={agent} />
 			<HistoryBox agent={agent} />
 			<AskBox agent={agent} />
@@ -123,6 +120,7 @@ export function AgentDetails({
 				handovers={handovers}
 				onSelectAgent={onSelectAgent}
 			/>
+			<RemoveAgent agent={agent} onRemoved={onRemoved} />
 			{lost ? null : <ScreenQuestion agent={agent} />}
 			{lost ? (
 				<p className="flex-1 text-[12px] text-muted-foreground">

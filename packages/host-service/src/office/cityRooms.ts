@@ -314,12 +314,23 @@ export class CityRooms {
 		return next;
 	}
 
-	/** Ends a lost agent for good and takes it out of the city. */
-	async remove(terminalId: string): Promise<void> {
-		const agent = this.lost(new Set()).find(
-			(a) => a.terminalId === terminalId && !a.reconnecting,
+	/** Named agents whose binding ended, so they are not among the running ones, and that can continue. */
+	away(): Array<
+		Pick<CityLostAgent, "terminalId" | "workspaceId" | "name" | "handle">
+	> {
+		const live = new Set(this.liveAgents().map((a) => a.terminalId));
+		return this.lost(live).filter(
+			(a) => a.resumable && !a.reconnecting && !live.has(a.terminalId),
 		);
-		if (!agent) throw new Error("Only a disconnected agent can be removed");
+	}
+
+	/** Ends an agent for good, running or not, and takes it out of the city. */
+	async remove(terminalId: string): Promise<void> {
+		const agent =
+			this.lost(new Set()).find(
+				(a) => a.terminalId === terminalId && !a.reconnecting,
+			) ?? this.liveAgents().find((a) => a.terminalId === terminalId);
+		if (!agent) throw new Error("That agent is already gone");
 		await this.deps.stopAgent?.(terminalId, agent.workspaceId);
 		this.state.names = this.state.names.filter(
 			(n) => n.terminalId !== terminalId,

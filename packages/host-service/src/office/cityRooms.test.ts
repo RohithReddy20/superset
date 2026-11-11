@@ -169,17 +169,19 @@ describe("CityRooms", () => {
 		]);
 	});
 
-	test("removing a lost agent ends it and takes it out of the city", async () => {
+	test("removing an agent ends it, whether it runs or not", async () => {
 		const { rooms, everyone, lost, stopped } = lostSetup();
 		rooms.snapshot();
 		everyone.splice(1, 1);
 		lost.push(lostAgent("t2"));
-		await expect(rooms.remove("t1")).rejects.toThrow("Only a disconnected");
+		await expect(rooms.remove("nobody")).rejects.toThrow("already gone");
 
 		await rooms.remove("t2");
 		lost.splice(0);
 		expect(stopped).toEqual(["t2"]);
 		expect(rooms.snapshot().lost).toEqual([]);
+		await rooms.remove("t1");
+		expect(stopped).toEqual(["t2", "t1"]);
 	});
 
 	test("a room names who sits in it, visitors included", async () => {

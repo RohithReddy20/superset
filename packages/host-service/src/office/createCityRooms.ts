@@ -259,6 +259,11 @@ export function createCityRooms({
 		send: (agent, text) => rooms.tell(agent.terminalId, text),
 		lastReply,
 		successorOf,
+		away: () => rooms.away(),
+		wake: async (terminalId) => {
+			watch.markGone(terminalId);
+			await rooms.reconnect(terminalId);
+		},
 		roomOf: (terminalId) => rooms.roomOf(terminalId),
 		roomAt: (place) => rooms.roomAt(place),
 		...(officeCli ? { officeCli } : {}),

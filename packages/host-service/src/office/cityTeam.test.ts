@@ -191,4 +191,43 @@ describe("CityTeam", () => {
 		});
 		expect(sent.slice(1).map((s) => s.to)).toEqual(["t1", "t2"]);
 	});
+
+	test("a message to an agent that cannot be reached starts it again, once", async () => {
+		const woken: string[] = [];
+		const { team } = setup({
+			send: async () => {
+				throw new Error("terminal is gone");
+			},
+			wake: async (terminalId) => {
+				woken.push(terminalId);
+			},
+		});
+		await team.say({ fromId: YOU, to: ["ada"], text: "one" });
+		await team.say({ fromId: YOU, to: ["ada"], text: "two" });
+		expect(woken).toEqual(["t2"]);
+	});
+
+	test("an agent that is away can still be written to, and is started for it", async () => {
+		const woken: string[] = [];
+		const { team } = setup({
+			away: () => [
+				{
+					terminalId: "t9",
+					workspaceId: "ws-t9",
+					name: "Otto",
+					handle: "otto",
+				},
+			],
+			wake: async (terminalId) => {
+				woken.push(terminalId);
+			},
+		});
+		const { waiting } = await team.say({
+			fromId: "t1",
+			to: ["@otto"],
+			text: "hi",
+		});
+		expect(waiting).toEqual(["Otto"]);
+		expect(woken).toEqual(["t9"]);
+	});
 });

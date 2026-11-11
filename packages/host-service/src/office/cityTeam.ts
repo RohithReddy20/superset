@@ -120,6 +120,16 @@ export interface CityTimelineEntry {
 	text: string;
 }
 
+/** A named agent whose terminal is gone. */
+export interface CityAwayAgent {
+	terminalId: string;
+	workspaceId: string;
+	name: string;
+	handle: string;
+}
+
+type Reach = Pick<NamedAgent, "terminalId" | "name" | "workspaceId">;
+
 export interface CityTeamDeps {
 	log: CityTeamLog;
 	agents: () => NamedAgent[];
@@ -129,6 +139,10 @@ export interface CityTeamDeps {
 	/** The room an agent sits in, with everyone sitting there. */
 	roomOf?: (terminalId: string) => CityRoomRef | null;
 	roomAt?: (place: { projectId: string; roomId: string }) => CityRoomRef | null;
+	/** Named agents that are not running now but can continue in a new terminal. */
+	away?: () => CityAwayAgent[];
+	/** Continues an agent that cannot be reached in a new terminal. */
+	wake?: (terminalId: string) => Promise<void>;
 	/** Called after anything in the team changed. */
 	onChange?: () => void;
 	/** Defaults to {@link OFFICE_CLI}. */
@@ -148,6 +162,8 @@ interface TeamState {
 
 const TAG = "[Paradev office]";
 const TIMELINE_ENTRIES = 200;
+/** An agent is not woken again while its last wake may still be starting it. */
+const WAKE_AGAIN_MS = 60_000;
 
 /**
  * The team as equals: the person and every running CLI agent. Each has its own list, anyone may
@@ -166,6 +182,7 @@ export class CityTeam {
 	private readonly now: () => number;
 	private readonly cli: string;
 	private readonly flushing = new Set<string>();
+	private readonly woken = new Map<string, number>();
 
 	constructor(private readonly deps: CityTeamDeps) {
 		this.now = deps.now ?? Date.now;
@@ -314,7 +331,7 @@ export class CityTeam {
 				this.record({ kind: "ask.answered", id: ask.id });
 		}
 		const waiting = await this.deliver(
-			agents.filter((a) => targets.includes(a.terminalId)),
+			this.reach(targets, agents),
 			room
 				? `${TAG} ${from.name} (@${from.handle}) writes to everyone in "${room.name}":\n${text}\n\n(No answer is needed. To write back to the room: ${this.cli} say @room "..."; to ${from.name} only: ${this.cli} say @${from.handle} "...")`
 				: `${TAG} ${from.name} (@${from.handle}) writes:\n${text}\n\n(No answer is needed. To write back: ${this.cli} say @${from.handle} "...")`,
@@ -333,7 +350,7 @@ export class CityTeam {
 		if (!toId) throw new Error("Nobody to ask");
 		if (!text) throw new Error("An ask needs some text");
 		const from = this.nameOf(input.fromId, agents);
-		const to = agents.find((a) => a.terminalId === toId);
+		const [to] = this.reach([toId], agents);
 		const at = this.now();
 		const n = this.state.next;
 		const todo: CityTodo = {
@@ -429,7 +446,7 @@ export class CityTeam {
 			const line = `${owner.name} (@${owner.handle}) ${verb} what you asked: ${todo.text}`;
 			this.note(todo.ownerId, owner, [ask.fromId], line, false);
 			await this.deliver(
-				agents.filter((a) => a.terminalId === ask.fromId),
+				this.reach([ask.fromId], agents),
 				`${TAG} ${line}\n\n(No answer is needed.)`,
 			);
 		}
@@ -446,7 +463,7 @@ export class CityTeam {
 	}): Promise<void> {
 		const agents = this.live();
 		const agent = agents.find((a) => a.terminalId === event.terminalId);
-		if (agent) await this.flush(agent);
+		if (agent) await this.flush(agent.terminalId);
 		const waiting = this.state.asks.filter(
 			(a) => !a.answered && a.toId === event.terminalId,
 		);
@@ -469,14 +486,25 @@ export class CityTeam {
 			const who = this.nameOf(agent.terminalId, agents);
 			this.note(agent.terminalId, who, [ask.fromId], reply, false);
 			await this.deliver(
-				this.live().filter((a) => a.terminalId === ask.fromId),
+				this.reach([ask.fromId], this.live()),
 				`${TAG} ${who.name} (@${who.handle}) ended its turn on what you asked (${ask.todoId}: ${ask.text}). Its last words:\n${reply}\n\n(No answer is needed.)`,
 			);
 		}
 	}
 
+	/** The teammates behind these ids that a message can be queued for: running agents and those away. */
+	private reach(ids: string[], agents: NamedAgent[]): Reach[] {
+		const away = this.deps.away?.() ?? [];
+		return ids.flatMap((id) => {
+			const found =
+				agents.find((a) => a.terminalId === id) ??
+				away.find((a) => a.terminalId === id);
+			return found ? [found] : [];
+		});
+	}
+
 	/** Queues the text for each agent and tries to type it in; resolves to who it still waits for. */
-	private async deliver(to: NamedAgent[], text: string): Promise<string[]> {
+	private async deliver(to: Reach[], text: string): Promise<string[]> {
 		for (const agent of to) {
 			this.record({
 				kind: "delivery.queued",
@@ -491,7 +519,7 @@ export class CityTeam {
 				},
 			});
 		}
-		await Promise.all(to.map((agent) => this.flush(agent)));
+		await Promise.all(to.map((agent) => this.flush(agent.terminalId)));
 		return to
 			.filter((agent) =>
 				this.state.deliveries.some(
@@ -501,14 +529,22 @@ export class CityTeam {
 			.map((agent) => agent.name);
 	}
 
-	/** Types in, oldest first, what waits for this agent; stops at the first that fails. */
-	private async flush(agent: NamedAgent): Promise<void> {
-		if (this.flushing.has(agent.terminalId)) return;
-		this.flushing.add(agent.terminalId);
+	/**
+	 * Types in, oldest first, what waits for this agent; stops at the first that fails. An agent
+	 * that cannot be reached is started again, and gets what waits when it is back.
+	 */
+	private async flush(terminalId: string): Promise<void> {
+		if (this.flushing.has(terminalId)) return;
+		const agent = this.deps.agents().find((a) => a.terminalId === terminalId);
+		if (!agent) {
+			this.wake(terminalId);
+			return;
+		}
+		this.flushing.add(terminalId);
 		try {
 			for (;;) {
 				const next = this.state.deliveries.find(
-					(d) => d.toId === agent.terminalId && d.status === "queued",
+					(d) => d.toId === terminalId && d.status === "queued",
 				);
 				if (!next) return;
 				try {
@@ -522,13 +558,21 @@ export class CityTeam {
 							error: message,
 							at: this.now(),
 						});
+					this.wake(terminalId);
 					return;
 				}
 				this.record({ kind: "delivery.done", id: next.id, at: this.now() });
 			}
 		} finally {
-			this.flushing.delete(agent.terminalId);
+			this.flushing.delete(terminalId);
 		}
+	}
+
+	private wake(terminalId: string): void {
+		const last = this.woken.get(terminalId);
+		if (last !== undefined && this.now() - last < WAKE_AGAIN_MS) return;
+		this.woken.set(terminalId, this.now());
+		void this.deps.wake?.(terminalId).catch(() => {});
 	}
 
 	private note(
@@ -572,9 +616,11 @@ export class CityTeam {
 				ids.add(YOU);
 				continue;
 			}
-			const agent = agents.find((a) => handleOf(a) === handle);
-			if (!agent) throw new Error(`Nobody here is @${handle}`);
-			ids.add(agent.terminalId);
+			const id =
+				agents.find((a) => handleOf(a) === handle)?.terminalId ??
+				this.deps.away?.().find((a) => a.handle === handle)?.terminalId;
+			if (!id) throw new Error(`Nobody here is @${handle}`);
+			ids.add(id);
 		}
 		ids.delete(fromId);
 		if (ids.size === 0) throw new Error("Nobody to write to");
@@ -586,8 +632,10 @@ export class CityTeam {
 		agents: NamedAgent[],
 	): { name: string; handle: string } {
 		const agent = agents.find((a) => a.terminalId === id);
-		return agent
-			? { name: agent.name, handle: handleOf(agent) }
+		if (agent) return { name: agent.name, handle: handleOf(agent) };
+		const away = this.deps.away?.().find((a) => a.terminalId === id);
+		return away
+			? { name: away.name, handle: away.handle }
 			: { name: "The person", handle: YOU };
 	}
 
