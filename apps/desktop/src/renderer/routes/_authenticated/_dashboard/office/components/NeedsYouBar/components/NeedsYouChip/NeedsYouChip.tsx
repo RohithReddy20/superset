@@ -3,9 +3,7 @@ import { cn } from "@superset/ui/utils";
 import type { IconType } from "react-icons";
 import {
 	LuArrowRightLeft,
-	LuBan,
 	LuCircleAlert,
-	LuCircleCheck,
 	LuEye,
 	LuHand,
 	LuMessageCircle,
@@ -47,16 +45,6 @@ const REASONS: Record<
 		label: "Disconnected",
 		icon: LuUnplug,
 		tone: "text-muted-foreground border-border bg-muted",
-	},
-	blocked: {
-		label: "Task blocked",
-		icon: LuBan,
-		tone: "text-red-500 border-red-500/40 bg-red-500/10",
-	},
-	verified: {
-		label: "Checked, ready to close",
-		icon: LuCircleCheck,
-		tone: "text-green-500 border-green-500/40 bg-green-500/10",
 	},
 	review: {
 		label: "Done, take a look",

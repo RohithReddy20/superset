@@ -1032,7 +1032,6 @@
         "@superset/agent-setup": "workspace:*",
         "@superset/chat": "workspace:*",
         "@superset/chat-runtime": "workspace:*",
-        "@superset/office-harness": "workspace:*",
         "@superset/port-scanner": "workspace:*",
         "@superset/pty-daemon": "workspace:*",
         "@superset/shared": "workspace:*",
@@ -1137,23 +1136,6 @@
         "drizzle-orm": "0.45.2",
         "superjson": "2.2.6",
         "zod": "4.6.6",
-      },
-      "devDependencies": {
-        "@superset/typescript": "workspace:*",
-        "@types/node": "24.12.0",
-        "bun-types": "1.4.3",
-        "typescript": "7.0.2",
-      },
-    },
-    "packages/office-harness": {
-      "name": "@superset/office-harness",
-      "version": "0.0.1",
-      "dependencies": {
-        "@agentclientprotocol/claude-agent-acp": "0.85.0",
-        "@agentclientprotocol/codex-acp": "2.1.0",
-        "@modelcontextprotocol/sdk": "1.31.0",
-        "@superset/chat-runtime": "workspace:*",
-        "zod": "4.6.5",
       },
       "devDependencies": {
         "@superset/typescript": "workspace:*",
@@ -3328,8 +3310,6 @@
     "@superset/mcp": ["@superset/mcp@workspace:packages/mcp"],
 
     "@superset/mobile": ["@superset/mobile@workspace:apps/mobile"],
-
-    "@superset/office-harness": ["@superset/office-harness@workspace:packages/office-harness"],
 
     "@superset/panes": ["@superset/panes@workspace:packages/panes"],
 

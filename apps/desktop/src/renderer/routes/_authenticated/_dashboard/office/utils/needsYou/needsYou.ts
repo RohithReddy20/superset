@@ -6,8 +6,7 @@ import type {
 	CityProject,
 	CityTodo,
 } from "../../city/types";
-import { isOpenTodo, OFFICE_PLACE, YOU } from "../../city/types";
-import type { Task } from "../../types";
+import { isOpenTodo, YOU } from "../../city/types";
 
 export type NeedsYouReason =
 	| "permission"
@@ -16,13 +15,12 @@ export type NeedsYouReason =
 	| "wrote"
 	| "handover"
 	| "lost"
-	| "blocked"
-	| "verified"
 	| "review";
 
-export type NeedsYouTarget =
-	| { kind: "agent"; projectId: string; terminalId: string }
-	| { kind: "tasks" };
+export interface NeedsYouTarget {
+	projectId: string;
+	terminalId: string;
+}
 
 export interface NeedsYouItem {
 	id: string;
@@ -42,8 +40,6 @@ const ORDER: NeedsYouReason[] = [
 	"wrote",
 	"handover",
 	"lost",
-	"blocked",
-	"verified",
 	"review",
 ];
 
@@ -58,13 +54,11 @@ const AGENT_REASONS = new Set<CityAgent["status"]>([
 export function needsYou({
 	projects,
 	handovers,
-	tasks = [],
 	todos = [],
 	unread = [],
 }: {
 	projects: CityProject[];
 	handovers: CityHandover[];
-	tasks?: Pick<Task, "id" | "title" | "status" | "updatedAt">[];
 	todos?: Pick<
 		CityTodo,
 		| "id"
@@ -140,18 +134,6 @@ export function needsYou({
 		});
 	}
 
-	for (const task of tasks) {
-		if (task.status !== "blocked" && task.status !== "verified") continue;
-		items.push({
-			id: `task:${task.id}`,
-			reason: task.status,
-			title: `${task.id} ${task.title}`,
-			where: "Office",
-			since: task.updatedAt,
-			target: { kind: "tasks" },
-		});
-	}
-
 	return items.sort(
 		(a, b) =>
 			ORDER.indexOf(a.reason) - ORDER.indexOf(b.reason) || a.since - b.since,
@@ -163,14 +145,6 @@ function whereOf(agent: CityAgent, projectName: Map<string, string>): string {
 	return project ? `${agent.workspaceName} · ${project}` : agent.workspaceName;
 }
 
-/** The building it is drawn in; an agent seated in the office opens in its own project's building. */
 function agentTarget(agent: CityAgent): NeedsYouTarget {
-	return {
-		kind: "agent",
-		projectId:
-			agent.place.projectId === OFFICE_PLACE
-				? agent.projectId
-				: agent.place.projectId,
-		terminalId: agent.terminalId,
-	};
+	return { projectId: agent.place.projectId, terminalId: agent.terminalId };
 }

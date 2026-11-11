@@ -4,11 +4,9 @@ import { useMemo, useState } from "react";
 import { LuChevronRight, LuList, LuMap } from "react-icons/lu";
 import { PageHeader } from "renderer/routes/_authenticated/_dashboard/components/PageHeader";
 import { NeedsYouBar } from "../../../components/NeedsYouBar";
-import { useOffice } from "../../../hooks/useOffice";
 import { STATUS_COLORS } from "../../constants";
 import { useCity } from "../../hooks/useCity";
-import { type AgentStatus, OFFICE_PLACE } from "../../types";
-import { officeBuilding } from "../../utils/officeBuilding";
+import type { AgentStatus } from "../../types";
 import { AgentList } from "./components/AgentList";
 import { AgentPanel } from "./components/AgentPanel";
 import { BuildingView } from "./components/BuildingView";
@@ -35,7 +33,6 @@ const SUMMARY: Array<[AgentStatus, string]> = [
 export function CityScreen({ projectId, agentId, view }: CityScreenProps) {
 	const navigate = useNavigate();
 	const { projects, rooms, handovers, hostReady, ready } = useCity();
-	const { state: office } = useOffice();
 	const [listSelected, setListSelected] = useState<string | null>(null);
 	const inside = projects.find((p) => p.id === projectId) ?? null;
 	const shown = inside ? [inside] : projects;
@@ -44,19 +41,13 @@ export function CityScreen({ projectId, agentId, view }: CityScreenProps) {
 		() => projects.flatMap((p) => p.workspaces.flatMap((w) => w.agents)),
 		[projects],
 	);
-	const buildings = useMemo(
-		() => (office.data ? [officeBuilding(office.data), ...projects] : projects),
-		[office.data, projects],
-	);
+	const buildings = projects;
 	const listAgent = everyone.find((a) => a.terminalId === listSelected);
 	const listProject = projects.find((p) => p.id === listAgent?.projectId);
 
 	const go = (search: { project?: string; agent?: string; view?: "list" }) =>
 		navigate({ to: "/office/city", search });
-	const enter = (id: string | null) => {
-		if (id === OFFICE_PLACE) navigate({ to: "/office" });
-		else go({ ...(id ? { project: id } : {}) });
-	};
+	const enter = (id: string | null) => go({ ...(id ? { project: id } : {}) });
 	const setView = (next: CityViewMode) =>
 		go({
 			...(projectId ? { project: projectId } : {}),
@@ -150,10 +141,8 @@ export function CityScreen({ projectId, agentId, view }: CityScreenProps) {
 							<AgentList
 								projects={shown}
 								allProjects={projects}
-								office={inside ? null : (office.data ?? null)}
 								selectedId={listAgent ? listSelected : null}
 								onSelect={setListSelected}
-								onOpenOffice={() => navigate({ to: "/office" })}
 							/>
 						</div>
 						{listAgent && listProject ? (

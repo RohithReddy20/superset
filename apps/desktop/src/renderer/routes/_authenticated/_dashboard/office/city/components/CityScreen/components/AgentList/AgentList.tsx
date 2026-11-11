@@ -1,13 +1,8 @@
 import { formatCompactRelativeTime } from "@superset/i18n/format";
 import { cn } from "@superset/ui/utils";
-import { LuBuilding2 } from "react-icons/lu";
-import { EngineMark } from "../../../../../components/EngineMark";
-import type { OfficeSnapshot } from "../../../../../types";
 import { useCityTeam } from "../../../../hooks/useCityTeam";
 import type { AgentStatus, CityAgent, CityProject } from "../../../../types";
-import { OFFICE_PLACE } from "../../../../types";
 import { MEETING_ROOM } from "../../../../utils/buildingSnapshot";
-import { teammateStatus } from "../../../../utils/officeBuilding";
 import { AgentIcon } from "../AgentIcon";
 import { StatusBadge } from "../StatusBadge";
 import { GroupHeader } from "./components/GroupHeader";
@@ -16,11 +11,8 @@ interface AgentListProps {
 	projects: CityProject[];
 	/** Every agent in the city, to name the rooms visitors sit in. */
 	allProjects: CityProject[];
-	/** The office's teammates and rooms; null leaves the office out. */
-	office: Pick<OfficeSnapshot, "teammates" | "rooms"> | null;
 	selectedId: string | null;
 	onSelect: (terminalId: string) => void;
-	onOpenOffice: () => void;
 }
 
 const URGENCY: AgentStatus[] = [
@@ -39,19 +31,13 @@ const ROW =
 export function AgentList({
 	projects,
 	allProjects,
-	office,
 	selectedId,
 	onSelect,
-	onOpenOffice,
 }: AgentListProps) {
 	const placeName = (agent: CityAgent): string | null => {
 		const { projectId, roomId } = agent.place;
 		if (projectId === agent.projectId && roomId === agent.workspaceId)
 			return null;
-		if (projectId === OFFICE_PLACE) {
-			const room = office?.rooms.find((r) => r.id === roomId);
-			return `Office${room ? ` · #${room.name}` : ""}`;
-		}
 		const project = allProjects.find((p) => p.id === projectId);
 		const room =
 			roomId === MEETING_ROOM.id
@@ -59,7 +45,6 @@ export function AgentList({
 				: project?.workspaces.find((w) => w.id === roomId)?.name;
 		return [room, project?.name].filter(Boolean).join(" · ") || null;
 	};
-	const aiTeammates = office?.teammates.filter((t) => t.kind === "ai") ?? [];
 	const { todos } = useCityTeam();
 	const doingOf = (terminalId: string) =>
 		todos.find((t) => t.ownerId === terminalId && t.state === "doing");
@@ -77,43 +62,6 @@ export function AgentList({
 				<span>Status</span>
 				<span className="text-right">Last change</span>
 			</div>
-			{office ? (
-				<section aria-label="Office">
-					<GroupHeader
-						icon={<LuBuilding2 className="size-3.5 text-muted-foreground" />}
-						name="Office"
-						detail={`${aiTeammates.length} AI teammate${aiTeammates.length === 1 ? "" : "s"}`}
-					/>
-					<ul>
-						{aiTeammates.map((t) => (
-							<li key={t.id}>
-								<button
-									type="button"
-									onClick={onOpenOffice}
-									className={cn(ROW, "hover:bg-fill-hover")}
-								>
-									<span className="flex min-w-0 items-center gap-2">
-										<EngineMark engine={t.engine} className="size-4" />
-										<span className="truncate font-medium">{t.name}</span>
-									</span>
-									<span className="min-w-0 truncate text-muted-foreground">
-										#
-										{office.rooms.find((r) => r.id === t.roomId)?.name ??
-											t.roomId}
-										{t.line ? ` · ${t.line}` : ""}
-									</span>
-									<span className="justify-self-start">
-										<StatusBadge status={teammateStatus(t)} />
-									</span>
-									<span className="text-right text-[12px] text-muted-foreground">
-										{t.lineSince ? formatCompactRelativeTime(t.lineSince) : ""}
-									</span>
-								</button>
-							</li>
-						))}
-					</ul>
-				</section>
-			) : null}
 			{projects.map((project) => {
 				const agents = project.workspaces
 					.flatMap((w) => w.agents)

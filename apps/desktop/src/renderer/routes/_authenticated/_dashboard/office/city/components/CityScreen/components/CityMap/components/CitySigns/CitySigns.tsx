@@ -1,12 +1,7 @@
 import { cn } from "@superset/ui/utils";
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
-import { LuBuilding2 } from "react-icons/lu";
 import { STATUS_COLORS } from "../../../../../../constants";
-import {
-	type AgentStatus,
-	type CityBuildingSource,
-	OFFICE_PLACE,
-} from "../../../../../../types";
+import type { AgentStatus, CityBuildingSource } from "../../../../../../types";
 import type { CityFrame } from "../../scene";
 
 export interface CitySignsHandle {
@@ -100,8 +95,6 @@ export const CitySigns = forwardRef<CitySignsHandle, CitySignsProps>(
 											className="size-4 rounded-sm object-cover group-data-[compact=true]/city:size-3"
 											draggable={false}
 										/>
-									) : project.id === OFFICE_PLACE ? (
-										<LuBuilding2 className="size-4 text-muted-foreground group-data-[compact=true]/city:size-3" />
 									) : (
 										<span className="flex size-4 items-center justify-center rounded-sm bg-muted text-[9px] uppercase text-muted-foreground group-data-[compact=true]/city:size-3">
 											{project.name.slice(0, 1)}

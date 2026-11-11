@@ -1,1 +1,0 @@
-export { NewRoomPrompt } from "./NewRoomPrompt";

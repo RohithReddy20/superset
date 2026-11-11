@@ -78,7 +78,7 @@ describe("needsYou", () => {
 		]);
 	});
 
-	test("puts a question before a failure, a hand-over, office tasks and finished work", () => {
+	test("puts a question before a failure, a hand-over and finished work", () => {
 		const items = needsYou({
 			projects: city([
 				agent("done", "review", 1),
@@ -89,18 +89,11 @@ describe("needsYou", () => {
 				agent("mover", "working", 4),
 			]),
 			handovers: [handover("mover", "asked"), handover("quiet", "done")],
-			tasks: [
-				{ id: "T-1", title: "Docs", status: "verified", updatedAt: 1 },
-				{ id: "T-2", title: "Port", status: "blocked", updatedAt: 1 },
-				{ id: "T-3", title: "Lint", status: "doing", updatedAt: 1 },
-			],
 		});
 		expect(items.map((i) => i.id)).toEqual([
 			"agent:asks",
 			"agent:broke",
 			"handover:h-mover",
-			"task:T-2",
-			"task:T-1",
 			"agent:done",
 		]);
 		expect(items[0]?.where).toBe("Check health · api");
@@ -115,20 +108,6 @@ describe("needsYou", () => {
 			handovers: [],
 		});
 		expect(items.map((i) => i.title)).toEqual(["early", "late"]);
-	});
-
-	test("opens an agent seated in the office in its own project's building", () => {
-		const [item] = needsYou({
-			projects: city([
-				agent("guest", "permission", 1, { projectId: "office", roomId: "eng" }),
-			]),
-			handovers: [],
-		});
-		expect(item?.target).toEqual({
-			kind: "agent",
-			projectId: "p1",
-			terminalId: "guest",
-		});
 	});
 });
 

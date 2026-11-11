@@ -23,7 +23,6 @@ export function buildingSnapshot(
 		MEETING_ROOM,
 	];
 	return {
-		started: true,
 		teammates: [you(), ...present.map(person)],
 		rooms: rooms.map((room) => ({
 			id: room.id,
@@ -34,12 +33,7 @@ export function buildingSnapshot(
 				.map((a) => a.terminalId),
 			...(room.id === MEETING_ROOM.id ? { place: "meeting" } : {}),
 		})),
-		messages: [],
 		handoffs: [],
-		tasks: [],
-		log: [],
-		project: null,
-		leadId: null,
 	};
 }
 

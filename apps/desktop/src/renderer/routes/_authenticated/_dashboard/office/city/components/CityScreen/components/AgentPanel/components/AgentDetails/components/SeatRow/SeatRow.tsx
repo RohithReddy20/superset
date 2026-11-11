@@ -2,13 +2,7 @@ import { Button } from "@superset/ui/button";
 import { useState } from "react";
 import { LuHouse } from "react-icons/lu";
 import { useCityActions } from "../../../../../../../../hooks/useCityActions";
-import { useOfficeRooms } from "../../../../../../../../hooks/useOfficeRooms";
-import {
-	type CityAgent,
-	type CityProject,
-	OFFICE_PLACE,
-	type OfficeRoomRef,
-} from "../../../../../../../../types";
+import type { CityAgent, CityProject } from "../../../../../../../../types";
 import {
 	isVisiting,
 	MEETING_ROOM,
@@ -22,10 +16,9 @@ interface SeatRowProps {
 /** Where the agent sits, a way home, and a pick of every room in the city to sit in instead. */
 export function SeatRow({ agent, projects }: SeatRowProps) {
 	const actions = useCityActions();
-	const officeRooms = useOfficeRooms();
 	const [error, setError] = useState<string | null>(null);
 	const visiting = isVisiting(agent);
-	const placeName = roomName(projects, officeRooms, agent.place);
+	const placeName = roomName(projects, agent.place);
 
 	const run = (action: Promise<unknown>) => {
 		setError(null);
@@ -72,22 +65,6 @@ export function SeatRow({ agent, projects }: SeatRowProps) {
 				<option value="" disabled>
 					Sit somewhere else in the city…
 				</option>
-				{officeRooms.length > 0 ? (
-					<optgroup label="Office, with its teammates">
-						{officeRooms.map((room) => (
-							<option
-								key={room.id}
-								value={`${OFFICE_PLACE}/${room.id}`}
-								disabled={
-									agent.place.projectId === OFFICE_PLACE &&
-									agent.place.roomId === room.id
-								}
-							>
-								#{room.name}
-							</option>
-						))}
-					</optgroup>
-				) : null}
 				{projects.map((project) => (
 					<optgroup key={project.id} label={project.name}>
 						{[
@@ -113,13 +90,7 @@ export function SeatRow({ agent, projects }: SeatRowProps) {
 	);
 }
 
-function roomName(
-	projects: CityProject[],
-	officeRooms: OfficeRoomRef[],
-	place: CityAgent["place"],
-): string {
-	if (place.projectId === OFFICE_PLACE)
-		return `#${officeRooms.find((r) => r.id === place.roomId)?.name ?? place.roomId} (office)`;
+function roomName(projects: CityProject[], place: CityAgent["place"]): string {
 	const project = projects.find((p) => p.id === place.projectId);
 	const room =
 		place.roomId === MEETING_ROOM.id

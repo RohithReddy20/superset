@@ -9,7 +9,6 @@ import {
 	type LostAgent,
 	lastAnswer,
 	mentioned,
-	OFFICE,
 	OFFICE_CLI,
 	SEAT_KEPT_MS,
 	saysNoReply,
@@ -483,43 +482,5 @@ describe("hand-over", () => {
 		await expect(
 			rooms.handOver({ terminalId: "t2", toWorkspaceId: "nope" }),
 		).rejects.toThrow("does not exist");
-	});
-});
-
-describe("office seats", () => {
-	test("an agent seated in an office room is synced to the office, and its answers go there", async () => {
-		const a = agent("t1", "api");
-		const synced: string[][] = [];
-		const ended: Array<[string, string]> = [];
-		const rooms = new CityRooms({
-			statePath: join(mkdtempSync(join(tmpdir(), "city-")), "city.json"),
-			agents: () => [a],
-			roomName: () => null,
-			send: async () => {},
-			lastReply: async () => "@Scout done",
-			office: {
-				rooms: () => [{ id: "eng", name: "engineering" }],
-				sync: (guests) =>
-					synced.push(guests.map((g) => `${g.terminalId}@${g.roomId}`)),
-				turnEnded: async (terminalId, reply) => {
-					ended.push([terminalId, reply]);
-				},
-			},
-			settleMs: 0,
-		});
-		await rooms.seat("t1", OFFICE, "eng");
-		rooms.snapshot();
-		expect(synced.at(-1)).toEqual(["t1@eng"]);
-		expect(rooms.snapshot().officeRooms).toEqual([
-			{ id: "eng", name: "engineering" },
-		]);
-		expect(rooms.snapshot().rooms.some((r) => r.projectId === OFFICE)).toBe(
-			false,
-		);
-		await rooms.onAgentEvent({ terminalId: "t1", eventType: "Stop" });
-		expect(ended).toEqual([["t1", "@Scout done"]]);
-		await expect(rooms.seat("t1", OFFICE, "nowhere")).rejects.toThrow(
-			"does not exist",
-		);
 	});
 });

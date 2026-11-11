@@ -74,7 +74,6 @@ export type CityRoomsSnapshot =
 export type CityRoom = CityRoomsSnapshot["rooms"][number];
 export type CityRoomMessage = CityRoom["messages"][number];
 export type CityHandover = CityRoomsSnapshot["handovers"][number];
-export type OfficeRoomRef = CityRoomsSnapshot["officeRooms"][number];
 export type CityTodo =
 	inferRouterOutputs<AppRouter>["office"]["team"]["todos"][number];
 export type CityNote =
@@ -83,5 +82,3 @@ export type CityNote =
 export const YOU = "you";
 export const isOpenTodo = (todo: Pick<CityTodo, "state">): boolean =>
 	todo.state === "open" || todo.state === "doing";
-/** The `projectId` of a place in the office rather than a project's building. */
-export const OFFICE_PLACE = "office";

@@ -10,7 +10,6 @@ import {
 } from "@superset/shared/host-routing";
 import { SANDBOX_PORTS } from "@superset/shared/sandbox-contract";
 import { createCityRooms } from "./office/createCityRooms";
-import { OfficeRuntime } from "./office/officeRuntime";
 import { runAgentInWorkspace } from "./trpc/router/agents";
 
 /** One frame of a 1920x1200 display is ~9 MB; this is a stalled reader, not a burst. */
@@ -342,29 +341,6 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 		onActivity: (workspaceId) => terminalAgentStore.noteActivity(workspaceId),
 	});
 
-	let officeRuntime: OfficeRuntime | null = null;
-	const office = () => {
-		officeRuntime ??= new OfficeRuntime({
-			db,
-			homeDir: join(resolveAppHomeDir(), "office"),
-			sendToTerminal: async (terminalId, workspaceId, text) => {
-				const result = await sendAgentMessage({
-					terminalId,
-					workspaceId,
-					text,
-					submit: true,
-					db,
-					eventBus,
-					terminalAgentStore,
-				});
-				if ("error" in result) throw new Error(result.error);
-			},
-			baseUrl: () =>
-				`http://127.0.0.1:${process.env.HOST_SERVICE_PORT || process.env.PORT}`,
-		});
-		return officeRuntime;
-	};
-
 	// A dev checkout's terminals have the installed CLI on PATH, which lacks this checkout's commands.
 	const devCli = join(dirname(resolveAppHomeDir()), "scripts", "dev-cli.ts");
 	const city = createCityRooms({
@@ -376,12 +352,6 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 		runAgent: (input) => runAgentInWorkspace(chatAgentContext, input),
 		resumeAgent: (input) =>
 			resumeTerminalAgentSession(resumeSessionDepsFor(chatAgentContext), input),
-		office: {
-			rooms: () => office().guestRooms(),
-			sync: (guests) => office().syncGuests(guests),
-			turnEnded: (terminalId, reply) =>
-				office().guestTurnEnded(terminalId, reply),
-		},
 	});
 
 	const chatSync = createChatSync({
@@ -390,7 +360,6 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 	});
 	const runtime = {
 		agentJobs,
-		office,
 		city: () => city.rooms,
 		cityTeam: () => city.team,
 		filesystem,
@@ -608,15 +577,6 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 	});
 	registerChatV3Routes({ app, db, mount: chatV3, upgradeWebSocket });
 
-	// A seat's engine calls the office tools here with its own per-seat token.
-	// Never relayed: a seat is a local process on this machine.
-	app.all("/office-mcp/:token", async (c) => {
-		if (c.req.header(SUPERSET_RELAYED_HEADER) !== undefined) {
-			return c.text("Not found", 404);
-		}
-		return office().handleMcp(c.req.param("token"), c.req.raw);
-	});
-
 	// tRPC answers a streamed batch before it has read the request body, and
 	// a sandbox's ingress treats that early response as the end of the
 	// exchange and drops the upload still in flight. Hand tRPC a body it
@@ -671,7 +631,6 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 	const dispose = async (): Promise<void> => {
 		stopChatSync?.();
 		agentJobs.stopAll();
-		await officeRuntime?.stop().catch(() => {});
 		if (projectPurgeTimer) clearInterval(projectPurgeTimer);
 		if (attachmentSweepTimer) clearInterval(attachmentSweepTimer);
 		await disposeWorkspaceTitleJobs(db);

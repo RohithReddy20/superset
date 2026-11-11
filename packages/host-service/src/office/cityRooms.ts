@@ -120,8 +120,6 @@ export interface CitySnapshot {
 	names: Array<{ terminalId: string; name: string; handle: string }>;
 	rooms: CityRoomSnapshot[];
 	handovers: CityHandover[];
-	/** Rooms of the office an agent can sit in, as the place `{ projectId: "office", roomId }`. */
-	officeRooms: Array<{ id: string; name: string }>;
 	/** Named agents whose terminal stopped; they keep their seat until they are reconnected or removed. */
 	lost: CityLostAgent[];
 }
@@ -134,25 +132,6 @@ export interface CityRoomsDeps {
 	send: (agent: CityAgentInfo, text: string) => Promise<void>;
 	/** The agent's last answer, read when its turn ends. */
 	lastReply: (agent: CityAgentInfo) => Promise<string | null>;
-	/** The office, for agents seated in its rooms (`projectId` {@link OFFICE}). */
-	office?: {
-		rooms: () => Array<{ id: string; name: string }>;
-		sync: (
-			guests: Array<
-				Pick<
-					NamedAgent,
-					| "terminalId"
-					| "name"
-					| "workspaceId"
-					| "agentId"
-					| "label"
-					| "workspaceName"
-					| "projectName"
-				> & { roomId: string }
-			>,
-		) => void;
-		turnEnded: (terminalId: string, reply: string) => Promise<void>;
-	};
 	/** A workspace on this host, or null when there is none with that id. */
 	workspace?: (workspaceId: string) => {
 		projectId: string;
@@ -185,8 +164,6 @@ export interface CityRoomsDeps {
 }
 
 export const MEETING_ROOM = "meeting";
-/** The `projectId` of a place in the office rather than in a project's building. */
-export const OFFICE = "office";
 /** A seat whose agent stopped running is kept this long, in case it comes back in a new terminal. */
 export const SEAT_KEPT_MS = 24 * 60 * 60 * 1000;
 /** How long a reconnected agent shows as reconnecting before its new terminal reports in. */
@@ -287,7 +264,6 @@ export class CityRooms {
 		const rooms: CityRoomSnapshot[] = [];
 		for (const key of keys) {
 			const { projectId, roomId } = parseKey(key);
-			if (projectId === OFFICE) continue;
 			const name = this.nameOf(projectId, roomId);
 			if (!name) continue;
 			const room = this.state.rooms[key];
@@ -315,7 +291,6 @@ export class CityRooms {
 			})),
 			rooms,
 			handovers: this.state.handovers,
-			officeRooms: this.deps.office?.rooms() ?? [],
 			lost,
 		};
 	}
@@ -671,8 +646,7 @@ export class CityRooms {
 		const briefing = this.state.handovers.find(
 			(h) => h.fromTerminalId === agent.terminalId && h.status === "briefing",
 		);
-		const inOffice = place.projectId === OFFICE;
-		if (handles.size < 2 && !briefing && !inOffice) return;
+		if (handles.size < 2 && !briefing) return;
 		const settle = this.deps.settleMs ?? 1000;
 		if (settle > 0) await new Promise((r) => setTimeout(r, settle));
 		const reply = (await this.deps.lastReply(agent))?.trim();
@@ -680,11 +654,6 @@ export class CityRooms {
 		if (briefing) {
 			this.lastRelayed.set(agent.terminalId, reply);
 			await this.finishHandover(briefing, agent, reply);
-			return;
-		}
-		if (inOffice) {
-			this.lastRelayed.set(agent.terminalId, reply);
-			await this.deps.office?.turnEnded(agent.terminalId, reply);
 			return;
 		}
 		const asked = handoverRequest(reply);
@@ -876,17 +845,6 @@ export class CityRooms {
 			return { ...agent, name };
 		});
 		if (changed) this.save();
-		if (this.deps.office) {
-			const byId = new Map(named.map((a) => [a.terminalId, a]));
-			this.deps.office.sync(
-				this.state.seats.flatMap((seat) => {
-					const agent = byId.get(seat.terminalId);
-					return seat.projectId === OFFICE && agent
-						? [{ ...agent, roomId: seat.roomId }]
-						: [];
-				}),
-			);
-		}
 		return named;
 	}
 
@@ -1000,7 +958,6 @@ export class CityRooms {
 		const agent = agents.find((a) => a.terminalId === fromTerminalId);
 		if (!agent || saysNoReply(reply)) return false;
 		const place = this.placeOf(agent);
-		if (place.projectId === OFFICE) return false;
 		const handles = this.handles(place.projectId, place.roomId, agents);
 		return mentioned(reply, handles, fromTerminalId).includes(toTerminalId);
 	}
@@ -1079,12 +1036,7 @@ export class CityRooms {
 		this.save();
 	}
 
-	/** A room's name: an office room, or one of a project's rooms. */
 	private nameOf(projectId: string, roomId: string): string | null {
-		if (projectId === OFFICE)
-			return (
-				this.deps.office?.rooms().find((r) => r.id === roomId)?.name ?? null
-			);
 		return this.deps.roomName(projectId, roomId);
 	}
 

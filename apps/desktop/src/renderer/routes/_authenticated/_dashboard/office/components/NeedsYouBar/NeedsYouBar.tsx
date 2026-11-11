@@ -9,19 +9,13 @@ import { NeedsYouChip } from "./components/NeedsYouChip";
 export function NeedsYouBar() {
 	const items = useNeedsYou();
 	const navigate = useNavigate();
-	const urgent = items.filter(
-		(i) => i.reason !== "review" && i.reason !== "verified",
-	).length;
+	const urgent = items.filter((i) => i.reason !== "review").length;
 
-	const open = (target: NeedsYouTarget) => {
-		if (target.kind === "tasks")
-			navigate({ to: "/office", search: { tab: "tasks" } });
-		else
-			navigate({
-				to: "/office/city",
-				search: { project: target.projectId, agent: target.terminalId },
-			});
-	};
+	const open = (target: NeedsYouTarget) =>
+		navigate({
+			to: "/office/city",
+			search: { project: target.projectId, agent: target.terminalId },
+		});
 
 	return (
 		<section

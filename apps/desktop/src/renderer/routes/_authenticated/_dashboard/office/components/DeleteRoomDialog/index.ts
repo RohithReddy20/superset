@@ -1,1 +1,0 @@
-export { DeleteRoomDialog } from "./DeleteRoomDialog";

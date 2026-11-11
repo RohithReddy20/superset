@@ -707,3 +707,30 @@ Order: 2 first on top of today's city (additive, old paths keep working), then 3
   moved → delivery.done → Milo started the item, added its own item, wrote "queued-ok" to the
   person and finished. The history section lists those lines. A new item from Milo was on screen
   117 ms after it was saved.
+
+## 2026-11-11: step 3 built — one system
+
+- **Gone: the city's task flow.** `CityTasks` (C-n tasks, check command, checker agent, rounds,
+  "ready for you", pull-request step) with `TASK DONE`, `VERDICT` and `PR:`; its tRPC procedures;
+  `TaskBox`, `GiveTaskForm`, `TaskCard`, `useCityTasks`. The agent panel has "Ask <name> for
+  something" (`AskBox`) instead: the item lands on the agent's own list through `office.teamAsk`.
+  The agent list shows the item an agent marked as doing.
+- **Gone: the Office's own teammates.** `packages/office-harness` (Office, Seat, guards, the office
+  MCP tools, the standalone web page), `OfficeRuntime`, `OfficeGuests`, the `/office-mcp` route,
+  the `office.state|say|setPaused|hire|addRoom|deleteRoom|setDesks|openGroup|moveTeammate|
+  createTask|assignTask|updateTask|stop` procedures, the lead and verifier settings, and the Office
+  building, its rooms as seats and its guests in the city. In the renderer: `OfficeScreen`,
+  `RoomFeed`, `TaskBoard`, `TeammateCard`, `RightNowRail`, the hire / room / task dialogs,
+  `OfficeFloor` (the wrapper), `GroupChat`, `NewRoomPrompt`, `useOffice`, `useOfficeRooms`,
+  `officeBuilding`. `/office` now redirects to the city.
+- **Kept and shared:** the floor scene, overlay, controls and tileset under
+  `office/components/OfficeFloor`, which the city's buildings draw with; `office/types.ts` now
+  holds only what the floor draws.
+- **Left on disk, unused:** `<app home>/office/office.json`, `state.json`, `city-tasks.json`,
+  `city-team.json`, `office-seats/`, `office-work/`.
+- **Still phrases, not commands:** talk between agents sitting in one room (@mentions in their
+  answers, "no reply") and hand-overs (`HANDOVER REQUEST`, `HANDOVER BRIEF`). These are the last
+  part of step 3.
+- **Checked in the running app:** the city loads with no Office building; `/office` shows the
+  city; Milo was reconnected from its panel; "Ask Milo for something" put D-6 on its list, Milo
+  wrote "asked-ok" to the person and finished it, and the panel showed it.

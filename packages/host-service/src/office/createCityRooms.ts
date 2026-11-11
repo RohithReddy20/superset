@@ -24,7 +24,6 @@ import {
 import {
 	type CityAgentInfo,
 	CityRooms,
-	type CityRoomsDeps,
 	type LostAgent,
 	lastAnswer,
 	MEETING_ROOM,
@@ -45,7 +44,6 @@ export function createCityRooms({
 	statePath,
 	runAgent,
 	resumeAgent,
-	office,
 	officeCli,
 }: {
 	db: HostDb;
@@ -63,8 +61,6 @@ export function createCityRooms({
 		workspaceId: string;
 		terminalId: string;
 	}) => Promise<{ resumed: true; terminalId: string } | { resumed: false }>;
-	/** The office, so agents can sit in its rooms next to its own teammates. */
-	office?: CityRoomsDeps["office"];
 	officeCli?: string;
 }): { rooms: CityRooms; team: CityTeam } {
 	mkdirSync(dirname(statePath), { recursive: true });
@@ -210,7 +206,6 @@ export function createCityRooms({
 				throw new Error("There was no conversation left to continue");
 			return { terminalId: result.terminalId };
 		},
-		...(office ? { office } : {}),
 		...(officeCli ? { officeCli } : {}),
 		successorOf,
 		roomName: (projectId, roomId) => {
