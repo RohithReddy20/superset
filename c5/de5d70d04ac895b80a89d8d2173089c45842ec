@@ -1,0 +1,39 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/components/HandoverBox/HandoverBox.tsx
+  s_5f8913573c0c91::t_f7df3ce628d290 23,44,114
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/components/ListBox/ListBox.tsx
+  s_5f8913573c0c91::t_8c737e464a5a06 17-19,49-59,102-144
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useCityTeam/useCityTeam.ts
+  s_5f8913573c0c91::t_bf646bda18b375 52-53
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/hooks/useNeedsYou/useNeedsYou.ts
+  s_5f8913573c0c91::t_2d849689b3537c 8,11-12
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/needsYou/needsYou.test.ts
+  s_5f8913573c0c91::t_32c7af0f2dbdf6 2,65
+packages/cli/src/commands/office/handover/command.ts
+  s_5f8913573c0c91::t_ae8846b9965172 1-32
+packages/host-service/src/office/cityRooms.test.ts
+  s_5f8913573c0c91::t_ebe3fe4fcaf6d8 399,406-411,419,433-438,440-448
+packages/host-service/src/office/cityRooms.ts
+  s_5f8913573c0c91::t_240d7dc6d3c021 80,93,155-156,179,452-464,467,470,472-478,480-503,553,567,579,603,654,659,897-900,902
+packages/host-service/src/office/createCityRooms.ts
+  s_5f8913573c0c91::t_bf912f6ef98e07 221-229
+packages/host-service/src/trpc/router/office/office.ts
+  s_5f8913573c0c91::t_ae832812ae040f 95-124
+plans/20261105-office-orchestration-notes.md
+  s_5f8913573c0c91::t_e56f0f5228103f 737-758
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c5de5d70d04ac895b80a89d8d2173089c45842ec",
+  "prompts": {},
+  "sessions": {
+    "s_5f8913573c0c91": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ffe1d21c-40b7-4316-ace2-1908f5fdc59b",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
