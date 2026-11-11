@@ -1,0 +1,96 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/CityScreen.tsx
+  s_6f7457834498e3::t_48da437063c244 52
+  s_3ee79395c5b19c::t_fe9a109eb18f24 2,6,8,10,14,18,20-21,25-30,32-37,39-41,49-51,53-61,63-85,87-99,102-109,114-119,121,125-170,172,175-177,179
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/BuildingView.tsx
+  s_3ee79395c5b19c::t_3bd58ae465caa0 1,3,5,11-19,24-29,32,47-66,68
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/BuildingFloor/BuildingFloor.tsx
+  s_3ee79395c5b19c::t_57d3317b2a1857 22,31,43-45,60-61,74-75,138-141,205-207,213,215,218,223-225,236,243,263,278-285
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/BuildingFloor/components/FloorHint/FloorHint.tsx
+  s_3ee79395c5b19c::t_4e25387e20492e 1-35
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/BuildingFloor/components/FloorHint/index.ts
+  s_3ee79395c5b19c::t_ea4fa06f4898b0 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/BuildingFloor/constants.ts
+  s_3ee79395c5b19c::t_a763bc9d7b7004 5,8-9
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/CityBreadcrumb/CityBreadcrumb.tsx
+  s_3ee79395c5b19c::t_5d8637d039d4b3 1-151
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/CityBreadcrumb/index.ts
+  s_3ee79395c5b19c::t_b2b9fc4bf1e021 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/CityMap/CityMap.tsx
+  s_3ee79395c5b19c::t_dd6ef9e9dc113c 46,66-79,116,118
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/CityMap/components/CitySigns/CitySigns.tsx
+  s_3ee79395c5b19c::t_073a9739891edf 5,92-95,102
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/CityMap/scene/CityScene.ts
+  s_3ee79395c5b19c::t_a4687f1b7a07eb 48-50,157-186,304
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/EmptyState/EmptyState.tsx
+  s_3ee79395c5b19c::t_4d8a9ec11dd804 1-12,14-38
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/ProjectIcon/ProjectIcon.tsx
+  s_3ee79395c5b19c::t_646bd69d2b4dc4 1-28
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/ProjectIcon/index.ts
+  s_3ee79395c5b19c::t_db92b7ce346d82 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/ViewSwitch/ViewSwitch.tsx
+  s_3ee79395c5b19c::t_0afe47f3d95223 1-41
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/ViewSwitch/index.ts
+  s_3ee79395c5b19c::t_175523a91b2131 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useCity/useCity.ts
+  s_3ee79395c5b19c::t_1d3ac823cd21e8 31-32,112
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useEscapeKey/index.ts
+  s_3ee79395c5b19c::t_fb9f8da4ce5bfc 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useEscapeKey/useEscapeKey.ts
+  s_3ee79395c5b19c::t_ad33c13330cbcd 1-25
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/page.tsx
+  s_3ee79395c5b19c::t_d442b8182ca2e4 10,12-13,28,30,38,43
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/buildingSnapshot/buildingSnapshot.test.ts
+  s_3ee79395c5b19c::t_6c32c214eb1249 77-83,86,88-94,96,98-101
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/buildingSnapshot/buildingSnapshot.ts
+  s_3ee79395c5b19c::t_2eaa197fe1740f 83-86,96,106,110-111
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/components/FloorControls/FloorControls.tsx
+  s_3ee79395c5b19c::t_506d1863155268 3-4,12,18-20,30-45,68-81,83-87
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/components/FloorOverlay/FloorOverlay.tsx
+  s_3ee79395c5b19c::t_b5f70b0a38b7e9 3,6-7,24,42,47-57,60-80,90,102,115-120,122-129,131-135,137,141-142,144-160,177,186-191,194,203,205,210,213,221,224-231,234-267,269-270
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/components/FloorOverlay/components/NameTag/NameTag.tsx
+  s_3ee79395c5b19c::t_679f95ed2afc1a 1-207
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/components/FloorOverlay/components/NameTag/index.ts
+  s_3ee79395c5b19c::t_689c568ab9fe59 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/components/FloorOverlay/components/RoomSign/RoomSign.tsx
+  s_3ee79395c5b19c::t_16ec7523d9ae31 1-37
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/components/FloorOverlay/components/RoomSign/index.ts
+  s_3ee79395c5b19c::t_f0665742d8bc6d 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/scene/OfficeScene.ts
+  s_3ee79395c5b19c::t_31517965eddded 9,17-18,38-43,64-73,82-85,89-91,93,132-139,150-152,160-167,171-190,208-212,223-229,231-232,234,239,241-243,256,283-288,291-293,297,306,390-396,399-400,402-403,405,408-412,415-420,424-426,431-433,455,464-483,487-488,490,493-498,504-519,521-522,527-561,563-593,595-597,603,612,633-635,645-646,662-670,679-686,743,770-774,809,840,851,855-865,868,873-874,895-918,928,930,938-943,947-982,993-998,1001-1009,1011-1014,1023,1027-1038,1040-1047,1050-1074,1094-1097,1099-1110,1115,1136-1137,1166,1172,1198-1207,1224-1225,1238-1293
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/scene/index.ts
+  s_3ee79395c5b19c::t_9035e896d552ec 7
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/types.ts
+  s_3ee79395c5b19c::t_6ec20fc7d39591 3-12,20-23
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/world/index.ts
+  s_3ee79395c5b19c::t_08c60dce88d1b5 19-20
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/world/world.test.ts
+  s_3ee79395c5b19c::t_5f9bd034a41000 8-9,115-137,247,256-259,305-379
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/world/world.ts
+  s_3ee79395c5b19c::t_538c139fef6044 19-20,80-83,124-147,149,179-181,242-266,400-445
+plans/20261105-office-orchestration-notes.md
+  s_3ee79395c5b19c::t_91a90f8f4b2b91 878-932
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "daa15524461f3508437be38a384ef1cb03b8ec44",
+  "prompts": {},
+  "sessions": {
+    "s_3ee79395c5b19c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cec73e00-c805-403b-aa3d-5fd48be8752a",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    },
+    "s_6f7457834498e3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a830efbe-28d8-4c69-8e55-abf00ec0995a",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
