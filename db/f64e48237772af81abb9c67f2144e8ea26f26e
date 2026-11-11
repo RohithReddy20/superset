@@ -1,0 +1,60 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/NeedsYouBar/NeedsYouBar.tsx
+  s_6f7457834498e3::t_3ec2b1b02b3481 12-15,17,21
+  s_3ee79395c5b19c::t_c745235f92de7a 3,9-11,32,40,43-46,51-57,59-72
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/CityScreen.tsx
+  s_3ee79395c5b19c::t_24f2bb868503ad 123-136
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentBar/AgentBar.tsx
+  s_3ee79395c5b19c::t_b6762b990af11b 6,121,149-151,177-194,200,202,204-208
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentFace/AgentFace.tsx
+  s_3ee79395c5b19c::t_9f07f5d7b0a637 1-28
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentFace/index.ts
+  s_3ee79395c5b19c::t_d6588005e81fc0 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentList/AgentList.tsx
+  s_3ee79395c5b19c::t_59b770f8bdaa14 3,7,9,21-24,27,29,50-64,67,84-86,91,93,96-98,108,113-114,116,119-120,124,128-131,133,138-146,149,154-157,164
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/AgentDetails.tsx
+  s_3ee79395c5b19c::t_e43f61e97f97b7 17,92,102-105
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/components/Conversation/components/ConversationTurn/ConversationTurn.tsx
+  s_3ee79395c5b19c::t_096a1a06e28fc8 17,19,21-25,27,32-37
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/CityMap/CityMap.tsx
+  s_3ee79395c5b19c::t_cc391320861b43 69
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/CityMap/scene/CityScene.ts
+  s_3ee79395c5b19c::t_454dc68f424fdf 50,305
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/StartBar/StartBar.tsx
+  s_3ee79395c5b19c::t_d1a5e1cff12d63 1-8,12-17,22,24-26,36-38,40-55,57,61
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/parseTurns/parseTurns.test.ts
+  s_3ee79395c5b19c::t_17f2906c8e33fe 24-32
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/parseTurns/parseTurns.ts
+  s_3ee79395c5b19c::t_c1851e3fd6beb1 2-3,9,25-32
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/LongText/LongText.tsx
+  s_3ee79395c5b19c::t_be937ce752a964 6-7,13,17-18,21-23,29
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/NeedsYouBar/components/NeedsYouChip/NeedsYouChip.tsx
+  s_3ee79395c5b19c::t_5a3785c762a1cb 50-58,61-62,64,72,74-77,91,94
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/needsYou/needsYou.ts
+  s_3ee79395c5b19c::t_506ca6bdb0d31e 29
+plans/20261105-office-orchestration-notes.md
+  s_3ee79395c5b19c::t_c4dd932339c7f3 969-994
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dbf64e48237772af81abb9c67f2144e8ea26f26e",
+  "prompts": {},
+  "sessions": {
+    "s_3ee79395c5b19c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cec73e00-c805-403b-aa3d-5fd48be8752a",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    },
+    "s_6f7457834498e3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a830efbe-28d8-4c69-8e55-abf00ec0995a",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
