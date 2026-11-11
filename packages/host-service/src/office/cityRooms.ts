@@ -108,6 +108,8 @@ export interface CitySnapshot {
 	/** Each running agent's name and the @handle it answers to. */
 	names: Array<{ terminalId: string; name: string; handle: string }>;
 	rooms: CityRoomSnapshot[];
+	/** The name the next agent gets when the person gives none. */
+	nextName: string;
 	handovers: CityHandover[];
 	/** Named agents whose terminal stopped; they keep their seat until they are reconnected or removed. */
 	lost: CityLostAgent[];
@@ -265,6 +267,7 @@ export class CityRooms {
 				handle: handleOf(a),
 			})),
 			rooms,
+			nextName: this.freeName(),
 			handovers: this.state.handovers,
 			lost,
 		};
@@ -719,6 +722,20 @@ export class CityRooms {
 	}
 
 	/** The first name of {@link AGENT_NAMES} no agent has, or one with a number. */
+	/** A name tidied and checked: its length, its handle, and that no other agent has it. */
+	private checkedName(wanted: string, own?: CityName): string {
+		const name = wanted.trim().replace(/\s+/g, " ");
+		if (!name || name.length > MAX_NAME_CHARS)
+			throw new Error(`A name is 1 to ${MAX_NAME_CHARS} characters`);
+		const handle = slug(name);
+		if (!handle) throw new Error("A name needs a letter or a digit");
+		if (RESERVED_HANDLES.has(handle))
+			throw new Error(`"${name}" is kept for talking to everyone`);
+		if (this.state.names.some((n) => n !== own && slug(n.name) === handle))
+			throw new Error(`Another agent is already called ${name}`);
+		return name;
+	}
+
 	private freeName(): string {
 		const taken = new Set(this.state.names.map((n) => slug(n.name)));
 		for (let n = 1; ; n++)
@@ -784,12 +801,16 @@ export class CityRooms {
 		workspaceId: string;
 		agent: string;
 		prompt: string;
+		/** The name the person chose; a free one is given when unset. */
+		name?: string;
 	}): Promise<{ terminalId: string; name: string }> {
 		const target = this.deps.workspace?.(input.workspaceId);
 		if (!target || !this.deps.startAgent)
 			throw new Error("That workspace does not exist on this machine");
 		this.liveAgents();
-		const name = this.freeName();
+		const name = input.name?.trim()
+			? this.checkedName(input.name)
+			: this.freeName();
 		const task = input.prompt.trim();
 		const prompt = [
 			this.identity({ ...target, name, workspaceName: target.name }),
@@ -818,18 +839,10 @@ export class CityRooms {
 
 	/** Renames an agent; it is told its new name with the next message the city gives it. */
 	rename(terminalId: string, wanted: string): void {
-		const name = wanted.trim().replace(/\s+/g, " ");
-		if (!name || name.length > MAX_NAME_CHARS)
-			throw new Error(`A name is 1 to ${MAX_NAME_CHARS} characters`);
-		const handle = slug(name);
-		if (!handle) throw new Error("A name needs a letter or a digit");
-		if (RESERVED_HANDLES.has(handle))
-			throw new Error(`"${name}" is kept for talking to everyone`);
 		const agent = this.liveAgents().find((a) => a.terminalId === terminalId);
 		const entry = this.state.names.find((n) => n.terminalId === terminalId);
 		if (!agent || !entry) throw new Error("That agent is no longer running");
-		if (this.state.names.some((n) => n !== entry && slug(n.name) === handle))
-			throw new Error(`Another agent is already called ${name}`);
+		const name = this.checkedName(wanted, entry);
 		if (entry.name === name) return;
 		entry.name = name;
 		entry.told = false;

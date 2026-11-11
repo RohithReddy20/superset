@@ -829,3 +829,17 @@ terminal bar.
 - The "Add agent" button and its popover are gone.
 - **Checked in the running app:** city-demo-ops showed "Rotate logs · Claude · Codex · OpenCode ·
   …"; one click on Codex started it as Leo, sitting next to Otto, and the header read "2 agents".
+
+## 2026-11-11: name an agent before it starts
+
+The person's idea: keep the row of CLIs, but fill in the details and let them edit or just create.
+
+- A click on a CLI in a building's row opens a small box under it: **Name** (filled with the next
+  free city name, `CitySnapshot.nextName`), **First task (optional)**, and **Create <CLI>**, which
+  has the focus, so Enter creates at once. `office.cityStart` takes `name`; `CityRooms.start`
+  checks it the way a rename is checked (`checkedName`: length, handle, no clash, not a reserved
+  word) before the CLI starts, so a refused name starts nothing.
+- **Checked:** unit tests (a chosen name is used, a clash is refused, `nextName`), typecheck, lint.
+- **Not checked in the running app:** after the app's last main-process restart its debug port
+  (9333) did not come back, so the box was not driven over CDP. The person had the app open, so it
+  was not restarted under them.

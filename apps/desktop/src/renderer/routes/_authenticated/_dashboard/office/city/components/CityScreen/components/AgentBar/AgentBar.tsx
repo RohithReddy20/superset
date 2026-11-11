@@ -1,4 +1,5 @@
 import { Button } from "@superset/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@superset/ui/popover";
 import { useLiveQuery } from "@tanstack/react-db";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
@@ -10,6 +11,7 @@ import { navigateToV2Workspace } from "renderer/routes/_authenticated/_dashboard
 import { useCollections } from "renderer/routes/_authenticated/providers/CollectionsProvider";
 import { useLocalHostService } from "renderer/routes/_authenticated/providers/LocalHostServiceProvider";
 import { filterMatchingPresetsForProject } from "shared/preset-project-targeting";
+import { useCity } from "../../../../hooks/useCity";
 import { useCityActions } from "../../../../hooks/useCityActions";
 import { AgentIcon } from "../AgentIcon";
 
@@ -72,6 +74,10 @@ export function AgentBar({
 			? inBar
 			: configs.map((agent) => ({ key: agent.id, label: agent.label, agent }));
 	}, [presets, projectId, configs]);
+	const { nextName } = useCity();
+	const [draft, setDraft] = useState<{ key: string; name: string } | null>(
+		null,
+	);
 	const [task, setTask] = useState("");
 	const [starting, setStarting] = useState<Starting[]>([]);
 	const [error, setError] = useState<string | null>(null);
@@ -85,14 +91,16 @@ export function AgentBar({
 		return () => clearInterval(timer);
 	}, [anyWaiting]);
 
-	const start = async (agent: string, label: string) => {
+	const start = async (agent: string, label: string, name?: string) => {
 		setError(null);
 		try {
 			const result = await actions.startAgent({
 				workspaceId,
 				agent,
 				prompt: task.trim(),
+				...(name?.trim() ? { name: name.trim() } : {}),
 			});
+			setDraft(null);
 			setTask("");
 			setStarting((list) => [
 				...list,
@@ -112,23 +120,69 @@ export function AgentBar({
 		return (
 			<div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none]">
 				{choices.map(({ key, label, agent }) => (
-					<Button
+					<Popover
 						key={key}
-						variant="ghost"
-						size="sm"
-						title={`Start ${label} here`}
-						className="h-7 shrink-0 gap-1.5 rounded-md px-2 text-[12px] font-normal text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-						onClick={() => void start(agent.id, label)}
+						open={draft?.key === key}
+						onOpenChange={(next) => {
+							setError(null);
+							setDraft(next ? { key, name: nextName } : null);
+						}}
 					>
-						<AgentIcon
-							agentId={
-								resolveV2PresetIconKey({ agentId: agent.id }, configs) ??
-								agent.presetId
-							}
-							className="size-3.5"
-						/>
-						{label}
-					</Button>
+						<PopoverTrigger asChild>
+							<Button
+								variant="ghost"
+								size="sm"
+								title={`Start ${label} here`}
+								className="h-7 shrink-0 gap-1.5 rounded-md px-2 text-[12px] font-normal text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+							>
+								<AgentIcon
+									agentId={
+										resolveV2PresetIconKey({ agentId: agent.id }, configs) ??
+										agent.presetId
+									}
+									className="size-3.5"
+								/>
+								{label}
+							</Button>
+						</PopoverTrigger>
+						<PopoverContent align="start" className="w-72 p-3">
+							<form
+								className="flex flex-col gap-2 text-[12px]"
+								onSubmit={(event) => {
+									event.preventDefault();
+									void start(agent.id, label, draft?.name);
+								}}
+							>
+								<label className="flex flex-col gap-1 text-muted-foreground">
+									Name
+									<input
+										value={draft?.name ?? ""}
+										onChange={(event) =>
+											setDraft({ key, name: event.target.value })
+										}
+										className="h-7 rounded-md border border-input bg-background px-2 text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+									/>
+								</label>
+								<label className="flex flex-col gap-1 text-muted-foreground">
+									First task (optional)
+									<input
+										value={task}
+										onChange={(event) => setTask(event.target.value)}
+										className="h-7 rounded-md border border-input bg-background px-2 text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+									/>
+								</label>
+								{error ? <p className="text-red-500">{error}</p> : null}
+								<Button
+									autoFocus
+									type="submit"
+									size="sm"
+									className="h-7 self-end px-3 text-[12px]"
+								>
+									Create {label}
+								</Button>
+							</form>
+						</PopoverContent>
+					</Popover>
 				))}
 				{waiting.map((s) => (
 					<span
@@ -138,9 +192,6 @@ export function AgentBar({
 						Starting {s.label}…
 					</span>
 				))}
-				{error ? (
-					<span className="shrink-0 text-[11px] text-red-500">{error}</span>
-				) : null}
 			</div>
 		);
 	const Chevron = open ? LuChevronDown : LuChevronRight;

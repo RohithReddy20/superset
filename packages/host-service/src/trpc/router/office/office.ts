@@ -217,6 +217,7 @@ export const officeRouter = router({
 				workspaceId: z.string().min(1),
 				agent: z.string().min(1),
 				prompt: z.string().max(8000).default(""),
+				name: z.string().max(100).optional(),
 			}),
 		)
 		.mutation(({ ctx, input }) =>

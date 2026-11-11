@@ -24,6 +24,8 @@ export function useCity(): {
 	projects: CityProject[];
 	rooms: CityRoom[];
 	handovers: CityHandover[];
+	/** The name the next agent gets when the person gives none. */
+	nextName: string;
 	hostReady: boolean;
 	ready: boolean;
 } {
@@ -101,6 +103,7 @@ export function useCity(): {
 	return {
 		projects: city,
 		rooms: rooms.data?.rooms ?? [],
+		nextName: rooms.data?.nextName ?? "",
 		handovers: rooms.data?.handovers ?? [],
 		hostReady: !!activeHostUrl,
 		ready: workspacesReady && projectsReady && bindings.isSuccess,

@@ -40,6 +40,7 @@ export function useCityActions() {
 			workspaceId: string;
 			agent: string;
 			prompt: string;
+			name?: string;
 		}) => then(client().cityStart.mutate(input)),
 		rename: (terminalId: string, name: string) =>
 			then(client().cityRename.mutate({ terminalId, name })),

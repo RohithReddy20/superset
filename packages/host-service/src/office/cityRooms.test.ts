@@ -341,6 +341,29 @@ describe("hand-over", () => {
 		).rejects.toThrow("different workspace");
 	});
 
+	test("a CLI can be started under a name the person chose", async () => {
+		const { rooms } = handoverSetup();
+		expect(rooms.snapshot().nextName).toBe("Iris");
+		expect(
+			(
+				await rooms.start({
+					workspaceId: "web",
+					agent: "claude",
+					prompt: "",
+					name: " Big  Bo ",
+				})
+			).name,
+		).toBe("Big Bo");
+		await expect(
+			rooms.start({
+				workspaceId: "web",
+				agent: "claude",
+				prompt: "",
+				name: "big bo",
+			}),
+		).rejects.toThrow("already called");
+	});
+
 	test("starting a CLI names it and tells it who it is with its first task", async () => {
 		const { rooms, started } = handoverSetup();
 		expect(
