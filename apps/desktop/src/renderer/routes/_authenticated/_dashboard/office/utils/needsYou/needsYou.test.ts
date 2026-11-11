@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { CityAgent, CityHandover, CityProject } from "../../city/types";
+import type { CityAgent, CityProject } from "../../city/types";
 import { needsYou } from "./needsYou";
 
 function agent(
@@ -40,21 +40,6 @@ function city(agents: CityAgent[]): CityProject[] {
 	];
 }
 
-function handover(
-	fromTerminalId: string,
-	status: CityHandover["status"],
-): CityHandover {
-	return {
-		id: `h-${fromTerminalId}`,
-		fromTerminalId,
-		fromLabel: fromTerminalId,
-		fromWorkspaceName: "Check health",
-		requestedBy: "agent",
-		status,
-		createdAt: 5,
-	};
-}
-
 describe("needsYou", () => {
 	test("a disconnected agent needs you, unless it is already reconnecting", () => {
 		const reconnecting = {
@@ -70,7 +55,6 @@ describe("needsYou", () => {
 				reconnecting,
 				agent("t3", "review", 3),
 			]),
-			handovers: [],
 		});
 		expect(items.map((i) => [i.title, i.reason])).toEqual([
 			["t1", "lost"],
@@ -78,7 +62,7 @@ describe("needsYou", () => {
 		]);
 	});
 
-	test("puts a question before a failure, a hand-over and finished work", () => {
+	test("puts a question before a failure and finished work", () => {
 		const items = needsYou({
 			projects: city([
 				agent("done", "review", 1),
@@ -88,12 +72,10 @@ describe("needsYou", () => {
 				agent("quiet", "idle", 4),
 				agent("mover", "working", 4),
 			]),
-			handovers: [handover("mover", "asked"), handover("quiet", "done")],
 		});
 		expect(items.map((i) => i.id)).toEqual([
 			"agent:asks",
 			"agent:broke",
-			"handover:h-mover",
 			"agent:done",
 		]);
 		expect(items[0]?.where).toBe("Check health · api");
@@ -105,7 +87,6 @@ describe("needsYou", () => {
 				agent("late", "permission", 9),
 				agent("early", "permission", 1),
 			]),
-			handovers: [],
 		});
 		expect(items.map((i) => i.title)).toEqual(["early", "late"]);
 	});
@@ -124,7 +105,6 @@ describe("needsYou with the team", () => {
 		};
 		const open = needsYou({
 			projects,
-			handovers: [],
 			todos: [{ ...todo, state: "open" }],
 		});
 		expect(open).toMatchObject([
@@ -133,7 +113,6 @@ describe("needsYou with the team", () => {
 		expect(
 			needsYou({
 				projects,
-				handovers: [],
 				todos: [{ ...todo, state: "finished" }],
 			}),
 		).toEqual([]);

@@ -35,14 +35,6 @@ export function useCityActions() {
 			agent?: string;
 			note?: string;
 		}) => then(client().cityHandOver.mutate(input)),
-		approveHandover: (input: {
-			id: string;
-			toWorkspaceId: string;
-			agent?: string;
-			note?: string;
-		}) => then(client().cityHandoverApprove.mutate(input)),
-		declineHandover: (id: string) =>
-			then(client().cityHandoverDecline.mutate({ id })),
 		cancelHandover: (id: string) =>
 			then(client().cityHandoverCancel.mutate({ id })),
 		/** Starts a CLI in a workspace's folder under a new name, told who it is. */

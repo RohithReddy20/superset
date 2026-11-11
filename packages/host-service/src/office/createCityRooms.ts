@@ -218,6 +218,15 @@ export function createCityRooms({
 		},
 		send,
 		workspace: workspaceOf,
+		findWorkspace: (query) => {
+			const rows = workspaceRows();
+			if (rows.some((w) => w.id === query)) return query;
+			const wanted = query.toLowerCase();
+			const named = rows.filter(
+				(w) => (w.name || w.branch).toLowerCase() === wanted,
+			);
+			return named.length === 1 ? (named[0]?.id ?? null) : null;
+		},
 		startAgent: async (workspaceId, agent, prompt) => {
 			const result = await runAgent({ workspaceId, agent, prompt });
 			return { terminalId: result.sessionId };

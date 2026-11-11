@@ -14,7 +14,9 @@ const SHOWN_NOTES = 3;
 
 /** What the agent carries on its own list, what it asked of you, and what it wrote to you. */
 export function ListBox({ agent }: { agent: CityAgent }) {
-	const { todos, setTodo, toYou, unread, markRead, waiting } = useCityTeam();
+	const { todos, setTodo, say, toYou, unread, markRead, waiting } =
+		useCityTeam();
+	const [answers, setAnswers] = useState<Record<string, string>>({});
 	const [error, setError] = useState<string | null>(null);
 	const open = todos.filter(isOpenTodo);
 	const own = open.filter((t) => t.ownerId === agent.terminalId);
@@ -43,6 +45,17 @@ export function ListBox({ agent }: { agent: CityAgent }) {
 		setTodo(todo.id, state).catch((cause: unknown) =>
 			setError(cause instanceof Error ? cause.message : String(cause)),
 		);
+	};
+	const answer = (todo: CityTodo) => {
+		const text = answers[todo.id]?.trim();
+		if (!text) return;
+		setError(null);
+		say(`@${agent.handle}`, text)
+			.then(() => setTodo(todo.id, "finished"))
+			.then(() => setAnswers(({ [todo.id]: _sent, ...rest }) => rest))
+			.catch((cause: unknown) =>
+				setError(cause instanceof Error ? cause.message : String(cause)),
+			);
 	};
 
 	return (
@@ -86,24 +99,49 @@ export function ListBox({ agent }: { agent: CityAgent }) {
 					</h3>
 					<ul className="flex flex-col gap-1.5">
 						{forYou.map((todo) => (
-							<li key={todo.id} className="flex items-start gap-1.5">
-								<span className="min-w-0 flex-1 break-words">{todo.text}</span>
-								<Button
-									size="sm"
-									variant="outline"
-									className="h-6 shrink-0 px-2 text-[11px]"
-									onClick={() => move(todo, "finished")}
-								>
-									Finished
-								</Button>
-								<Button
-									size="sm"
-									variant="ghost"
-									className="h-6 shrink-0 px-2 text-[11px]"
-									onClick={() => move(todo, "dropped")}
-								>
-									Not mine
-								</Button>
+							<li key={todo.id} className="flex flex-col gap-1">
+								<span className="break-words">{todo.text}</span>
+								<div className="flex items-center gap-1.5">
+									<input
+										value={answers[todo.id] ?? ""}
+										onChange={(event) =>
+											setAnswers((all) => ({
+												...all,
+												[todo.id]: event.target.value,
+											}))
+										}
+										onKeyDown={(event) => {
+											if (event.key === "Enter") answer(todo);
+										}}
+										placeholder={`Your answer to ${agent.name}`}
+										aria-label={`Your answer to ${agent.name}`}
+										className="h-6 min-w-0 flex-1 rounded border border-border bg-background px-1.5 outline-none focus-visible:ring-1 focus-visible:ring-ring"
+									/>
+									<Button
+										size="sm"
+										className="h-6 shrink-0 px-2 text-[11px]"
+										disabled={!answers[todo.id]?.trim()}
+										onClick={() => answer(todo)}
+									>
+										Answer
+									</Button>
+									<Button
+										size="sm"
+										variant="outline"
+										className="h-6 shrink-0 px-2 text-[11px]"
+										onClick={() => move(todo, "finished")}
+									>
+										Finished
+									</Button>
+									<Button
+										size="sm"
+										variant="ghost"
+										className="h-6 shrink-0 px-2 text-[11px]"
+										onClick={() => move(todo, "dropped")}
+									>
+										Not mine
+									</Button>
+								</div>
 							</li>
 						))}
 					</ul>

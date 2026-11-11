@@ -49,6 +49,8 @@ export function useCityTeam() {
 		unread,
 		waiting: query.data?.waiting ?? NO_WAITING,
 		markRead: (fromId: string) => then(client().teamRead.mutate({ fromId })),
+		say: (to: string, text: string) =>
+			then(client().teamSay.mutate({ to: [to], text })),
 		ask: (to: string, text: string) =>
 			then(client().teamAsk.mutate({ to, text })),
 		setTodo: (id: string, state: CityTodo["state"]) =>

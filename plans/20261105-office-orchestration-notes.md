@@ -734,3 +734,25 @@ Order: 2 first on top of today's city (additive, old paths keep working), then 3
 - **Checked in the running app:** the city loads with no Office building; `/office` shows the
   city; Milo was reconnected from its panel; "Ask Milo for something" put D-6 on its list, Milo
   wrote "asked-ok" to the person and finished it, and the panel showed it.
+
+## 2026-11-11: hand-overs by command, and answering an ask in place
+
+- **Hand-over is one command the agent runs itself**: `superset office handover <workspace>
+  "<brief>" [--agent claude|codex]` (`office.teamHandover` → `CityRooms.handOverWithBrief`). A new
+  agent starts in that workspace with the brief and sits where the first one sits. Nobody
+  approves. The workspace is named by id, or by name when only one has it
+  (`CityRoomsDeps.findWorkspace`). `teamCommands` tells every agent about it.
+- **Gone:** the `HANDOVER REQUEST:` line and its parsing, the request that waited for a person
+  (`asked`, `declined`, `approveHandover`, `declineHandover`, their procedures and buttons, the
+  "Asks to hand over its work" chip), and the `HANDOVER BRIEF` reply read at the end of a turn.
+  The person's "Hand its work to another workspace…" still exists: it now asks the agent to run
+  the command for that workspace, and the person's note is carried into the new agent's prompt.
+- **Answer in place.** An item an agent asked you has a field: Answer sends your words to the
+  agent (`teamSay`) and finishes the item.
+- **Checked in the running app:** asked Milo to hand its work to "Plan release": Milo ran the
+  command with its own brief, a new Claude (Iris) started there, and `office who` listed it; no
+  approval step. Milo asked "which colour should the badge be?"; typing "teal" and Answer in its
+  panel delivered the answer to Milo and closed D-10.
+- **Still phrases:** talk between agents sitting in one room (@mentions in their answers and
+  "no reply"). Not built: a view of the person's own whole list (items the person added
+  themselves show only through `superset office todo list`).

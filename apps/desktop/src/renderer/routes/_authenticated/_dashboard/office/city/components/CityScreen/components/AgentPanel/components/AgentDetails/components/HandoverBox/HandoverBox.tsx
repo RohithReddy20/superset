@@ -20,7 +20,7 @@ const KINDS = [
 	{ id: "codex", label: "Codex" },
 ];
 
-/** Moving the agent's work to another workspace: where it stands, an agent's own request, or a form to start one. */
+/** Moving the agent's work to another workspace: where it stands, or a form to start one. */
 export function HandoverBox({
 	agent,
 	projects,
@@ -41,10 +41,7 @@ export function HandoverBox({
 	const latest = mine.at(-1);
 	const tookOver = handovers.find((h) => h.newTerminalId === agent.terminalId);
 	const active =
-		latest &&
-		(latest.status === "asked" ||
-			latest.status === "briefing" ||
-			latest.status === "starting")
+		latest && (latest.status === "briefing" || latest.status === "starting")
 			? latest
 			: null;
 
@@ -114,43 +111,7 @@ export function HandoverBox({
 					Took over from {tookOver.fromLabel} in {tookOver.fromWorkspaceName}.
 				</span>
 			) : null}
-			{active?.status === "asked" ? (
-				<>
-					<span>
-						<span className="font-medium">Asks to hand its work over:</span>{" "}
-						{active.request}
-					</span>
-					{picker}
-					<div className="flex gap-1.5">
-						<Button
-							size="sm"
-							className="h-7 flex-1"
-							disabled={!target || busy}
-							onClick={() =>
-								run(() =>
-									actions.approveHandover({
-										id: active.id,
-										toWorkspaceId: target,
-										agent: kind,
-										...(note.trim() ? { note: note.trim() } : {}),
-									}),
-								)
-							}
-						>
-							Approve
-						</Button>
-						<Button
-							size="sm"
-							variant="outline"
-							className="h-7 flex-1"
-							disabled={busy}
-							onClick={() => run(() => actions.declineHandover(active.id))}
-						>
-							Decline
-						</Button>
-					</div>
-				</>
-			) : active?.status === "briefing" ? (
+			{active?.status === "briefing" ? (
 				<div className="flex items-center gap-2">
 					<span className="min-w-0 flex-1">
 						Writing its brief for {active.toWorkspaceName}…

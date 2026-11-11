@@ -2,7 +2,6 @@ import { formatCompactRelativeTime } from "@superset/i18n/format";
 import { cn } from "@superset/ui/utils";
 import type { IconType } from "react-icons";
 import {
-	LuArrowRightLeft,
 	LuCircleAlert,
 	LuEye,
 	LuHand,
@@ -35,11 +34,6 @@ const REASONS: Record<
 		label: "Wrote to you",
 		icon: LuMessageCircle,
 		tone: "text-sky-500 border-sky-500/40 bg-sky-500/10",
-	},
-	handover: {
-		label: "Asks to hand over its work",
-		icon: LuArrowRightLeft,
-		tone: "text-amber-500 border-amber-500/40 bg-amber-500/10",
 	},
 	lost: {
 		label: "Disconnected",

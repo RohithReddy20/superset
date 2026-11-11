@@ -396,18 +396,19 @@ describe("hand-over", () => {
 	}
 
 	test("asks for a brief, starts the new agent with it, and seats it beside the old one", async () => {
-		const { rooms, sent, started, replies } = handoverSetup();
+		const { rooms, sent, started } = handoverSetup();
 		await rooms.handOver({
 			terminalId: "t1",
 			toWorkspaceId: "web",
 			note: "keep it small",
 		});
 		expect(sent.at(-1)?.to).toBe("t1");
-		expect(sent.at(-1)?.text).toContain(
-			'Start your reply with the line "HANDOVER BRIEF"',
-		);
-		replies.set("t1", "HANDOVER BRIEF\nDone: server.js. Left: the client.");
-		await rooms.onAgentEvent({ terminalId: "t1", eventType: "Stop" });
+		expect(sent.at(-1)?.text).toContain('superset office handover web "');
+		await rooms.handOverWithBrief({
+			terminalId: "t1",
+			toWorkspaceId: "web",
+			brief: "Done: server.js. Left: the client.",
+		});
 		expect(started).toHaveLength(1);
 		expect(started[0]?.workspaceId).toBe("web");
 		expect(started[0]?.prompt).toContain("Done: server.js. Left: the client.");
@@ -415,7 +416,7 @@ describe("hand-over", () => {
 		expect(started[0]?.prompt).toStartWith(
 			'[Paradev office] You are Iris (@iris) working in workspace "Web app"',
 		);
-		expect(started[0]?.prompt).toContain("start a line with @ada");
+		expect(started[0]?.prompt).toContain("superset office ask @ada");
 		const snapshot = rooms.snapshot();
 		expect(snapshot.handovers[0]).toMatchObject({
 			status: "done",
@@ -427,31 +428,24 @@ describe("hand-over", () => {
 		expect(snapshot.names.find((n) => n.terminalId === "t9")?.name).toBe(
 			"Iris",
 		);
-		expect(sent.at(-1)?.to).toBe("t1");
-		expect(sent.at(-1)?.text).toContain("Stop working on it");
 	});
 
-	test("an agent's own request waits for a person, who approves or declines it", async () => {
-		const { rooms, sent, started, replies } = handoverSetup();
-		replies.set(
-			"t1",
-			"This belongs in the web project.\nHANDOVER REQUEST: web - the client lives there",
-		);
-		await rooms.onAgentEvent({ terminalId: "t1", eventType: "Stop" });
-		const [request] = rooms.snapshot().handovers;
-		expect(request).toMatchObject({
-			status: "asked",
-			request: "web - the client lives there",
+	test("an agent hands its own work on with its brief, with nobody approving", async () => {
+		const { rooms, started } = handoverSetup();
+		const handover = await rooms.handOverWithBrief({
+			terminalId: "t1",
+			toWorkspaceId: "web",
+			brief: "The client lives there. Left: wire it up.",
 		});
-		expect(started).toHaveLength(0);
-		await rooms.declineHandover(request?.id ?? "");
-		expect(rooms.snapshot().handovers[0]?.status).toBe("declined");
-		expect(sent.at(-1)?.text).toContain("declined");
-		replies.set("t1", "HANDOVER REQUEST: web - again");
-		await rooms.onAgentEvent({ terminalId: "t1", eventType: "Stop" });
-		const again = rooms.snapshot().handovers.at(-1);
-		await rooms.approveHandover({ id: again?.id ?? "", toWorkspaceId: "web" });
-		expect(rooms.snapshot().handovers.at(-1)?.status).toBe("briefing");
+		expect(handover).toMatchObject({ requestedBy: "agent", status: "done" });
+		expect(started[0]?.prompt).toContain("Left: wire it up.");
+		await expect(
+			rooms.handOverWithBrief({
+				terminalId: "t1",
+				toWorkspaceId: "api",
+				brief: "x",
+			}),
+		).rejects.toThrow("different workspace");
 	});
 
 	test("starting a CLI names it and tells it who it is with its first task", async () => {

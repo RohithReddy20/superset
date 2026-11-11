@@ -92,6 +92,36 @@ export const officeRouter = router({
 			}),
 		),
 
+	teamHandover: protectedProcedure
+		.input(
+			z.object({
+				caller,
+				to: z.string().min(1),
+				agent: z.string().min(1).optional(),
+				brief: z.string().min(1),
+			}),
+		)
+		.mutation(({ ctx, input }) =>
+			badRequest(async () => {
+				const city = cityOf(ctx.runtime);
+				const from = teamOf(ctx.runtime).callerOf(input.caller);
+				if (from === "you")
+					throw new Error(
+						"Run this from the terminal of the agent whose work moves",
+					);
+				const handover = await city.handOverWithBrief({
+					terminalId: from,
+					toWorkspaceId: city.workspaceIdFor(input.to),
+					...(input.agent ? { agent: input.agent } : {}),
+					brief: input.brief,
+				});
+				return {
+					workspace: handover.toWorkspaceName ?? "",
+					newTerminalId: handover.newTerminalId ?? null,
+				};
+			}),
+		),
+
 	teamTimeline: protectedProcedure
 		.input(z.object({ id: z.string().min(1) }))
 		.query(({ ctx, input }) => teamOf(ctx.runtime).timeline(input.id)),
@@ -180,28 +210,6 @@ export const officeRouter = router({
 		)
 		.mutation(({ ctx, input }) =>
 			badRequest(() => cityOf(ctx.runtime).handOver(input)),
-		),
-
-	cityHandoverApprove: protectedProcedure
-		.input(
-			z.object({
-				id: z.string().min(1),
-				toWorkspaceId: z.string().min(1),
-				agent: z.string().min(1).optional(),
-				note: z.string().max(2000).optional(),
-			}),
-		)
-		.mutation(({ ctx, input }) =>
-			badRequest(() => cityOf(ctx.runtime).approveHandover(input)),
-		),
-
-	cityHandoverDecline: protectedProcedure
-		.input(z.object({ id: z.string().min(1) }))
-		.mutation(({ ctx, input }) =>
-			badRequest(async () => {
-				await cityOf(ctx.runtime).declineHandover(input.id);
-				return { ok: true as const };
-			}),
 		),
 
 	cityHandoverCancel: protectedProcedure

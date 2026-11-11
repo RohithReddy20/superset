@@ -1,7 +1,6 @@
 import { askingLine } from "../../city/constants";
 import type {
 	CityAgent,
-	CityHandover,
 	CityNote,
 	CityProject,
 	CityTodo,
@@ -13,7 +12,6 @@ export type NeedsYouReason =
 	| "failed"
 	| "asked"
 	| "wrote"
-	| "handover"
 	| "lost"
 	| "review";
 
@@ -38,7 +36,6 @@ const ORDER: NeedsYouReason[] = [
 	"failed",
 	"asked",
 	"wrote",
-	"handover",
 	"lost",
 	"review",
 ];
@@ -53,12 +50,10 @@ const AGENT_REASONS = new Set<CityAgent["status"]>([
 /** Everything waiting on the person, most urgent first, then longest waiting first. */
 export function needsYou({
 	projects,
-	handovers,
 	todos = [],
 	unread = [],
 }: {
 	projects: CityProject[];
-	handovers: CityHandover[];
 	todos?: Pick<
 		CityTodo,
 		| "id"
@@ -86,20 +81,6 @@ export function needsYou({
 			title: agent.name,
 			where: whereOf(agent, projectName),
 			since: agent.lastEventAt,
-			target: agentTarget(agent),
-		});
-	}
-
-	for (const handover of handovers) {
-		if (handover.status !== "asked") continue;
-		const agent = byTerminal.get(handover.fromTerminalId);
-		if (!agent) continue;
-		items.push({
-			id: `handover:${handover.id}`,
-			reason: "handover",
-			title: agent.name,
-			where: whereOf(agent, projectName),
-			since: handover.createdAt,
 			target: agentTarget(agent),
 		});
 	}
