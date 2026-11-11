@@ -840,6 +840,7 @@ The person's idea: keep the row of CLIs, but fill in the details and let them ed
   checks it the way a rename is checked (`checkedName`: length, handle, no clash, not a reserved
   word) before the CLI starts, so a refused name starts nothing.
 - **Checked:** unit tests (a chosen name is used, a clash is refused, `nextName`), typecheck, lint.
-- **Not checked in the running app:** after the app's last main-process restart its debug port
-  (9333) did not come back, so the box was not driven over CDP. The person had the app open, so it
-  was not restarted under them.
+- **Checked in the running app** (after a main-process restart brought the debug port back): in
+  city-demo-api a click on Claude opened the box with Name "Mira", an empty first task and the
+  focus on "Create Claude"; the name was changed to "Scribe" and Enter started a Claude called
+  Scribe in "Add health check"; the box closed.
