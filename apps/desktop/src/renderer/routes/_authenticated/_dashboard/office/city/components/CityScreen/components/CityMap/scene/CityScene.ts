@@ -47,7 +47,7 @@ const LIGHT: Record<AgentStatus, number> = {
 const ZOOMS = [0.5, 0.75, 1, 1.5, 2, 3];
 /** The whole city fills this much of the view, and is never blown up past its drawn size by more than this. */
 const FIT_SHARE = 0.94;
-const MAX_FIT_ZOOM = 2;
+const MAX_FIT_ZOOM = 3;
 const DRAG_START = 5;
 const WHEEL_STEP = 80;
 const HOVER_COLOR = 0xffffff;
@@ -302,7 +302,7 @@ export class CityScene extends Phaser.Scene {
 			: { x: camera.worldView.centerX, y: camera.worldView.centerY };
 		const fit = Math.min(view.width / layout.w, view.height / layout.h);
 		const fitted = Math.min(MAX_FIT_ZOOM, fit * FIT_SHARE);
-		const zoom = Math.min(this.zoom ?? fitted, 2.5);
+		const zoom = Math.min(this.zoom ?? fitted, ZOOMS.at(-1) as number);
 		camera.setZoom(zoom);
 		const seenW = view.width / zoom;
 		const seenH = view.height / zoom;

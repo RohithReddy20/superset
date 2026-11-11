@@ -21,6 +21,15 @@ describe("parseTurns", () => {
 		]);
 	});
 
+	test("what the office typed itself is its own kind of turn, without its tag", () => {
+		expect(
+			parseTurns("User: [Paradev office] You are Iris.\n\nUser: hello"),
+		).toEqual([
+			{ who: "office", text: "You are Iris." },
+			{ who: "you", text: "hello" },
+		]);
+	});
+
 	test("keeps the cut-off start of a long record as the agent's", () => {
 		expect(parseTurns("…end of a long answer\n\nUser: next")).toEqual([
 			{ who: "agent", text: "…end of a long answer" },

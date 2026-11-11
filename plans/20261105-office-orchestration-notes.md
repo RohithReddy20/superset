@@ -966,3 +966,29 @@ Same capabilities, laid out for what is done most. Renderer only.
   as icons. No console errors.
 - **Not checked live:** the "asks you" card and a screen question (no agent asked), the
   disconnected notice, "New below" (no conversation was long enough to scroll).
+
+## 2026-11-12: UI/UX pass, step 3 — one look
+
+Renderer only.
+
+- **"Needs you" bar**: chips leave the building's name out when you are inside it, the chip of
+  the open agent is marked, a new chip slides in, the list fades out at the right edge where it
+  is cut and scrolls with the wheel.
+- **Start row** (`StartBar`): reads "Start in [workspace]" with the app's own select, and follows
+  the room or agent that is open, so a CLI started while a room is open starts there. The name
+  box has a title and says Enter creates; "Starting …" has a spinner.
+- **One face per agent** (`AgentFace`): the pixel face from the floor is also in the list and in
+  the panel header, with the CLI's mark next to it.
+- **List view**: rows keep one order (those that cannot go on without you first, the rest oldest
+  first). Before, opening a finished agent marked it seen, which re-sorted the list under the
+  pointer; Up and Down then jumped. Up and Down now move between rows and open each.
+- **Conversation**: what the office itself typed into an agent (who it is, what a teammate wrote,
+  the commands) is its own kind of turn, dashed and folded to two lines, labelled "The office
+  told Iris". What you typed stays solid and is labelled "You to Iris".
+- **City map**: fills the view up to zoom 3 (three buildings were shown at a fixed 2 with wide
+  margins); a click on the map gives it the keyboard.
+- **Checked:** 43 office tests (new: office turns), typecheck, biome.
+- **Checked in the running app:** dark and light theme on the building, the panel, the list and
+  the start box; in the list, Down from Mira went to Ada then Iris with the panel following; the
+  start row switched to "Write docs" when Iris was opened; on the city map Right twice put the
+  outline on city-demo-web, Enter went in, Esc came back. No console errors.

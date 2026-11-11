@@ -14,6 +14,7 @@ import {
 	isOpenTodo,
 } from "../../../../../../types";
 import { isVisiting } from "../../../../../../utils/buildingSnapshot";
+import { AgentFace } from "../../../AgentFace";
 import { AgentIcon } from "../../../AgentIcon";
 import { StatusBadge } from "../../../StatusBadge";
 import { AgentName } from "../AgentName";
@@ -88,7 +89,7 @@ export function AgentDetails({
 	return (
 		<>
 			<PanelHeader
-				icon={<AgentIcon agentId={agent.agentId} className="size-5" />}
+				icon={<AgentFace terminalId={agent.terminalId} />}
 				title={
 					<>
 						<AgentName agent={agent} />
@@ -98,6 +99,10 @@ export function AgentDetails({
 				meta={
 					<>
 						<span title={workspace?.branch ?? undefined}>
+							<AgentIcon
+								agentId={agent.agentId}
+								className="mr-1 inline size-3 align-[-2px]"
+							/>
 							{agent.kind}
 							{agent.handle ? ` · @${agent.handle}` : ""} · works in{" "}
 							<span className="text-foreground">{agent.workspaceName}</span>

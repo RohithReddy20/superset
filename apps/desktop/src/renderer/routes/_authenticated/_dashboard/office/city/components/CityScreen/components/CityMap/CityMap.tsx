@@ -66,6 +66,7 @@ export function CityMap({ projects, onEnter }: CityMapProps) {
 				aria-label="City: the arrow keys pick a building, Enter goes inside"
 				// biome-ignore lint/a11y/noNoninteractiveTabindex: the map takes the arrow keys and Enter
 				tabIndex={0}
+				onPointerDown={() => hostRef.current?.focus({ preventScroll: true })}
 				onKeyDown={(event) => {
 					const scene = sceneRef.current;
 					if (!scene || event.metaKey || event.ctrlKey || event.altKey) return;

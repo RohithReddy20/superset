@@ -120,8 +120,20 @@ export function CityScreen({
 				}
 				end={<ViewSwitch view={view} onChange={setView} />}
 			/>
-			<NeedsYouBar />
-			{inside ? <StartBar key={inside.id} project={inside} /> : null}
+			<NeedsYouBar openAgentId={agentId} insideProject={inside?.name} />
+			{inside ? (
+				<StartBar
+					key={inside.id}
+					project={inside}
+					openWorkspaceId={
+						roomId && !agentId
+							? roomId
+							: selectedAgent?.projectId === inside.id
+								? selectedAgent.workspaceId
+								: null
+					}
+				/>
+			) : null}
 			<div className="@container/city relative flex min-h-0 flex-1">
 				<div className="relative min-w-0 flex-1">
 					{!hostReady ? (

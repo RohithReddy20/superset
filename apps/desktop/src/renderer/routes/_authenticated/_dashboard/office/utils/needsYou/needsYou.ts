@@ -26,6 +26,7 @@ export interface NeedsYouItem {
 	/** Says more than the reason does, e.g. "Asks to trust this folder". */
 	note?: string;
 	title: string;
+	/** The workspace it works in, then its project. */
 	where: string;
 	since: number;
 	target: NeedsYouTarget;

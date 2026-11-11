@@ -3,7 +3,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@superset/ui/popover";
 import { useLiveQuery } from "@tanstack/react-db";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { LuChevronDown, LuChevronRight } from "react-icons/lu";
+import { LuChevronDown, LuChevronRight, LuLoaderCircle } from "react-icons/lu";
 import { useV2AgentConfigs } from "renderer/hooks/useV2AgentConfigs";
 import { findLinkedAgent } from "renderer/lib/agent-launch-command";
 import { resolveV2PresetIconKey } from "renderer/lib/preset-icon-key";
@@ -118,7 +118,7 @@ export function AgentBar({
 	if (choices.length === 0) return null;
 	if (inline)
 		return (
-			<div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none]">
+			<div className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto pr-6 [mask-image:linear-gradient(to_right,black_calc(100%-28px),transparent)] [scrollbar-width:none]">
 				{choices.map(({ key, label, agent }) => (
 					<Popover
 						key={key}
@@ -146,6 +146,9 @@ export function AgentBar({
 							</Button>
 						</PopoverTrigger>
 						<PopoverContent align="start" className="w-72 p-3">
+							<p className="mb-2 text-[12px] font-medium">
+								Start {label} in this workspace
+							</p>
 							<form
 								className="flex flex-col gap-2 text-[12px]"
 								onSubmit={(event) => {
@@ -171,26 +174,38 @@ export function AgentBar({
 										className="h-7 rounded-md border border-input bg-background px-2 text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
 									/>
 								</label>
-								{error ? <p className="text-red-500">{error}</p> : null}
-								<Button
-									autoFocus
-									type="submit"
-									size="sm"
-									className="h-7 self-end px-3 text-[12px]"
-								>
-									Create {label}
-								</Button>
+								{error ? (
+									<p role="alert" className="text-red-500">
+										{error}
+									</p>
+								) : null}
+								<div className="flex items-center justify-between gap-2">
+									<span className="text-[11px] text-muted-foreground">
+										Enter creates it
+									</span>
+									<Button
+										autoFocus
+										type="submit"
+										size="sm"
+										className="h-7 px-3 text-[12px]"
+									>
+										Create {label}
+									</Button>
+								</div>
 							</form>
 						</PopoverContent>
 					</Popover>
 				))}
 				{waiting.map((s) => (
-					<span
+					<output
 						key={s.terminalId}
-						className="shrink-0 text-[11px] text-muted-foreground"
+						className="flex shrink-0 items-center gap-1.5 px-2 text-[11px] text-muted-foreground motion-safe:animate-in motion-safe:fade-in"
 					>
-						Starting {s.label}…
-					</span>
+						<LuLoaderCircle className="size-3 motion-safe:animate-spin" />
+						{now - s.since < SLOW_START_MS
+							? `Starting ${s.label}…`
+							: `${s.label} is starting in its terminal; it shows up here when its CLI is ready`}
+					</output>
 				))}
 			</div>
 		);

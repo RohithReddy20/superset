@@ -47,13 +47,21 @@ const REASONS: Record<
 	},
 };
 
+interface NeedsYouChipProps {
+	item: NeedsYouItem;
+	/** Where it works, as short as the screen allows it. */
+	where: string;
+	/** Its agent's panel is the one that is open. */
+	current: boolean;
+	onOpen: () => void;
+}
+
 export function NeedsYouChip({
 	item,
+	where,
+	current,
 	onOpen,
-}: {
-	item: NeedsYouItem;
-	onOpen: () => void;
-}) {
+}: NeedsYouChipProps) {
 	const reason = REASONS[item.reason];
 	const Icon = reason.icon;
 	const label = item.note ?? reason.label;
@@ -61,8 +69,12 @@ export function NeedsYouChip({
 		<button
 			type="button"
 			onClick={onOpen}
+			aria-current={current ? "true" : undefined}
 			title={`${item.title}: ${label} (${item.where})`}
-			className="flex h-7 max-w-[440px] items-center gap-1.5 rounded-full border border-border bg-popover pl-1 pr-2.5 text-[12px] hover:bg-fill-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			className={cn(
+				"flex h-7 max-w-[400px] items-center gap-1.5 rounded-full border bg-popover pl-1 pr-2.5 text-[12px] transition-colors hover:bg-fill-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+				current ? "border-foreground/50 bg-fill-selected" : "border-border",
+			)}
 		>
 			<span
 				className={cn(
@@ -76,12 +88,10 @@ export function NeedsYouChip({
 						item.reason === "permission" && "motion-safe:animate-pulse",
 					)}
 				/>
-				<span className="max-w-[220px] truncate">{label}</span>
+				<span className="max-w-[200px] truncate">{label}</span>
 			</span>
 			<span className="shrink-0 font-medium text-foreground">{item.title}</span>
-			<span className="min-w-0 truncate text-muted-foreground">
-				{item.where}
-			</span>
+			<span className="min-w-0 truncate text-muted-foreground">{where}</span>
 			<span className="shrink-0 text-[11px] text-muted-foreground">
 				{formatCompactRelativeTime(item.since)}
 			</span>

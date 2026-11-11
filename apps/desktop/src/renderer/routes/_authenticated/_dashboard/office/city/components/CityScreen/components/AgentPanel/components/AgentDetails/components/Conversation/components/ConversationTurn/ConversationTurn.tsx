@@ -14,16 +14,26 @@ export const ConversationTurn = memo(function ConversationTurn({
 	turn,
 	agentName,
 }: ConversationTurnProps) {
-	const mine = turn.who === "you";
+	const typed = turn.who !== "agent";
 	return (
-		<div className={cn("flex flex-col gap-0.5", mine && "items-end")}>
+		<div className={cn("flex flex-col gap-0.5", typed && "items-end")}>
 			<span className="text-[10px] text-muted-foreground">
-				{mine ? `To ${agentName}` : agentName}
+				{turn.who === "you"
+					? `You to ${agentName}`
+					: turn.who === "office"
+						? `The office told ${agentName}`
+						: agentName}
 			</span>
-			{mine ? (
+			{turn.who === "you" ? (
 				<LongText
 					text={turn.text}
 					className="w-fit max-w-[92%] rounded-lg bg-foreground px-2.5 py-1.5 text-[12px] leading-snug text-background [&_button]:text-background/70 [&_button:hover]:text-background"
+				/>
+			) : turn.who === "office" ? (
+				<LongText
+					brief
+					text={turn.text}
+					className="w-fit max-w-[92%] rounded-lg border border-dashed border-border px-2.5 py-1.5 text-[11px] leading-snug text-muted-foreground"
 				/>
 			) : (
 				<div className="w-fit max-w-[96%] rounded-lg border border-border bg-background px-2.5 py-1.5 text-[12px] leading-snug text-foreground [overflow-wrap:anywhere] [&_code]:text-[11px] [&_h1]:text-[13px] [&_h2]:text-[13px] [&_h3]:text-[12px] [&_li]:my-0 [&_ol]:my-1 [&_p]:my-1 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_pre]:my-1 [&_pre]:text-[11px] [&_ul]:my-1">
