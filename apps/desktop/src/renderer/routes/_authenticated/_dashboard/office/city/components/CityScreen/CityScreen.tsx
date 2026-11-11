@@ -10,6 +10,7 @@ import { BuildingView } from "./components/BuildingView";
 import { CityBreadcrumb } from "./components/CityBreadcrumb";
 import { CityMap } from "./components/CityMap";
 import { EmptyState } from "./components/EmptyState";
+import { HostTrouble } from "./components/HostTrouble";
 import { StartBar } from "./components/StartBar";
 import { type CityViewMode, ViewSwitch } from "./components/ViewSwitch";
 
@@ -36,8 +37,17 @@ export function CityScreen({
 	view,
 }: CityScreenProps) {
 	const navigate = useNavigate();
-	const { projects, rooms, handovers, hostReady, ready, agentsReady } =
-		useCity();
+	const {
+		projects,
+		rooms,
+		handovers,
+		hostReady,
+		ready,
+		agentsReady,
+		hostTrouble,
+		asking,
+		askAgain,
+	} = useCity();
 	const [picked, setPicked] = useState<string[]>([]);
 	const inside = projects.find((p) => p.id === projectId) ?? null;
 	const shown = inside ? [inside] : projects;
@@ -121,6 +131,9 @@ export function CityScreen({
 				end={<ViewSwitch view={view} onChange={setView} />}
 			/>
 			<NeedsYouBar openAgentId={agentId} insideProject={inside?.name} />
+			{hostTrouble && projects.length > 0 ? (
+				<HostTrouble trying={asking} onRetry={askAgain} />
+			) : null}
 			{inside ? (
 				<StartBar
 					key={inside.id}
@@ -136,7 +149,7 @@ export function CityScreen({
 			) : null}
 			<div className="@container/city relative flex min-h-0 flex-1">
 				<div className="relative min-w-0 flex-1">
-					{!hostReady ? (
+					{!hostReady && projects.length === 0 ? (
 						<EmptyState
 							busy
 							title="Waiting for this machine's host"
@@ -185,6 +198,7 @@ export function CityScreen({
 						rooms={rooms}
 						handovers={handovers}
 						selection={selection}
+						loading={!agentsReady}
 						onSelectAgent={selectAgent}
 						onClose={() => void select(null)}
 					/>

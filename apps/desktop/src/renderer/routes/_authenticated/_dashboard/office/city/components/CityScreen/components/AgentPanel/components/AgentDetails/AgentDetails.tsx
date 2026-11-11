@@ -89,7 +89,7 @@ export function AgentDetails({
 	return (
 		<>
 			<PanelHeader
-				icon={<AgentFace terminalId={agent.terminalId} />}
+				icon={<AgentFace name={agent.name} />}
 				title={
 					<>
 						<AgentName agent={agent} />

@@ -121,7 +121,7 @@ export function AgentList({
 												)}
 											>
 												<span className="flex min-w-0 items-center gap-2">
-													<AgentFace terminalId={agent.terminalId} />
+													<AgentFace name={agent.name} />
 													<span className="truncate font-medium">
 														{agent.name}
 													</span>

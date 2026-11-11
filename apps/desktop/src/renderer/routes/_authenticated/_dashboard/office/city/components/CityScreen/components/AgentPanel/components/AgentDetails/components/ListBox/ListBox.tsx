@@ -33,7 +33,7 @@ export function ListBox({ agent }: { agent: CityAgent }) {
 							<li
 								key={todo.id}
 								className={cn(
-									"flex items-baseline gap-2 rounded-md border px-2 py-1.5",
+									"flex items-baseline gap-2 rounded-md border px-2 py-1.5 transition-colors duration-300 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-1",
 									todo.state === "doing"
 										? "border-amber-500/40 bg-amber-500/10"
 										: "border-border",
@@ -70,7 +70,10 @@ export function ListBox({ agent }: { agent: CityAgent }) {
 					</h3>
 					<ul className="flex flex-col gap-1.5">
 						{wrote.map((note) => (
-							<li key={note.id} className="rounded-md bg-muted/50 px-2 py-1.5">
+							<li
+								key={note.id}
+								className="rounded-md bg-muted/50 px-2 py-1.5 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-1"
+							>
 								<span className="text-[10px] text-muted-foreground">
 									{formatRelativeTime(note.at)}
 								</span>

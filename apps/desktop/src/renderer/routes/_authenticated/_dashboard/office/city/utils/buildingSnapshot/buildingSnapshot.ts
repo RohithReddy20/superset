@@ -108,6 +108,7 @@ function person(
 		role: agent.agentId,
 		roomId: agent.place.roomId,
 		...(isVisiting(agent) ? { from: agent.workspaceName } : {}),
+		look: agent.name,
 		joinedAt: agent.startedAt,
 		...(agent.agentId === "claude" || agent.agentId === "codex"
 			? { engine: agent.agentId }

@@ -71,7 +71,7 @@ export function NameTag({
 						urgent
 							? "border-orange-500/60 text-foreground"
 							: "border-border text-muted-foreground group-hover/tag:text-foreground group-data-[marked=true]/tag:text-foreground",
-						away && "opacity-70",
+						away && "opacity-90",
 					)}
 				>
 					{urgent ? (
@@ -140,7 +140,7 @@ export function NameTag({
 					isMe
 						? "border-foreground bg-foreground text-background"
 						: "border-border bg-popover/95 text-foreground hover:bg-popover",
-					away && "opacity-60",
+					away && "opacity-75",
 					marked && "border-[#5ec8ff] ring-2 ring-[#5ec8ff]/70",
 				)}
 			>

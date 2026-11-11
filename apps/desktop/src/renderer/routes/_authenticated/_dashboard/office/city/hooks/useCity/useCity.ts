@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { resolveProjectIconUrl } from "renderer/hooks/host-projects/resolveProjectIconUrl";
 import { useHostProjects } from "renderer/hooks/host-projects/useHostProjects";
@@ -30,6 +30,11 @@ export function useCity(): {
 	ready: boolean;
 	/** This machine's agents and their seats have loaded at least once. */
 	agentsReady: boolean;
+	/** The host stopped answering; what is shown is what was last seen. */
+	hostTrouble: boolean;
+	/** A request to the host is under way. */
+	asking: boolean;
+	askAgain: () => void;
 } {
 	const { activeHostUrl, machineId } = useLocalHostService();
 	useCityLive();
@@ -48,6 +53,7 @@ export function useCity(): {
 			return client.terminalAgents.list.query();
 		},
 		refetchInterval: CITY_FALLBACK_POLL_MS,
+		placeholderData: keepPreviousData,
 	});
 	const rooms = useQuery({
 		queryKey: cityQueryKey(activeHostUrl),
@@ -57,6 +63,7 @@ export function useCity(): {
 			return client.office.cityState.query();
 		},
 		refetchInterval: CITY_FALLBACK_POLL_MS,
+		placeholderData: keepPreviousData,
 	});
 
 	const watched = useMemo(
@@ -110,5 +117,16 @@ export function useCity(): {
 		hostReady: !!activeHostUrl,
 		ready: workspacesReady && projectsReady && bindings.isSuccess,
 		agentsReady: bindings.isSuccess && rooms.isSuccess,
+		hostTrouble:
+			!activeHostUrl ||
+			bindings.failureCount > 0 ||
+			rooms.failureCount > 0 ||
+			bindings.isError ||
+			rooms.isError,
+		asking: bindings.isFetching || rooms.isFetching,
+		askAgain: () => {
+			void bindings.refetch();
+			void rooms.refetch();
+		},
 	};
 }

@@ -1,4 +1,8 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	keepPreviousData,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import { useMemo } from "react";
 import { getHostServiceClientByUrl } from "renderer/lib/host-service-client";
 import { useLocalHostService } from "renderer/routes/_authenticated/providers/LocalHostServiceProvider";
@@ -23,6 +27,7 @@ export function useCityTeam() {
 		enabled: !!activeHostUrl,
 		queryFn: () => client().team.query(),
 		refetchInterval: CITY_FALLBACK_POLL_MS,
+		placeholderData: keepPreviousData,
 	});
 	const then = async <T>(promise: Promise<T>): Promise<T> => {
 		try {

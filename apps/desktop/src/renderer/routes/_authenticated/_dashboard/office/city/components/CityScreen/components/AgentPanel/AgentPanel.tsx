@@ -22,6 +22,8 @@ interface AgentPanelProps {
 	rooms: CityRoom[];
 	handovers: CityHandover[];
 	selection: BuildingSelection;
+	/** The city's agents are still loading, so one that is not found may yet show up. */
+	loading: boolean;
 	onSelectAgent: (terminalId: string) => void;
 	onClose: () => void;
 }
@@ -34,6 +36,7 @@ export function AgentPanel({
 	rooms,
 	handovers,
 	selection,
+	loading,
 	onSelectAgent,
 	onClose,
 }: AgentPanelProps) {
@@ -90,6 +93,7 @@ export function AgentPanel({
 			) : (
 				<GonePanel
 					what={selection.kind === "agent" ? "agent" : "room"}
+					loading={loading}
 					onClose={onClose}
 				/>
 			)}

@@ -992,3 +992,46 @@ Renderer only.
   the start box; in the list, Down from Mira went to Ada then Iris with the panel following; the
   start row switched to "Write docs" when Iris was opened; on the city map Right twice put the
   outline on city-demo-web, Enter went in, Esc came back. No console errors.
+
+## 2026-11-12: UI/UX pass, step 4 — when things go wrong
+
+Renderer only; no host change, so the dev app was never restarted.
+
+- **The host stops answering**: the city's three queries keep what they last had
+  (`keepPreviousData`), also across a new host address after a restart, so people no longer vanish
+  and come back. A line under the "Needs you" bar says the host is not answering and that the
+  city catches up by itself, with "Try now" (`HostTrouble`, `useCity().hostTrouble`).
+- **A panel opened from a saved address** says "Looking for it" while the city loads instead of
+  "Not here any more" (`GonePanel`).
+- **Reconnect keeps the person**: looks are drawn from the agent's name, not its terminal
+  (`Teammate.look`), and the floor adopts someone who comes back under a new terminal instead of
+  walking one figure out and another in (`OfficeScene.adopt`). Before, every reconnect gave the
+  agent a new face. A rename now changes the face; that is the trade.
+- The room under the pointer gets a faint outline and a pointer cursor. New items in an agent's
+  list and in "Your list" fade in; "Your list" uses the same item look as the panel.
+- **Checked:** 43 office tests, typecheck, biome.
+- **Checked in the running app:**
+  - Host not answering, simulated by blocking the page's requests to the host address for 30 s
+    (CDP `Network.setBlockedURLs`): the line showed within 5 s, all 8 people stayed on the floor,
+    no console error; 4 s after unblocking the line was gone. A real host restart was not done:
+    it disconnects every running agent.
+  - Disconnected agent: killed the terminal of a test Codex (Zara). Within 5 s its tag read
+    "Disconnected", the figure was grey with a "z" beside it. Opening it reconnected it in under a
+    second; its face and its place were the same before and after, and the panel followed it to
+    the new terminal.
+  - Long name: renamed it to "Bartholomew Longfellow X" (24 characters, the limit): the tag cut it
+    with an ellipsis, the panel header and the list kept their layout.
+  - Reduced motion (emulated in one CDP session, building re-entered): tag and panel animations
+    were "none" and a zoom was at its final place after 60 ms; without it the same zoom was 3 of
+    28 px along after 60 ms.
+  - Small window: 640 x 480, floor and panel; no sideways scroll of the page. The panel lies over
+    the floor at that size.
+  - Clean-up: the test agents (Ada, Iris, Otto, Felix, Luna, Hugo, Zara) were removed through
+    `office.cityRemove`; Mira stays. D-17 and D-18 were finished by Iris before it was removed.
+- **Found, not fixed (host side):** the first test Codex (Milo) dropped out of the city about a
+  minute after it started while its process kept running; its name was no longer in
+  `cityState.names`. Not looked into; the process was ended by hand.
+- **Not checked live:** an empty city, a failed agent's red cross, an agent asking on its screen
+  (no agent was in those states), a real host restart, more than 8 agents in a building.
+- **Ideas noted, not built** (they would be new capability): dragging the panel's edge to resize
+  it; a filter or search in the list view; a "seen" marker in a room's talk.

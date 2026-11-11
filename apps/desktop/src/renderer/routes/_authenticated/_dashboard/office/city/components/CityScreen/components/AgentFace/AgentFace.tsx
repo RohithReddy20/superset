@@ -6,14 +6,14 @@ import {
 } from "../../../../../components/OfficeFloor/scene/pixel";
 
 interface AgentFaceProps {
-	/** The agent's terminal: its face on the floor is drawn from the same id. */
-	terminalId: string;
+	/** The agent's name: its face on the floor is drawn from it too. */
+	name: string;
 	className?: string;
 }
 
 /** The face an agent has on the floor, so a row or a panel reads as the same person. */
-export function AgentFace({ terminalId, className }: AgentFaceProps) {
-	const look = lookFor(terminalId);
+export function AgentFace({ name, className }: AgentFaceProps) {
+	const look = lookFor(name);
 	return (
 		<img
 			src={renderFace(look, lookKey(look))}

@@ -119,6 +119,8 @@ export interface SceneCallbacks {
 
 interface Actor {
 	id: string;
+	/** What its looks are drawn from; someone who comes back under a new id is found by it. */
+	look: string;
 	ai: boolean;
 	character: string;
 	sprite: Phaser.GameObjects.Sprite;
@@ -232,6 +234,8 @@ export class OfficeScene extends Phaser.Scene {
 	private framedPeople = "";
 	private populated = false;
 	private selectedId: string | null = null;
+	/** The room under the pointer, outlined faintly: a click there opens it. */
+	private hoveredRoomId: string | null = null;
 	private wheel = 0;
 	private now = 0;
 	private press: Press | null = null;
@@ -280,6 +284,9 @@ export class OfficeScene extends Phaser.Scene {
 		);
 		this.input.on("pointerup", () => this.onRelease());
 		this.input.on("pointerupoutside", () => this.onRelease());
+		this.input.on("gameout", () => {
+			this.hoveredRoomId = null;
+		});
 		this.input.on(
 			"wheel",
 			(
@@ -656,7 +663,11 @@ export class OfficeScene extends Phaser.Scene {
 
 	private onDrag(pointer: Phaser.Input.Pointer): void {
 		const press = this.press;
-		if (!press || !pointer.isDown) return;
+		if (!press || !pointer.isDown) {
+			this.hoverRoom(pointer);
+			return;
+		}
+		this.hoveredRoomId = null;
 		const dx = pointer.x - press.x;
 		const dy = pointer.y - press.y;
 		if (!press.moved) {
@@ -690,6 +701,19 @@ export class OfficeScene extends Phaser.Scene {
 			});
 			this.applyPose(this.pose);
 		}
+	}
+
+	private hoverRoom(pointer: Phaser.Input.Pointer): void {
+		const layout = this.payload?.layout;
+		const overPerson = this.input
+			.hitTestPointer(pointer)
+			.some((object) => object instanceof Phaser.GameObjects.Sprite);
+		const world = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+		const room =
+			layout && !overPerson ? roomAt(layout, { x: world.x, y: world.y }) : null;
+		if (room?.id === this.hoveredRoomId) return;
+		this.hoveredRoomId = room?.id ?? null;
+		if (!overPerson) this.input.setDefaultCursor(room ? "pointer" : "");
 	}
 
 	private onRelease(): void {
@@ -869,6 +893,15 @@ export class OfficeScene extends Phaser.Scene {
 				.lineStyle(1.5, SELECTED_ROOM_COLOR, 0.45)
 				.strokeRect(open.x, open.y, open.w, open.h);
 		}
+		const hovered =
+			this.hoveredRoomId !== this.payload?.selectedRoomId
+				? this.payload?.layout.rooms.find((r) => r.id === this.hoveredRoomId)
+						?.zone.rect
+				: null;
+		if (hovered)
+			marks
+				.lineStyle(1, SELECTED_ROOM_COLOR, 0.22)
+				.strokeRect(hovered.x, hovered.y, hovered.w, hovered.h);
 		const picked = new Set(this.payload?.picked ?? []);
 		for (const actor of this.actors.values()) {
 			if (!picked.has(actor.id) || actor.carried || actor.leaving) continue;
@@ -993,7 +1026,7 @@ export class OfficeScene extends Phaser.Scene {
 		for (const teammate of payload.state.teammates) {
 			seen.add(teammate.id);
 			const target = payload.layout.targets.get(teammate.id) ?? null;
-			let actor = this.actors.get(teammate.id);
+			let actor = this.actors.get(teammate.id) ?? this.adopt(teammate, payload);
 			if (!actor) {
 				if (!target) continue;
 				const walksIn =
@@ -1033,6 +1066,23 @@ export class OfficeScene extends Phaser.Scene {
 			if (seen.has(id) || actor.leaving) continue;
 			if (!this.walkOut(actor)) this.remove(id);
 		}
+	}
+
+	/**
+	 * Someone already on the floor who is the same person under a new id, as after a reconnect:
+	 * they stay where they are instead of leaving and arriving.
+	 */
+	private adopt(teammate: Teammate, payload: ScenePayload): Actor | undefined {
+		if (!teammate.look) return undefined;
+		const still = new Set(payload.state.teammates.map((t) => t.id));
+		for (const [id, actor] of this.actors) {
+			if (still.has(id) || actor.look !== teammate.look) continue;
+			this.actors.delete(id);
+			actor.id = teammate.id;
+			this.actors.set(teammate.id, actor);
+			return actor;
+		}
+		return undefined;
 	}
 
 	/** Sends a teammate to a point along the floor; one that cannot get there is put there. */
@@ -1078,7 +1128,8 @@ export class OfficeScene extends Phaser.Scene {
 		seat: SeatTarget,
 		arriving: boolean,
 	): Actor {
-		const character = this.characterTexture(teammate.id);
+		const look = teammate.look ?? teammate.id;
+		const character = this.characterTexture(look);
 		const { cell } = SHEET;
 		const ai = teammate.kind === "ai";
 		const sprite = this.add
@@ -1087,6 +1138,7 @@ export class OfficeScene extends Phaser.Scene {
 			.setInteractive({ cursor: ai ? "grab" : "pointer" });
 		const actor: Actor = {
 			id: teammate.id,
+			look,
 			ai,
 			character,
 			sprite,

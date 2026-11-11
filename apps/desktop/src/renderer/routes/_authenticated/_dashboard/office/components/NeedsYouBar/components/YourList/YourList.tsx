@@ -1,5 +1,6 @@
 import { Button } from "@superset/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@superset/ui/popover";
+import { cn } from "@superset/ui/utils";
 import { useState } from "react";
 import { LuListTodo } from "react-icons/lu";
 import { useCityTeam } from "../../../../city/hooks/useCityTeam";
@@ -44,15 +45,29 @@ export function YourList() {
 					) : null}
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent align="end" className="flex w-80 flex-col gap-2 p-3">
+			<PopoverContent align="end" className="flex w-80 flex-col gap-2.5 p-3">
+				<div className="flex items-baseline justify-between gap-2">
+					<h3 className="text-[12px] font-medium">Your list</h3>
+					<span className="text-[11px] text-muted-foreground">
+						yours, and what teammates asked
+					</span>
+				</div>
 				{mine.length === 0 ? (
-					<p className="text-[12px] text-muted-foreground">
+					<p className="rounded-md border border-dashed border-border px-2 py-3 text-center text-[12px] text-muted-foreground">
 						Nothing on your list.
 					</p>
 				) : (
-					<ul className="flex max-h-72 flex-col gap-2 overflow-y-auto">
+					<ul className="flex max-h-72 flex-col gap-1.5 overflow-y-auto">
 						{mine.map((todo) => (
-							<li key={todo.id} className="flex flex-col gap-1 text-[12px]">
+							<li
+								key={todo.id}
+								className={cn(
+									"flex flex-col gap-1.5 rounded-md border px-2 py-1.5 text-[12px] transition-colors duration-300 motion-safe:animate-in motion-safe:fade-in",
+									todo.state === "doing"
+										? "border-amber-500/40 bg-amber-500/10"
+										: "border-border",
+								)}
+							>
 								<span className="break-words">
 									{todo.text}
 									{todo.askedByName ? (
@@ -62,10 +77,16 @@ export function YourList() {
 										</span>
 									) : null}
 								</span>
-								<div className="flex gap-1.5">
+								<div className="flex gap-1">
 									<Button
 										size="sm"
 										variant={todo.state === "doing" ? "default" : "outline"}
+										aria-pressed={todo.state === "doing"}
+										title={
+											todo.state === "doing"
+												? "You are on it. Click to put it back."
+												: "Mark that you are on it"
+										}
 										className="h-6 px-2 text-[11px]"
 										onClick={() => run(setTodo(todo.id, next(todo)))}
 									>
@@ -82,7 +103,7 @@ export function YourList() {
 									<Button
 										size="sm"
 										variant="ghost"
-										className="h-6 px-2 text-[11px]"
+										className="h-6 px-2 text-[11px] text-muted-foreground"
 										onClick={() => run(setTodo(todo.id, "dropped"))}
 									>
 										Drop

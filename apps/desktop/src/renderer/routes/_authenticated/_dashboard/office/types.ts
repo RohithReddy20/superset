@@ -19,6 +19,8 @@ export interface Teammate {
 	roomId: string;
 	/** Where a visitor works, when they sit in a room that is not their own. */
 	from?: string;
+	/** What their looks are drawn from, when not their id: the same person under a new id keeps their face. */
+	look?: string;
 	/** When they came; seats are dealt oldest first, so a newcomer never takes someone's desk. */
 	joinedAt?: number;
 	engine?: EngineId;

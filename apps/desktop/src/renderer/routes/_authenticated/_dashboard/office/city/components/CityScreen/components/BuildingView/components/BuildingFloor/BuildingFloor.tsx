@@ -151,7 +151,7 @@ export function BuildingFloor({
 		() =>
 			new Map(
 				snapshot.teammates.map((t) => {
-					const look = lookFor(t.id);
+					const look = lookFor(t.look ?? t.id);
 					return [t.id, renderFace(look, lookKey(look))];
 				}),
 			),
