@@ -1,7 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import type { CityRooms, CitySnapshot } from "../../../office/cityRooms";
-import type { CityTasks, CityTasksSnapshot } from "../../../office/cityTasks";
 import type { CityTeam, CityTeamSnapshot } from "../../../office/cityTeam";
 import type { OfficeRuntime } from "../../../office/officeRuntime";
 import type { OfficeSnapshot } from "../../../office/types";
@@ -27,17 +26,6 @@ function cityOf(runtime: { city?: () => CityRooms }): CityRooms {
 		});
 	}
 	return city;
-}
-
-function tasksOf(runtime: { cityTasks?: () => CityTasks }): CityTasks {
-	const tasks = runtime.cityTasks?.();
-	if (!tasks) {
-		throw new TRPCError({
-			code: "PRECONDITION_FAILED",
-			message: "City tasks are not available on this host.",
-		});
-	}
-	return tasks;
 }
 
 function teamOf(runtime: { cityTeam?: () => CityTeam }): CityTeam {
@@ -66,8 +54,6 @@ const place = z.object({
 	projectId: z.string().min(1),
 	roomId: z.string().min(1),
 });
-
-const taskId = z.object({ id: z.string().min(1) });
 
 /** The terminal a command was run from; unset or unknown means the person. */
 const caller = z.string().min(1).optional();
@@ -159,48 +145,6 @@ export const officeRouter = router({
 					state: input.state,
 				});
 			}),
-		),
-
-	cityTasks: protectedProcedure.query(
-		({ ctx }): CityTasksSnapshot => tasksOf(ctx.runtime).snapshot(),
-	),
-
-	cityTaskGive: protectedProcedure
-		.input(
-			z.object({
-				terminalId: z.string().min(1),
-				title: z.string().min(1).max(200),
-				brief: z.string().max(8000),
-				checkCommand: z.string().max(500).optional(),
-				checker: z.enum(["claude", "codex"]).optional(),
-			}),
-		)
-		.mutation(({ ctx, input }) =>
-			badRequest(() => tasksOf(ctx.runtime).give(input)),
-		),
-
-	cityTaskSendBack: protectedProcedure
-		.input(taskId.extend({ note: z.string().max(4000) }))
-		.mutation(({ ctx, input }) =>
-			badRequest(() => tasksOf(ctx.runtime).sendBack(input.id, input.note)),
-		),
-
-	cityTaskPullRequest: protectedProcedure
-		.input(taskId)
-		.mutation(({ ctx, input }) =>
-			badRequest(() => tasksOf(ctx.runtime).askForPullRequest(input.id)),
-		),
-
-	cityTaskClose: protectedProcedure
-		.input(taskId)
-		.mutation(({ ctx, input }) =>
-			badRequest(() => tasksOf(ctx.runtime).close(input.id)),
-		),
-
-	cityTaskCancel: protectedProcedure
-		.input(taskId)
-		.mutation(({ ctx, input }) =>
-			badRequest(() => tasksOf(ctx.runtime).cancel(input.id)),
 		),
 
 	citySeat: protectedProcedure
@@ -333,7 +277,6 @@ export const officeRouter = router({
 		.mutation(({ ctx, input }) =>
 			badRequest(async () => {
 				await cityOf(ctx.runtime).remove(input.terminalId);
-				ctx.runtime.cityTasks?.().dropAgent(input.terminalId);
 				return { ok: true as const };
 			}),
 		),

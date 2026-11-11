@@ -386,7 +386,7 @@ export class EventBus {
 		this.broadcast({ type: "project:changed", ...message });
 	}
 
-	broadcastOfficeChanged(scope: "team" | "rooms" | "tasks"): void {
+	broadcastOfficeChanged(scope: "team" | "rooms"): void {
 		this.broadcast({ type: "office:changed", scope, occurredAt: Date.now() });
 	}
 

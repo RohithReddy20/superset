@@ -269,10 +269,10 @@ export type ServerMessage =
 	| OfficeChangedMessage
 	| EventBusErrorMessage;
 
-/** Something in the office changed: the team's lists and messages, the rooms, or the tasks. */
+/** Something in the office changed: the team's lists and messages, or the rooms. */
 export interface OfficeChangedMessage {
 	type: "office:changed";
-	scope: "team" | "rooms" | "tasks";
+	scope: "team" | "rooms";
 	occurredAt: number;
 }
 

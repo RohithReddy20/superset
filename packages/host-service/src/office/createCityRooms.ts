@@ -1,7 +1,5 @@
-import { execFile } from "node:child_process";
 import { mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { promisify } from "node:util";
+import { dirname } from "node:path";
 import { AGENT_IDENTITY_LABELS } from "@superset/shared/agent-catalog";
 import { asc, isNull } from "drizzle-orm";
 import type { HostDb } from "../db";
@@ -31,17 +29,14 @@ import {
 	lastAnswer,
 	MEETING_ROOM,
 } from "./cityRooms";
-import { CityTasks } from "./cityTasks";
 import { CityTeam, type CityTeamEvent, type CityTeamLog } from "./cityTeam";
 import { TerminalWatch } from "./terminalWatch";
 
 const REPLY_CHARS = 12_000;
-const CHECK_TIMEOUT_MS = 10 * 60 * 1000;
-const run = promisify(execFile);
 
 /**
- * The city's rooms and tasks wired to this host: its agents, workspaces, terminals and lifecycle
- * events. Tasks keep their state next to the rooms' state file.
+ * The city's rooms and team wired to this host: its agents, workspaces, terminals and lifecycle
+ * events.
  */
 export function createCityRooms({
 	db,
@@ -71,7 +66,7 @@ export function createCityRooms({
 	/** The office, so agents can sit in its rooms next to its own teammates. */
 	office?: CityRoomsDeps["office"];
 	officeCli?: string;
-}): { rooms: CityRooms; tasks: CityTasks; team: CityTeam } {
+}): { rooms: CityRooms; team: CityTeam } {
 	mkdirSync(dirname(statePath), { recursive: true });
 	const workspaceRows = () =>
 		db
@@ -235,47 +230,6 @@ export function createCityRooms({
 		lastReply,
 	});
 
-	const tasks = new CityTasks({
-		onChange: () => eventBus.broadcastOfficeChanged("tasks"),
-		statePath: join(dirname(statePath), "city-tasks.json"),
-		agents: () => rooms.namedAgents(),
-		workspace: workspaceOf,
-		send,
-		lastReply,
-		startChecker: (workspaceId, agent, prompt) =>
-			rooms.start({ workspaceId, agent, prompt }),
-		stopAgent,
-		successorOf,
-		runCheck: async (command, cwd) => {
-			try {
-				const { stdout, stderr } = await run("sh", ["-lc", command], {
-					cwd,
-					timeout: CHECK_TIMEOUT_MS,
-					maxBuffer: 16 * 1024 * 1024,
-				});
-				return { ok: true, output: `${stdout}\n${stderr}` };
-			} catch (error) {
-				const e = error as {
-					stdout?: string;
-					stderr?: string;
-					message: string;
-				};
-				return {
-					ok: false,
-					output: `${e.stdout ?? ""}\n${e.stderr ?? ""}\n${e.message}`,
-				};
-			}
-		},
-		headOf: async (cwd) => {
-			try {
-				const { stdout } = await run("git", ["rev-parse", "HEAD"], { cwd });
-				return stdout.trim() || null;
-			} catch {
-				return null;
-			}
-		},
-	});
-
 	const events: CityTeamEvent[] = db
 		.select({ payload: officeEvents.payload })
 		.from(officeEvents)
@@ -311,12 +265,9 @@ export function createCityRooms({
 		rooms.onAgentEvent(event).catch((error: unknown) => {
 			console.warn("[city] relay failed", { error });
 		});
-		tasks.onAgentEvent(event).catch((error: unknown) => {
-			console.warn("[city] task step failed", { error });
-		});
 		team.onAgentEvent(event).catch((error: unknown) => {
 			console.warn("[city] ask relay failed", { error });
 		});
 	});
-	return { rooms, tasks, team };
+	return { rooms, team };
 }

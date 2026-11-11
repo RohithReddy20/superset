@@ -4,7 +4,6 @@ import type {
 	CityHandover,
 	CityNote,
 	CityProject,
-	CityTask,
 	CityTodo,
 } from "../../city/types";
 import { isOpenTodo, OFFICE_PLACE, YOU } from "../../city/types";
@@ -60,24 +59,12 @@ export function needsYou({
 	projects,
 	handovers,
 	tasks = [],
-	cityTasks = [],
 	todos = [],
 	unread = [],
 }: {
 	projects: CityProject[];
 	handovers: CityHandover[];
 	tasks?: Pick<Task, "id" | "title" | "status" | "updatedAt">[];
-	cityTasks?: Pick<
-		CityTask,
-		| "id"
-		| "title"
-		| "status"
-		| "updatedAt"
-		| "terminalId"
-		| "projectId"
-		| "agentName"
-		| "blockedReason"
-	>[];
 	todos?: Pick<
 		CityTodo,
 		| "id"
@@ -95,16 +82,8 @@ export function needsYou({
 	const agents = projects.flatMap((p) => p.workspaces.flatMap((w) => w.agents));
 	const byTerminal = new Map(agents.map((a) => [a.terminalId, a]));
 	const items: NeedsYouItem[] = [];
-	const waitingTask = new Set(
-		cityTasks
-			.filter((t) => t.status === "ready" || t.status === "blocked")
-			.map((t) => t.terminalId),
-	);
-
 	for (const agent of agents) {
 		if (!AGENT_REASONS.has(agent.status)) continue;
-		if (agent.status === "review" && waitingTask.has(agent.terminalId))
-			continue;
 		if (agent.lost?.reconnecting) continue;
 		items.push({
 			id: `agent:${agent.terminalId}`,
@@ -170,28 +149,6 @@ export function needsYou({
 			where: "Office",
 			since: task.updatedAt,
 			target: { kind: "tasks" },
-		});
-	}
-
-	for (const task of cityTasks) {
-		if (task.status !== "blocked" && task.status !== "ready") continue;
-		const agent = byTerminal.get(task.terminalId);
-		items.push({
-			id: `city-task:${task.id}`,
-			reason: task.status === "ready" ? "verified" : "blocked",
-			...(task.status === "blocked" && task.blockedReason
-				? { note: `Blocked: ${task.blockedReason}` }
-				: {}),
-			title: `${task.id} ${task.title}`,
-			where: agent ? whereOf(agent, projectName) : task.agentName,
-			since: task.updatedAt,
-			target: agent
-				? agentTarget(agent)
-				: {
-						kind: "agent",
-						projectId: task.projectId,
-						terminalId: task.terminalId,
-					},
 		});
 	}
 

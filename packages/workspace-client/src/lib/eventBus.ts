@@ -174,7 +174,7 @@ type EventListener<T extends EventType> = T extends "fs:events"
 												) => void
 											: T extends "office:changed"
 												? (
-														scope: "team" | "rooms" | "tasks",
+														scope: "team" | "rooms",
 														payload: OfficeChangedPayload,
 													) => void
 												: T extends "page-watch:changed"

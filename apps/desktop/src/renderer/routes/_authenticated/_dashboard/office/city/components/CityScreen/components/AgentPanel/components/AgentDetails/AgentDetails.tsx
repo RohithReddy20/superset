@@ -15,6 +15,7 @@ import type {
 import { AgentIcon } from "../../../AgentIcon";
 import { MessageBox } from "../../../MessageBox";
 import { StatusBadge } from "../../../StatusBadge";
+import { AskBox } from "./components/AskBox";
 import { Conversation } from "./components/Conversation";
 import { HandoverBox } from "./components/HandoverBox";
 import { HistoryBox } from "./components/HistoryBox";
@@ -23,7 +24,6 @@ import { ListBox } from "./components/ListBox";
 import { LostNotice } from "./components/LostNotice";
 import { ScreenQuestion } from "./components/ScreenQuestion";
 import { SeatRow } from "./components/SeatRow";
-import { TaskBox } from "./components/TaskBox";
 
 interface AgentDetailsProps {
 	agent: CityAgent;
@@ -115,7 +115,7 @@ export function AgentDetails({
 			/>
 			<ListBox agent={agent} />
 			<HistoryBox agent={agent} />
-			<TaskBox agent={agent} />
+			<AskBox agent={agent} />
 			<SeatRow agent={agent} projects={projects} />
 			<HandoverBox
 				agent={agent}

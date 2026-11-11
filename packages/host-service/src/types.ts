@@ -7,7 +7,6 @@ import type { ClosedMidTurnChat } from "./chat-v3/closedMidTurn";
 import type { HostDb } from "./db";
 import type { EventBus } from "./events";
 import type { CityRooms } from "./office/cityRooms";
-import type { CityTasks } from "./office/cityTasks";
 import type { CityTeam } from "./office/cityTeam";
 import type { OfficeRuntime } from "./office/officeRuntime";
 import type { PageWatchManager } from "./page-watch/index.ts";
@@ -36,7 +35,6 @@ export interface HostServiceRuntime {
 	agentJobs?: AgentJobRunner;
 	office?: () => OfficeRuntime;
 	city?: () => CityRooms;
-	cityTasks?: () => CityTasks;
 	cityTeam?: () => CityTeam;
 }
 

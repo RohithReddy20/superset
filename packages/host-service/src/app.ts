@@ -392,7 +392,6 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 		agentJobs,
 		office,
 		city: () => city.rooms,
-		cityTasks: () => city.tasks,
 		cityTeam: () => city.team,
 		filesystem,
 		pullRequests: pullRequestRuntime,
