@@ -1,0 +1,47 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/RoomDetails/RoomDetails.tsx
+  s_5f8913573c0c91::t_5b9d3010e1692a 20,40,136-137,140-153,165
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/RoomDetails/components/DecideBox/DecideBox.tsx
+  s_5f8913573c0c91::t_20f7d3e7a32840 1-141
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/RoomDetails/components/DecideBox/index.ts
+  s_5f8913573c0c91::t_ec92eff01753ed 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/BuildingFloor/BuildingFloor.tsx
+  s_5f8913573c0c91::t_056c4eaba6c8b0 24,71-100,102-103,225
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useCityTeam/useCityTeam.ts
+  s_5f8913573c0c91::t_7f5ab74c23919c 58-62
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/buildingSnapshot/buildingSnapshot.ts
+  s_5f8913573c0c91::t_8a3ccaa70baf63 11-18,28,35-38,81-101
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/OfficeFloor/components/FloorOverlay/FloorOverlay.tsx
+  s_5f8913573c0c91::t_32c8bd80c44d5f 3,41-42,73,217,229,231,324-341
+packages/cli/src/commands/office/decide/command.ts
+  s_5f8913573c0c91::t_a63f3da0133fb5 1-47
+packages/host-service/src/office/cityRooms.test.ts
+  s_5f8913573c0c91::t_1bad408ad1e4a6 2,230-264
+packages/host-service/src/office/cityRooms.ts
+  s_5f8913573c0c91::t_11716c059bd5f0 29-30,164-167,169,568,783-790,792-795,845
+packages/host-service/src/office/cityTeam.test.ts
+  s_5f8913573c0c91::t_876b65ecb9adc0 195-223
+packages/host-service/src/office/cityTeam.ts
+  s_5f8913573c0c91::t_8f54c1caf771d7 55-56,232,402-486,672,682
+packages/host-service/src/trpc/router/office/office.ts
+  s_5f8913573c0c91::t_3a2b490cffb494 98-120
+plans/20261105-office-orchestration-notes.md
+  s_5f8913573c0c91::t_ec67751d5a09c5 847-877
+scripts/dev-cli.ts
+  s_5f8913573c0c91::t_742eb427810bc9 91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d6ab089891bc3b04050130e62c5cbc92807ff0c8",
+  "prompts": {},
+  "sessions": {
+    "s_5f8913573c0c91": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ffe1d21c-40b7-4316-ace2-1908f5fdc59b",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
