@@ -21,6 +21,7 @@ import type { MiddlewareHandler } from "hono";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createApiClient } from "./api";
+import { createChatSync, syncWhenEnabled } from "./chat-sync";
 import {
 	createChatAgentBridge,
 	createChatV3Mount,
@@ -90,6 +91,7 @@ import type {
 } from "./types";
 import { getHostWorkerPool } from "./workers/host-worker-pool";
 import { gitWorkspaceRefsTask } from "./workers/tasks/git";
+import { disposeUsageWorkerPool } from "./workers/usage-worker-pool";
 import { disposeWorkspaceTitleJobs } from "./workspaces/workspace-title-jobs";
 
 export interface CreateAppOptions {
@@ -312,7 +314,10 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 		},
 		isTerminalAlive: (terminalId, workspaceId) => {
 			const chat = terminalAgentStore.getChat(terminalId);
-			if (chat) return chat.lastEventType !== "Failed";
+			if (chat?.chatSessionId) {
+				const live = chatV3.runtime().live.get(chat.chatSessionId);
+				return live !== null && live.state.status !== "dead";
+			}
 			return isAgentTerminalAlive({ terminalId, workspaceId, db, eventBus });
 		},
 		isAgentBusy: (terminalId) =>
@@ -375,6 +380,10 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 		},
 	});
 
+	const chatSync = createChatSync({
+		runtime: () => chatV3.existingRuntime(),
+		api,
+	});
 	const runtime = {
 		agentJobs,
 		office,
@@ -384,7 +393,13 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 		pullRequests: pullRequestRuntime,
 		pageWatch,
 		chat: () => chatV3.runtime(),
+		chatSync,
 		closeChats: (scopeId: string) => chatV3.closeScope(scopeId),
+		closedMidTurn: {
+			list: () => chatV3.closedMidTurn(),
+			resume: () => chatV3.resumeClosedMidTurn(),
+			keepPaused: () => chatV3.keepClosedMidTurnPaused(),
+		},
 	};
 
 	// Chat v3 runtime (plans/chat-v3-pane-mount.md). Registered unconditionally:
@@ -416,7 +431,14 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 				workspaceId: scopeId,
 				occurredAt,
 			}),
+		onAppend: (envelope) => chatSync.noteAppend(envelope),
 	});
+	// A box whose owner has it keeps its chats in the cloud as they happen; a
+	// machine someone owns pushes a chat only when it moves.
+	const stopChatSync =
+		process.env.SUPERSET_HOST_RUN_MODE === "sandbox"
+			? syncWhenEnabled({ chatSync, api })
+			: null;
 	try {
 		chatV3.resumeAfterUpdate();
 	} catch (error) {
@@ -643,6 +665,7 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 
 	const ownsDb = options.db === undefined;
 	const dispose = async (): Promise<void> => {
+		stopChatSync?.();
 		agentJobs.stopAll();
 		await officeRuntime?.stop().catch(() => {});
 		if (projectPurgeTimer) clearInterval(projectPurgeTimer);
@@ -680,6 +703,11 @@ export function createApp(options: CreateAppOptions): CreateAppResult {
 			await getHostWorkerPool().dispose();
 		} catch (err) {
 			console.warn("[host-service] hostWorkerPool.dispose failed:", err);
+		}
+		try {
+			await disposeUsageWorkerPool();
+		} catch (err) {
+			console.warn("[host-service] usageWorkerPool.dispose failed:", err);
 		}
 		try {
 			eventBus.close();

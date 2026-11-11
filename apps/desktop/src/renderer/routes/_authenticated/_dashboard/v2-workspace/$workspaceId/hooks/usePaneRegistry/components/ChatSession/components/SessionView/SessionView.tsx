@@ -4,9 +4,9 @@ import {
 	deriveQueuedPrompts,
 	runningTurnId as findRunningTurnId,
 	latestSessionUsage,
-	launchConfigSelections,
 	type OutboxEntry,
 	presetForAnyHarness,
+	type SessionSnapshot,
 	userMessageText,
 } from "@superset/chat/core";
 import type {
@@ -64,6 +64,7 @@ import { SubagentView } from "../SubagentView";
 import { Transcript, type TranscriptHandle } from "../Transcript";
 import { useChildrenByParent } from "../Transcript/hooks/useChildrenByParent";
 import { NestedItemsProvider } from "../Transcript/providers/NestedItemsProvider";
+import { SessionModeProvider } from "../Transcript/providers/SessionModeProvider";
 import { TranscriptPluginsProvider } from "../Transcript/providers/TranscriptPluginsProvider";
 import {
 	type DrawerExit,
@@ -79,6 +80,7 @@ import {
 import { useFailureRecovery } from "./hooks/useFailureRecovery";
 import { useLaunchPromptDelivered } from "./hooks/useLaunchPromptDelivered";
 import { useMainSend } from "./hooks/useMainSend";
+import { useManualSignIn } from "./hooks/useManualSignIn";
 import { useMoveToBackground } from "./hooks/useMoveToBackground";
 import { usePendingPrompts } from "./hooks/usePendingPrompts";
 import { useRestoreUnsentPrompts } from "./hooks/useRestoreUnsentPrompts";
@@ -87,12 +89,11 @@ import { useSubagentTarget } from "./hooks/useSubagentTarget";
 import { escapeBack } from "./utils/escapeBack";
 import { settledToolCalls } from "./utils/settledToolCalls";
 import { setupEnvironmentId } from "./utils/setupEnvironmentLink";
+import { withStoredHistory } from "./utils/withStoredHistory";
 
 const RESUME_FOLLOW_PX = 24;
 const NO_COMMANDS: AvailableCommand[] = [];
 const NO_CONFIG_OPTIONS: SessionConfigOption[] = [];
-
-const MODEL_OPTIONS_GRACE_MS = 1000;
 
 function contentText(content: UserContent[]): string {
 	return userMessageText({ content });
@@ -108,10 +109,10 @@ export function SessionView({
 	draftKey,
 	headerLeft,
 	held,
+	storedSnapshot,
 	isActive,
 	onModeChange,
 	pendingPrompts,
-	preferredModelLabel,
 	onPendingPromptsSent,
 	onLaunchPromptDelivered,
 	onFork,
@@ -146,9 +147,9 @@ export function SessionView({
 		launched?: UserContent[];
 	};
 	isActive?: boolean;
+	/** The chat as the database holds it, shown until the host sends the live one. */
+	storedSnapshot?: SessionSnapshot | null;
 	pendingPrompts: UserContent[][];
-	/** Selected by name once the agent lists its models, before the first prompt goes out. */
-	preferredModelLabel?: string;
 	onPendingPromptsSent: () => void;
 	onLaunchPromptDelivered?: () => void;
 	onSessionState?: (session: SessionState | null) => void;
@@ -244,7 +245,14 @@ export function SessionView({
 		}
 	}, [outbox]);
 	useRestoreUnsentPrompts(draftKey, outbox, draftOf);
-	const timeline = useTimeline(session.snapshot, { nestChildItems: true });
+	const shownSnapshot = useMemo(
+		() =>
+			storedSnapshot
+				? withStoredHistory(storedSnapshot, session.snapshot)
+				: session.snapshot,
+		[storedSnapshot, session.snapshot],
+	);
+	const timeline = useTimeline(shownSnapshot, { nestChildItems: true });
 	const rail = useStableList(
 		useMemo(() => railMessages(timeline), [timeline]),
 		(previous, next) =>
@@ -259,42 +267,12 @@ export function SessionView({
 	);
 
 	const configOptions = session.snapshot.session?.configOptions;
-	const agentStatus = session.snapshot.session?.status;
-	const [modelSettled, setModelSettled] = useState(
-		preferredModelLabel === undefined,
-	);
-	const modelRequested = useRef(false);
-	useEffect(() => {
-		if (modelSettled || session.status !== "ready") return;
-		if (configOptions === undefined) {
-			// An agent that reports no options never sends them.
-			if (agentStatus !== "idle") return;
-			const timer = setTimeout(
-				() => setModelSettled(true),
-				MODEL_OPTIONS_GRACE_MS,
-			);
-			return () => clearTimeout(timer);
-		}
-		if (modelRequested.current) return;
-		const [selection] = launchConfigSelections(configOptions, {
-			modelLabel: preferredModelLabel ?? null,
-			effortLabel: null,
-		});
-		if (!selection) {
-			setModelSettled(true);
-			return;
-		}
-		modelRequested.current = true;
-		void session
-			.setConfigOption(selection.configId, selection.value)
-			.finally(() => setModelSettled(true));
-	}, [agentStatus, configOptions, modelSettled, preferredModelLabel, session]);
 
 	usePendingPrompts({
 		held: held !== undefined,
 		onSent: onPendingPromptsSent,
 		prompts: pendingPrompts,
-		ready: session.status === "ready" && modelSettled,
+		ready: session.status === "ready",
 		sendPrompt: session.sendPrompt,
 	});
 
@@ -543,10 +521,10 @@ export function SessionView({
 
 	const onBackgroundSubagent = useMoveToBackground(client);
 	const plugins = usePluginMentionOptions();
-	const childrenByParent = useChildrenByParent(session.snapshot);
+	const childrenByParent = useChildrenByParent(shownSnapshot);
 	const nestedItems = useMemo(
 		() => ({
-			snapshot: session.snapshot,
+			snapshot: shownSnapshot,
 			childrenByParent,
 			requestItemBodies: session.requestItemBodies,
 			respondToApproval: onRespond,
@@ -554,7 +532,7 @@ export function SessionView({
 			moveToBackground: onBackgroundSubagent,
 		}),
 		[
-			session.snapshot,
+			shownSnapshot,
 			childrenByParent,
 			session.requestItemBodies,
 			onRespond,
@@ -577,6 +555,7 @@ export function SessionView({
 			pausedByLimit:
 				sessionState?.usageLimit !== undefined ||
 				sessionState?.queuePausedByLimit === true,
+			pausedByShutdown: sessionState?.queuePausedByShutdown === true,
 			actionable: sessionState?.queueControls === true,
 			remove: session.removeQueuedPrompt,
 			resume: session.resumeQueue,
@@ -588,6 +567,7 @@ export function SessionView({
 			sessionState?.queuePaused,
 			sessionState?.usageLimit,
 			sessionState?.queuePausedByLimit,
+			sessionState?.queuePausedByShutdown,
 			sessionState?.queueControls,
 			session.removeQueuedPrompt,
 			session.resumeQueue,
@@ -647,6 +627,7 @@ export function SessionView({
 		() => composerRef.current?.openModelPicker(),
 		[],
 	);
+	const { manualSignIn, openAgentSettings } = useManualSignIn(presetId);
 	const { failureActions, onSetConfigOption, onModelPickerOpenChange } =
 		useFailureRecovery({
 			blocked:
@@ -657,6 +638,8 @@ export function SessionView({
 				approvals.length > 0 ||
 				outbox.length > 0,
 			configOptions,
+			manualSignIn,
+			openAgentSettings,
 			onRestartAndContinue,
 			onStartNewChat,
 			openModelPicker,
@@ -705,39 +688,41 @@ export function SessionView({
 					scrollPreviousItemPeek={0}
 				>
 					<div className="@container relative flex min-h-0 flex-1">
-						<TranscriptPluginsProvider value={plugins}>
-							<NestedItemsProvider value={nestedItems}>
-								{focusedSubagentId ? (
-									<SubagentView
-										itemId={focusedSubagentId}
-										queued={subagent.queued}
-									/>
-								) : (
-									<TurnFailureActionsProvider value={failureActions}>
-										<Transcript
-											approvals={approvals}
-											canForkToWorktree={canForkToWorktree}
-											groups={timeline}
-											hasOlder={session.hasOlder}
-											isActive={isActive}
-											onCloseFind={focusComposer}
-											onDiscardPrompt={session.discardPrompt}
-											onFork={onFork ? forkWithTranscript : undefined}
-											onLoadOlder={loadOlder}
-											onRequestItemBodies={session.requestItemBodies}
-											onRespond={onRespond}
-											onMessageRevealed={clearRevealMessage}
-											onRetryPrompt={session.retryPrompt}
-											outbox={transcriptOutbox}
-											ref={transcriptRef}
-											revealMessageId={revealMessageId}
-											sessionId={client.sessionId}
-											snapshot={session.snapshot}
+						<SessionModeProvider value={sessionState?.modeId}>
+							<TranscriptPluginsProvider value={plugins}>
+								<NestedItemsProvider value={nestedItems}>
+									{focusedSubagentId ? (
+										<SubagentView
+											itemId={focusedSubagentId}
+											queued={subagent.queued}
 										/>
-									</TurnFailureActionsProvider>
-								)}
-							</NestedItemsProvider>
-						</TranscriptPluginsProvider>
+									) : (
+										<TurnFailureActionsProvider value={failureActions}>
+											<Transcript
+												approvals={approvals}
+												canForkToWorktree={canForkToWorktree}
+												groups={timeline}
+												hasOlder={session.hasOlder}
+												isActive={isActive}
+												onCloseFind={focusComposer}
+												onDiscardPrompt={session.discardPrompt}
+												onFork={onFork ? forkWithTranscript : undefined}
+												onLoadOlder={loadOlder}
+												onRequestItemBodies={session.requestItemBodies}
+												onRespond={onRespond}
+												onMessageRevealed={clearRevealMessage}
+												onRetryPrompt={session.retryPrompt}
+												outbox={transcriptOutbox}
+												ref={transcriptRef}
+												revealMessageId={revealMessageId}
+												sessionId={client.sessionId}
+												snapshot={shownSnapshot}
+											/>
+										</TurnFailureActionsProvider>
+									)}
+								</NestedItemsProvider>
+							</TranscriptPluginsProvider>
+						</SessionModeProvider>
 						{!focusedSubagentId && rail.length > 1 && (
 							<ChatHistorySidebarScroller
 								className="absolute inset-y-0 left-0 my-auto hidden h-fit max-h-full flex-col pl-3 @[56rem]:flex"
@@ -804,6 +789,7 @@ export function SessionView({
 					sessionUsage={sessionUsage}
 					turnRunning={runningTurnId !== null}
 					promptPending={heldOutbox.length > 0}
+					awaitingBackground={awaitingBackground}
 					terminalId={terminalId}
 					agentLabel={agentLabel}
 					onNewChat={onNewChat}

@@ -3,6 +3,7 @@ import { acpHarnessForPreset } from "@superset/chat/core";
 import { AGENT_DEFAULT_MODE, type UserContent } from "@superset/chat/protocol";
 import { errorMessage } from "@superset/i18n/errors";
 import { getAgentModelSupport } from "@superset/shared/agent-models";
+import { hostRemembersChatSelections } from "@superset/shared/host-version";
 import {
 	buildChatRewindPrompt,
 	buildChatSessionHandoffPrompt,
@@ -13,13 +14,22 @@ import { useWorkspaceClient } from "@superset/workspace-client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { TRPCClientError } from "@trpc/client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useHostServiceInfo } from "renderer/hooks/host-service/useHostServiceInfo";
 import { useTerminalAgentBindings } from "renderer/hooks/host-service/useTerminalAgentBindings";
 import { useWorkspaceEvent } from "renderer/hooks/host-service/useWorkspaceEvent";
 import { useV2AgentConfigs } from "renderer/hooks/useV2AgentConfigs";
 import { isUnrestrictedMode } from "renderer/routes/_authenticated/utils/isUnrestrictedMode";
 import { useChatTurnSnapshotsEnabled } from "renderer/stores/chat-turn-snapshots";
+import { StoredChatTranscript } from "../../../../../../components/StoredChatTranscript";
 import type { OpenFile } from "../../../../../../types";
+import { isChatSessionReopened } from "../../../../../../utils/closedChatSessions";
 import { saveLastChatAgent } from "../../../../../../utils/lastChatAgent";
+import { useForkChatSession } from "../../../../hooks/useForkChatSession";
+import {
+	forgetSavedChatMode,
+	freshStartMode,
+	readSavedChatMode,
+} from "../../../../utils/savedChatMode";
 import { SessionView } from "../../../ChatSession/components/SessionView";
 import { useSessionClient } from "../../../ChatSession/hooks/useSessionClient";
 import type {
@@ -33,13 +43,18 @@ import type {
 } from "../../../ChatSession/types";
 import { carryReaderPosition } from "../../../ChatSession/utils/carriedReaderPosition";
 import { useForkChat } from "../../hooks/useForkChat";
-import { readSavedChatMode } from "../../utils/savedChatMode";
 import { AcpRecovery } from "./components/AcpRecovery";
 import { DraftChat } from "./components/DraftChat";
+import { MoveProgress } from "./components/MoveProgress";
 import { useChatSessionLiveness } from "./hooks/useChatSessionLiveness";
 import { useReplacementSession } from "./hooks/useReplacementSession";
+import { useStoredChatSnapshot } from "./hooks/useStoredChatSnapshot";
 import { closeChatForAccountSwitch } from "./utils/closeChatForAccountSwitch";
 import { createWhenReachable } from "./utils/createWhenReachable";
+import {
+	type SessionInfo,
+	sessionInfoFromState,
+} from "./utils/sessionInfoFromState";
 import {
 	isChatCreateWatched,
 	sharedChatCreate,
@@ -64,6 +79,8 @@ export interface AgentSwitchTarget {
 
 export function AcpChatPane({
 	agent,
+	awaitingMove,
+	onMoveArrived,
 	draftId,
 	isActive,
 	onSessionInfo,
@@ -90,7 +107,7 @@ export function AcpChatPane({
 	terminalId,
 	workspaceId,
 	modelId,
-	modelLabel,
+	effortId,
 	modeId,
 }: {
 	workspaceId: string;
@@ -98,6 +115,9 @@ export function AcpChatPane({
 	draftId?: string;
 	/** `sessionId` is absent until the agent has run a turn to report one. */
 	agent: { id: string; sessionId?: string } | undefined;
+	/** The chat is moving here and the host may not have it yet: wait, do not recover. */
+	awaitingMove?: boolean;
+	onMoveArrived?: () => void;
 	isActive: boolean;
 	sessionId: string | null;
 	pendingPrompts: UserContent[][];
@@ -109,7 +129,7 @@ export function AcpChatPane({
 	onRestoreQueuedPrompts: (prompts: UserContent[][]) => void;
 	onSessionCreated: (sessionId: string, pendingPrompt?: string) => void;
 	onModeChange?: (modeId: string) => void;
-	onSessionInfo: (info: { harnessSessionId?: string; title?: string }) => void;
+	onSessionInfo: (info: SessionInfo) => void;
 	onOpenFile?: OpenFile;
 	onOpenDiff?: OpenDiff;
 	onOpenPage?: OpenPage;
@@ -124,14 +144,17 @@ export function AcpChatPane({
 	onOpenForkedChat?: (fork: { sessionId: string; terminalId: string }) => void;
 	onRewound?: (prompt: string) => void;
 	modelId?: string;
-	modelLabel?: string;
+	effortId?: string;
 	modeId?: string;
 }) {
 	const { t } = useLingui();
 	const snapshotWorktree = useChatTurnSnapshotsEnabled();
 	const { client, wiring } = useSessionClient(sessionId);
+	const forkChatSession = useForkChatSession(workspaceId);
+	const storedSnapshot = useStoredChatSnapshot(sessionId);
 	const { forkToWorktree, canForkToWorktree } = useForkChat(workspaceId);
 	const { hostUrl } = useWorkspaceClient();
+	const hostInfo = useHostServiceInfo(hostUrl);
 	const { data: agentConfigs } = useV2AgentConfigs(hostUrl);
 	const agentLabel = agentConfigs?.find(
 		(config) => config.id === agent?.id,
@@ -192,9 +215,11 @@ export function AcpChatPane({
 			attaching.current = true;
 			setFailure(null);
 			try {
-				const startModeId =
-					modeId ??
-					(resume || !agent ? undefined : readSavedChatMode(agent.id));
+				const savedModeId =
+					resume || !agent ? undefined : readSavedChatMode(agent.id);
+				const startModeId = resume
+					? modeId
+					: freshStartMode(modeId, savedModeId);
 				const commandId = crypto.randomUUID();
 				const createdId = await sharedChatCreate(
 					createKey,
@@ -208,7 +233,9 @@ export function AcpChatPane({
 										harness: resumeHarness,
 										terminalId,
 										...(modelId ? { modelId } : {}),
+										...(effortId ? { effortId } : {}),
 										...(startModeId ? { modeId: startModeId } : {}),
+										...(resume ? {} : { rememberSelections: true }),
 										...(resume
 											? {
 													resume: {
@@ -231,6 +258,14 @@ export function AcpChatPane({
 							.catch(() => undefined);
 					},
 				);
+				if (
+					agent &&
+					savedModeId &&
+					startModeId === savedModeId &&
+					hostRemembersChatSelections(hostInfo.data?.version)
+				) {
+					forgetSavedChatMode(agent.id);
+				}
 				if (!mounted.current) return false;
 				if (replacing) holdReplacement(createdId);
 				else onSessionCreated(createdId);
@@ -250,9 +285,11 @@ export function AcpChatPane({
 			onSessionCreated,
 			holdReplacement,
 			modelId,
+			effortId,
 			modeId,
 			agent,
 			sessionId,
+			hostInfo.data?.version,
 		],
 	);
 
@@ -271,35 +308,17 @@ export function AcpChatPane({
 	// point — so where it was clicked from makes no difference to the branch.
 	const forkHere = useCallback(() => {
 		if (!sessionId) return;
-		const terminalId = crypto.randomUUID();
-		void wiring.transport
-			.forkSession({
-				commandId: crypto.randomUUID(),
-				sessionId,
-				workspaceId,
-				terminalId,
-			})
-			.then((forked) => {
-				if (forked) {
-					if (!mounted.current || !onOpenForkedChat) {
-						void wiring.transport
-							.closeSession({ sessionId: forked.sessionId })
-							.catch(() => undefined);
-						return;
-					}
-					onOpenForkedChat({ sessionId: forked.sessionId, terminalId });
-					return;
-				}
-				// The adapter declines rather than sending a `session/fork` an
-				// agent would reject, and a button that does nothing is worse
-				// than one that says why.
-				toast.error(t({ message: "This agent can't branch a conversation" }));
-			})
-			.catch((error: unknown) => {
-				console.error("[acp-chat] fork failed", error);
-				toast.error(t({ message: "Couldn't branch the conversation" }));
-			});
-	}, [wiring.transport, sessionId, workspaceId, onOpenForkedChat, t]);
+		void forkChatSession(sessionId).then((forked) => {
+			if (!forked) return;
+			if (!mounted.current || !onOpenForkedChat) {
+				void wiring.transport
+					.closeSession({ sessionId: forked.sessionId })
+					.catch(() => undefined);
+				return;
+			}
+			onOpenForkedChat(forked);
+		});
+	}, [forkChatSession, wiring.transport, sessionId, onOpenForkedChat]);
 
 	// A worktree of its own cannot resume this session — the agent keys its
 	// sessions to a project directory — so that branch is a fresh chat handed
@@ -383,13 +402,10 @@ export function AcpChatPane({
 					presetId,
 					label,
 					model: nextModel,
-					// Never more access than the chat being left, unless the user
-					// already chose otherwise for the agent being switched to.
-					modeId:
-						readSavedChatMode(presetId) ??
-						(isUnrestrictedMode(currentModeId)
-							? undefined
-							: AGENT_DEFAULT_MODE),
+					// Never more access than the chat being left.
+					modeId: isUnrestrictedMode(currentModeId)
+						? undefined
+						: AGENT_DEFAULT_MODE,
 					handoffPrompt: transcript.trim()
 						? buildChatSessionHandoffPrompt({
 								transcript,
@@ -463,8 +479,28 @@ export function AcpChatPane({
 				!binding.chatSessionId &&
 				binding.endedAt === undefined,
 		);
+	const closedElsewhere =
+		stored?.session?.closedByUser === true &&
+		!!sessionId &&
+		!isChatSessionReopened(sessionId);
+	// This host may still hold an older copy of the chat, so only the move
+	// reaching `ready` means it arrived.
+	const waitingForMove = awaitingMove === true;
+	const checkSession = useCallback(() => {
+		void queryClient.invalidateQueries({
+			queryKey: ["acp-chat-session", sessionId],
+		});
+	}, [queryClient, sessionId]);
+	const moveArrived = useCallback(() => {
+		checkSession();
+		onMoveArrived?.();
+	}, [checkSession, onMoveArrived]);
 	const recoverable = Boolean(
-		(sessionStopped || sessionDead) && harness && !continuedInTerminal,
+		(sessionStopped || sessionDead) &&
+			harness &&
+			!continuedInTerminal &&
+			!closedElsewhere &&
+			!waitingForMove,
 	);
 	const recoveries = useRef(0);
 	if (stored?.live && !sessionDead) recoveries.current = 0;
@@ -633,6 +669,7 @@ export function AcpChatPane({
 					prompt: request.messageText,
 					...(handoffPrompt ? { handoffPrompt } : {}),
 					...(modelId ? { modelId } : {}),
+					...(effortId ? { effortId } : {}),
 					...(modeId ? { modeId } : {}),
 					...(snapshotWorktree ? { snapshotWorktree: true } : {}),
 				});
@@ -679,6 +716,7 @@ export function AcpChatPane({
 			t,
 			agentLabel,
 			modelId,
+			effortId,
 			modeId,
 			snapshotWorktree,
 		],
@@ -707,6 +745,18 @@ export function AcpChatPane({
 			workspaceId={workspaceId}
 		/>
 	);
+
+	if (waitingForMove && sessionId) {
+		return (
+			<MoveProgress
+				chatSessionId={sessionId}
+				workspaceId={workspaceId}
+				sessionLive={stored?.live === true}
+				onCheckSession={checkSession}
+				onArrived={moveArrived}
+			/>
+		);
+	}
 
 	const lost = failure !== null && stored === null;
 	if (
@@ -742,6 +792,26 @@ export function AcpChatPane({
 				</div>
 			);
 		}
+		if (storedSnapshot && sessionId) {
+			return (
+				<DraftChat
+					draftKey={draftKey}
+					getOpenFilePaths={getOpenFilePaths}
+					isActive={isActive}
+					onOpenHistory={onOpenHistory}
+					onQueue={onQueuePrompt}
+					queued={pendingPrompts}
+					transcript={
+						<StoredChatTranscript
+							chatId={sessionId}
+							pending={pendingPrompts}
+							snapshot={storedSnapshot}
+						/>
+					}
+					workspaceId={workspaceId}
+				/>
+			);
+		}
 		return draft();
 	}
 
@@ -761,6 +831,7 @@ export function AcpChatPane({
 					}
 				: {})}
 			key={sessionId}
+			storedSnapshot={storedSnapshot}
 			onPendingPromptsSent={onPendingPromptsSent}
 			onLaunchPromptDelivered={
 				launchPrompt ? onLaunchPromptDelivered : undefined
@@ -785,20 +856,10 @@ export function AcpChatPane({
 			onOpenHistory={onOpenHistory}
 			onNewChat={newChat}
 			onSessionState={(state) => {
-				// A resume that found no transcript lands on a different agent
-				// session. Keep the pane pointed at the live one, or the trip back
-				// to the CLI resumes an id that no longer exists.
-				const bound = state?.harnessSessionId;
 				if (!mounted.current) return;
-				onSessionInfo({
-					...(bound && bound !== agent?.sessionId
-						? { harnessSessionId: bound }
-						: {}),
-					...(state?.title ? { title: state.title } : {}),
-				});
+				onSessionInfo(sessionInfoFromState(state, agent?.sessionId));
 			}}
 			pendingPrompts={pendingPrompts}
-			preferredModelLabel={modelLabel}
 			terminalId={terminalId}
 			workspaceId={workspaceId}
 		/>
