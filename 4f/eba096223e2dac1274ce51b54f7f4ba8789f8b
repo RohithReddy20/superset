@@ -1,0 +1,37 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentList/AgentList.tsx
+  s_5f8913573c0c91::t_4a00d37def5709 6,8,63-65,153,195,197
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/AgentDetails.tsx
+  s_5f8913573c0c91::t_d9e0e397a18f73 18,118
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/components/AskBox/AskBox.tsx
+  s_5f8913573c0c91::t_a81234b7d6ca3e 4-5,7-13,15-34,36,38,42-43,46-78,80-81
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/components/AskBox/index.ts
+  s_5f8913573c0c91::t_cb1e578e35cdcd 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/hooks/useNeedsYou/useNeedsYou.ts
+  s_5f8913573c0c91::t_c0c6e290621237 14-15
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/needsYou/needsYou.test.ts
+  s_5f8913573c0c91::t_739dbfc93cf6a9 135
+packages/host-service/src/events/event-bus.ts
+  s_5f8913573c0c91::t_65375ccdd1efdb 389
+packages/host-service/src/events/types.ts
+  s_5f8913573c0c91::t_1f9685e022025f 272,275
+packages/host-service/src/office/createCityRooms.ts
+  s_5f8913573c0c91::t_8e0d13ecdb2020 2,38-39,69,272
+packages/workspace-client/src/lib/eventBus.ts
+  s_5f8913573c0c91::t_294bb7621d06fd 177
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4feba096223e2dac1274ce51b54f7f4ba8789f8b",
+  "prompts": {},
+  "sessions": {
+    "s_5f8913573c0c91": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ffe1d21c-40b7-4316-ace2-1908f5fdc59b",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
