@@ -1,0 +1,19 @@
+plans/20261105-office-orchestration-notes.md
+  s_3ee79395c5b19c::t_3fd023d638580d 1069-1107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bd2773e86bc854f809d1c74d8057cbbd90a67891",
+  "prompts": {},
+  "sessions": {
+    "s_3ee79395c5b19c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cec73e00-c805-403b-aa3d-5fd48be8752a",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
