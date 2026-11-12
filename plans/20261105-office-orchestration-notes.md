@@ -1066,3 +1066,42 @@ Tests: host `src/office` 31 pass (one new), renderer office 44 pass (one new); t
 
 Not checked: a reconnect (`claude --resume`) keeping the model, since that goes through the app's
 resume path, which takes no model; a hand-over carrying the model; Codex and other CLIs' lists.
+
+## First real task run through the office (2026-11-12)
+
+The person's task: two Claude Opus agents in two workspaces (this repo and the portfolio at
+`/Users/rohith/rohith/personal/soft-kawaii`) correct the portfolio's existing "Paradev Office"
+case study, started and run from the office in the dev app, not from a terminal.
+
+How it was set up:
+
+- Projects `paradev-office` (this checkout) and `portfolio` were added with the dev CLI
+  (`projects create --import --local`, `workspaces create --checkout local`), because adding a
+  project in the app opens a system folder picker that CDP cannot drive.
+- From the office start box (Opus, High effort): Juno in "Office source" (told to be read-only and
+  to be the source of facts) and Kai in "Paradev office page" (told to rewrite the page, not commit).
+  Both processes showed `--model opus --effort high`.
+- Juno was seated in Kai's room from her Manage tab (the seat `<select>` was set by value; it is a
+  system menu).
+
+What happened (about 7 minutes): Kai asked Juno two rounds of questions with `office ask`, Juno
+answered and corrected one of her own answers, Kai asked for a review of the draft, Juno listed
+four factual fixes with replacement sentences, Kai applied them and wrote to the person. The portfolio
+has uncommitted changes in `lib/data/projects.tsx`, `public/llms.txt` and `public/paradev-office/`
+(5 new screenshots with phone crops, 8 old files deleted). This repo was not changed by Juno.
+
+Checked after the run: the portfolio's `tsc --noEmit` and `eslint lib/data/projects.tsx` gave no
+output; the page loaded at `/projects/paradev-office` on a local `next dev` with all six images
+loaded and no console errors; three sections were looked at in screenshots. Not checked: the phone
+layout, `next build`, every sentence of the new text against the code (Juno's review is the check).
+
+Found while using it, not fixed:
+
+- The room panel said "Nothing written to this room yet" for the whole run. Agents sitting together
+  talked with `ask` and `say @name`, which shows only in each agent's History tab, so a person
+  watching the room sees no conversation.
+- The building header counts only its own agents ("1 workspace · 1 agent" with two sitting there).
+- A removed test agent's name (Nova) stays taken; the start box says so but the name cannot be reused.
+- The start box's first task is a one-line field; a 1,600-character task works but cannot be read.
+- The panel's "last change … · started …" line does not tick while the panel stays open.
+- The office has no way to add a project (building); it needs the app's folder picker.
