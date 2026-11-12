@@ -1,3 +1,4 @@
+import { Button } from "@superset/ui/button";
 import {
 	Select,
 	SelectContent,
@@ -6,6 +7,8 @@ import {
 	SelectValue,
 } from "@superset/ui/select";
 import { useEffect, useState } from "react";
+import { LuPlus } from "react-icons/lu";
+import { useOpenNewWorkspaceForLocalProject } from "renderer/hooks/useOpenNewWorkspace";
 import type { CityProject } from "../../../../types";
 import { AgentBar } from "../AgentBar";
 
@@ -24,9 +27,27 @@ export function StartBar({ project, openWorkspaceId }: StartBarProps) {
 	useEffect(() => {
 		if (openWorkspaceId) setPicked(openWorkspaceId);
 	}, [openWorkspaceId]);
+	const openNewWorkspace = useOpenNewWorkspaceForLocalProject();
 	const workspace =
 		project.workspaces.find((w) => w.id === picked) ?? project.workspaces[0];
-	if (!workspace) return null;
+	if (!workspace)
+		return (
+			<section
+				aria-label="Start an agent"
+				className="flex h-9 shrink-0 items-center gap-2 border-b border-border bg-background px-3 text-[12px] text-muted-foreground"
+			>
+				This building has no rooms yet. A workspace is a room agents work in.
+				<Button
+					variant="outline"
+					size="sm"
+					className="h-6 gap-1 px-2 text-[12px]"
+					onClick={() => openNewWorkspace(project.id)}
+				>
+					<LuPlus className="size-3.5" />
+					New workspace
+				</Button>
+			</section>
+		);
 
 	return (
 		<section
@@ -58,6 +79,16 @@ export function StartBar({ project, openWorkspaceId }: StartBarProps) {
 					{workspace.name}
 				</span>
 			)}
+			<Button
+				variant="ghost"
+				size="icon-sm"
+				aria-label="New workspace in this building"
+				title="New workspace in this building"
+				className="size-6 shrink-0 text-muted-foreground"
+				onClick={() => openNewWorkspace(project.id)}
+			>
+				<LuPlus className="size-3.5" />
+			</Button>
 			<span className="h-4 w-px shrink-0 bg-border" />
 			<AgentBar
 				key={workspace.id}

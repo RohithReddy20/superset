@@ -32,6 +32,27 @@ function binding(
 }
 
 describe("buildCity", () => {
+	test("a project on this machine is a building before its first workspace", () => {
+		const city = buildCity({
+			projects: [
+				{
+					id: "p9",
+					name: "new",
+					color: null,
+					iconUrl: null,
+					createdAt: 9,
+					here: true,
+				},
+			],
+			workspaces: [],
+			bindings: [],
+			seats: [],
+			seenAt: {},
+			machineId: "me",
+		});
+		expect(city.map((p) => [p.id, p.workspaces.length])).toEqual([["p9", 0]]);
+	});
+
 	test("keeps projects with a workspace on this machine and leaves out the rest", () => {
 		const city = buildCity({
 			projects,

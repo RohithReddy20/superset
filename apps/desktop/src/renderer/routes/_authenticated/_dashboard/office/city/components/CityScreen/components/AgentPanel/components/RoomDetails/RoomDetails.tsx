@@ -18,6 +18,7 @@ import {
 	YOU,
 } from "../../../../../../types";
 import { MEETING_ROOM } from "../../../../../../utils/buildingSnapshot";
+import { roomTalk } from "../../../../../../utils/roomTalk";
 import { AgentBar } from "../../../AgentBar";
 import { AgentIcon } from "../../../AgentIcon";
 import { MessageBox } from "../../../MessageBox";
@@ -80,9 +81,12 @@ export function RoomDetails({
 	const handleOf = new Map(
 		(room?.members ?? []).map((m) => [m.terminalId, m.handle]),
 	);
-	const messages = notes.filter(
-		(n) => n.room?.projectId === project.id && n.room.roomId === roomId,
-	);
+	const nameOf = new Map(people.map((p) => [p.terminalId, p.name]));
+	const messages = roomTalk(notes, place, new Set(nameOf.keys()));
+	const toWhom = (ids: string[]) =>
+		ids
+			.map((id) => (id === YOU ? "you" : (nameOf.get(id) ?? "someone")))
+			.join(", ");
 	const said = messages.length;
 	const empty = people.length === 0;
 
@@ -182,8 +186,8 @@ export function RoomDetails({
 			>
 				{messages.length === 0 ? (
 					<p className="text-[12px] text-muted-foreground">
-						Nothing written to this room yet. What you and the agents sitting
-						here write to the room, and what you decide, shows here.
+						Nothing said in this room yet. What you and the agents sitting here
+						write to the room or to each other, and what you decide, shows here.
 					</p>
 				) : (
 					messages.map((m) => (
@@ -196,7 +200,11 @@ export function RoomDetails({
 						>
 							<span className="text-[10px] text-muted-foreground">
 								{m.fromId === YOU ? "You" : m.fromName}
-								{m.decision ? " wrote down a decision" : " → everyone here"}
+								{m.decision
+									? " wrote down a decision"
+									: m.room
+										? " → everyone here"
+										: `${m.expectsReply ? " asked " : " → "}${toWhom(m.toIds)}`}
 							</span>
 							<LongText
 								text={

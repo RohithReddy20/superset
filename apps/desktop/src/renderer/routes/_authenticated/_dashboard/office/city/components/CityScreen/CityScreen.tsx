@@ -1,9 +1,14 @@
+import { Button } from "@superset/ui/button";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { LuPlus } from "react-icons/lu";
 import { PageHeader } from "renderer/routes/_authenticated/_dashboard/components/PageHeader";
+import { useFolderImportIntent } from "renderer/stores/folder-import-intent";
 import { NeedsYouBar } from "../../../components/NeedsYouBar";
 import { useCity } from "../../hooks/useCity";
 import { useEscapeKey } from "../../hooks/useEscapeKey";
+import { presentIn } from "../../utils/buildingSnapshot";
+import { seatedCity } from "../../utils/seatedCity";
 import { AgentList } from "./components/AgentList";
 import { AgentPanel, type BuildingSelection } from "./components/AgentPanel";
 import { BuildingView } from "./components/BuildingView";
@@ -51,11 +56,16 @@ export function CityScreen({
 	const [picked, setPicked] = useState<string[]>([]);
 	const inside = projects.find((p) => p.id === projectId) ?? null;
 	const shown = inside ? [inside] : projects;
-	const agents = shown.flatMap((p) => p.workspaces.flatMap((w) => w.agents));
 	const everyone = useMemo(
 		() => projects.flatMap((p) => p.workspaces.flatMap((w) => w.agents)),
 		[projects],
 	);
+	const seated = useMemo(() => seatedCity(projects), [projects]);
+	const agents =
+		inside && view === "map"
+			? presentIn(inside.id, everyone)
+			: shown.flatMap((p) => p.workspaces.flatMap((w) => w.agents));
+	const addBuilding = useFolderImportIntent((state) => state.request);
 	const selectedAgent = everyone.find((a) => a.terminalId === agentId);
 	const panelProject =
 		inside ?? projects.find((p) => p.id === selectedAgent?.projectId) ?? null;
@@ -122,13 +132,29 @@ export function CityScreen({
 			<PageHeader
 				start={
 					<CityBreadcrumb
-						projects={projects}
+						projects={seated}
 						inside={inside}
 						agents={agents}
 						onEnter={enter}
 					/>
 				}
-				end={<ViewSwitch view={view} onChange={setView} />}
+				end={
+					<div className="flex items-center gap-2">
+						{inside ? null : (
+							<Button
+								variant="ghost"
+								size="sm"
+								title="Open a folder as a project; it becomes a building"
+								className="h-7 gap-1 px-2 text-[12px] font-normal text-muted-foreground hover:text-foreground"
+								onClick={addBuilding}
+							>
+								<LuPlus className="size-3.5" />
+								Add building
+							</Button>
+						)}
+						<ViewSwitch view={view} onChange={setView} />
+					</div>
+				}
 			/>
 			<NeedsYouBar openAgentId={agentId} insideProject={inside?.name} />
 			{hostTrouble && projects.length > 0 ? (
@@ -160,7 +186,7 @@ export function CityScreen({
 					) : projectId && !inside ? (
 						<EmptyState
 							title="This building is gone"
-							hint="The project has no workspaces on this machine any more."
+							hint="The project is not on this machine any more."
 							action={{ label: "Back to the city", onClick: () => enter(null) }}
 						/>
 					) : view === "list" ? (
@@ -184,10 +210,11 @@ export function CityScreen({
 					) : projects.length === 0 ? (
 						<EmptyState
 							title="No buildings yet"
-							hint="Every project with a workspace on this machine becomes a building. Create a workspace to see the first one."
+							hint="Every project on this machine becomes a building. Open a folder to add the first one."
+							action={{ label: "Add building", onClick: addBuilding }}
 						/>
 					) : (
-						<CityMap projects={projects} onEnter={enter} />
+						<CityMap projects={seated} onEnter={enter} />
 					)}
 				</div>
 				{panelShown && selection && panelProject ? (

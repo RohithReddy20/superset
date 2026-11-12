@@ -9,6 +9,7 @@ import {
 	LuMessageCircleQuestion,
 	LuUnplug,
 } from "react-icons/lu";
+import { TICK_MS, useNow } from "../../../../hooks/useNow";
 import type { NeedsYouItem, NeedsYouReason } from "../../../../utils/needsYou";
 
 const REASONS: Record<
@@ -62,6 +63,7 @@ export function NeedsYouChip({
 	current,
 	onOpen,
 }: NeedsYouChipProps) {
+	const now = useNow(TICK_MS);
 	const reason = REASONS[item.reason];
 	const Icon = reason.icon;
 	const label = item.note ?? reason.label;
@@ -93,7 +95,7 @@ export function NeedsYouChip({
 			<span className="shrink-0 font-medium text-foreground">{item.title}</span>
 			<span className="min-w-0 truncate text-muted-foreground">{where}</span>
 			<span className="shrink-0 text-[11px] text-muted-foreground">
-				{formatCompactRelativeTime(item.since)}
+				{formatCompactRelativeTime(item.since, Math.max(now, item.since))}
 			</span>
 		</button>
 	);

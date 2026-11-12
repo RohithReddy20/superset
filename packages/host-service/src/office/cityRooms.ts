@@ -776,9 +776,24 @@ export class CityRooms {
 		if (!handle) throw new Error("A name needs a letter or a digit");
 		if (RESERVED_HANDLES.has(handle))
 			throw new Error(`"${name}" is kept for talking to everyone`);
-		if (this.state.names.some((n) => n !== own && slug(n.name) === handle))
+		const shown = this.shownTerminals();
+		const same = this.state.names.filter(
+			(n) => n !== own && slug(n.name) === handle,
+		);
+		if (same.some((n) => shown.has(n.terminalId)))
 			throw new Error(`Another agent is already called ${name}`);
+		if (same.length > 0)
+			this.state.names = this.state.names.filter((n) => !same.includes(n));
 		return name;
+	}
+
+	/** Agents the city shows: running, disconnected, or starting again. A name kept for one that is gone is free to take. */
+	private shownTerminals(): Set<string> {
+		return new Set([
+			...this.deps.agents().map((a) => a.terminalId),
+			...(this.deps.lostAgents?.() ?? []).map((a) => a.terminalId),
+			...this.reconnecting.keys(),
+		]);
 	}
 
 	private freeName(): string {

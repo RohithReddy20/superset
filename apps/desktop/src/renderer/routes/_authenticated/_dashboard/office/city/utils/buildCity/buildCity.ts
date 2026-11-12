@@ -16,6 +16,8 @@ export interface ProjectRow {
 	color: string | null;
 	iconUrl: string | null;
 	createdAt: number;
+	/** The project is on this machine; it is a building even before its first workspace. */
+	here?: boolean;
 }
 
 export interface WorkspaceRow {
@@ -61,7 +63,7 @@ export interface LostRow extends NameRow {
 	reconnecting?: boolean;
 }
 
-/** This machine's projects that have a workspace here, each with its workspaces and running agents. */
+/** The projects on this machine, each with its workspaces here and their running agents. */
 export function buildCity({
 	projects,
 	workspaces,
@@ -170,8 +172,8 @@ export function buildCity({
 		workspacesOf.set(projectId, list);
 	}
 
-	return projects.flatMap((p) => {
+	return projects.flatMap(({ here, ...p }) => {
 		const list = workspacesOf.get(p.id);
-		return list ? [{ ...p, workspaces: list }] : [];
+		return list || here ? [{ ...p, workspaces: list ?? [] }] : [];
 	});
 }

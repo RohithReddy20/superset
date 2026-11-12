@@ -203,6 +203,16 @@ describe("CityRooms", () => {
 });
 
 describe("names", () => {
+	test("the name of an agent that is gone can be given to another", () => {
+		const agents = [agent("t1", "api"), agent("t2", "api")];
+		const { rooms } = setup(agents);
+		rooms.rename("t2", "Nova");
+		expect(() => rooms.rename("t1", "nova")).toThrow("already called");
+		agents.splice(1, 1);
+		rooms.rename("t1", "Nova");
+		expect(rooms.snapshot().names.map((n) => n.name)).toEqual(["Nova"]);
+	});
+
 	test("a renamed agent answers to its new handle and is told its name once", async () => {
 		const { rooms, sent } = setup([agent("t1", "api"), agent("t2", "api")]);
 		rooms.rename("t1", "  Big   Bo ");

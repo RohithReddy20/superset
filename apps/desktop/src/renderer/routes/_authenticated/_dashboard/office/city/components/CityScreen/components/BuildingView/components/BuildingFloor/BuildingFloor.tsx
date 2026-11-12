@@ -260,7 +260,11 @@ export function BuildingFloor({
 				onCarryMove={(x, y) => sceneRef.current?.carryToScreen(x, y)}
 				onCarryEnd={() => sceneRef.current?.endCarry()}
 			/>
-			<FloorHint empty={agents.length === 0} hidden={touched} />
+			<FloorHint
+				empty={agents.length === 0}
+				noRooms={project.workspaces.length === 0}
+				hidden={touched}
+			/>
 			{view ? (
 				<FloorControls
 					view={view}

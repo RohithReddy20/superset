@@ -1,6 +1,7 @@
 import { formatRelativeTime } from "@superset/i18n/format";
 import { cn } from "@superset/ui/utils";
 import { LongText } from "../../../../../../../../../components/LongText";
+import { TICK_MS, useNow } from "../../../../../../../../../hooks/useNow";
 import { useCityTeam } from "../../../../../../../../hooks/useCityTeam";
 import { type CityAgent, isOpenTodo } from "../../../../../../../../types";
 
@@ -9,6 +10,7 @@ const SHOWN_NOTES = 10;
 /** What the agent carries on its own list, and what it wrote to you. */
 export function ListBox({ agent }: { agent: CityAgent }) {
 	const { todos, toYou } = useCityTeam();
+	const now = useNow(TICK_MS);
 	const own = todos
 		.filter((t) => isOpenTodo(t) && t.ownerId === agent.terminalId)
 		.sort((a, b) => Number(b.state === "doing") - Number(a.state === "doing"));
@@ -75,7 +77,7 @@ export function ListBox({ agent }: { agent: CityAgent }) {
 								className="rounded-md bg-muted/50 px-2 py-1.5 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-1"
 							>
 								<span className="text-[10px] text-muted-foreground">
-									{formatRelativeTime(note.at)}
+									{formatRelativeTime(note.at, Math.max(now, note.at))}
 								</span>
 								<LongText text={note.text} />
 							</li>

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getHostServiceClientByUrl } from "renderer/lib/host-service-client";
 import { useLocalHostService } from "renderer/routes/_authenticated/providers/LocalHostServiceProvider";
 import { LongText } from "../../../../../../../../../components/LongText";
+import { TICK_MS, useNow } from "../../../../../../../../../hooks/useNow";
 import { CITY_QUERY_ROOT } from "../../../../../../../../hooks/useCityLive";
 import type { CityAgent } from "../../../../../../../../types";
 
@@ -20,6 +21,7 @@ export function HistoryBox({ agent }: { agent: CityAgent }) {
 		},
 	});
 	const entries = history.data ? [...history.data].reverse() : [];
+	const now = useNow(TICK_MS);
 
 	return (
 		<div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-3 text-[12px]">
@@ -41,7 +43,7 @@ export function HistoryBox({ agent }: { agent: CityAgent }) {
 						>
 							<span className="absolute -left-[3px] top-1.5 size-[5px] rounded-full bg-muted-foreground/60" />
 							<span className="text-[10px] text-muted-foreground">
-								{formatRelativeTime(entry.at)}
+								{formatRelativeTime(entry.at, Math.max(now, entry.at))}
 							</span>
 							<LongText text={entry.text} />
 						</li>

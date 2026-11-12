@@ -5,7 +5,7 @@ import {
 import { Button } from "@superset/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@superset/ui/popover";
 import { cn } from "@superset/ui/utils";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useAgentEffortPreference } from "renderer/hooks/useAgentEffortPreference";
 import { useAgentModelPreference } from "renderer/hooks/useAgentModelPreference";
 import { AgentIcon } from "../../../AgentIcon";
@@ -36,7 +36,8 @@ interface StartChoiceProps {
 }
 
 const FIELD =
-	"h-7 rounded-md border border-input bg-background px-2 text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
+	"rounded-md border border-input bg-background px-2 text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
+const TASK_MAX_PX = 180;
 
 /** One CLI of the start row: a click opens a box for its name, first task, model and effort. */
 export function StartChoice({
@@ -52,6 +53,14 @@ export function StartChoice({
 	const [task, setTask] = useState("");
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const taskRef = useRef<HTMLTextAreaElement>(null);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: the box grows with its text, and is measured once it opens
+	useLayoutEffect(() => {
+		const node = taskRef.current;
+		if (!node) return;
+		node.style.height = "auto";
+		node.style.height = `${Math.min(node.scrollHeight + 2, TASK_MAX_PX)}px`;
+	}, [task, open]);
 	const models = getAgentModelSupport(launchPresetId)?.models ?? [];
 	const { selectedModel, setSelectedModel } = useAgentModelPreference(
 		OFFICE_MODEL_STORAGE_KEY,
@@ -125,15 +134,27 @@ export function StartChoice({
 						<input
 							value={name}
 							onChange={(event) => setName(event.target.value)}
-							className={FIELD}
+							className={cn(FIELD, "h-7")}
 						/>
 					</label>
 					<label className="flex flex-col gap-1 text-muted-foreground">
 						First task (optional)
-						<input
+						<textarea
+							ref={taskRef}
+							rows={1}
+							placeholder="Shift+Enter for a new line"
 							value={task}
 							onChange={(event) => setTask(event.target.value)}
-							className={FIELD}
+							onKeyDown={(event) => {
+								if (event.key !== "Enter" || event.shiftKey) return;
+								if (event.nativeEvent.isComposing) return;
+								event.preventDefault();
+								void submit();
+							}}
+							className={cn(
+								FIELD,
+								"min-h-7 resize-none overflow-y-auto py-1 leading-snug",
+							)}
 						/>
 					</label>
 					{models.length > 0 || efforts.length > 0 ? (

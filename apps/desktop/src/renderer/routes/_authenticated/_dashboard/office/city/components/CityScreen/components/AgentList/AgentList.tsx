@@ -1,6 +1,7 @@
 import { formatCompactRelativeTime } from "@superset/i18n/format";
 import { cn } from "@superset/ui/utils";
 import type { KeyboardEvent } from "react";
+import { TICK_MS, useNow } from "../../../../../hooks/useNow";
 import { useCityTeam } from "../../../../hooks/useCityTeam";
 import type { AgentStatus, CityAgent, CityProject } from "../../../../types";
 import { MEETING_ROOM } from "../../../../utils/buildingSnapshot";
@@ -45,6 +46,7 @@ export function AgentList({
 		return [room, project?.name].filter(Boolean).join(" · ") || null;
 	};
 	const { todos } = useCityTeam();
+	const now = useNow(TICK_MS);
 	const doingOf = (terminalId: string) =>
 		todos.find((t) => t.ownerId === terminalId && t.state === "doing");
 	const onRowKey = (event: KeyboardEvent<HTMLButtonElement>) => {
@@ -162,7 +164,10 @@ export function AgentList({
 													<StatusBadge status={agent.status} />
 												</span>
 												<span className="text-right text-[12px] tabular-nums text-muted-foreground">
-													{formatCompactRelativeTime(agent.lastEventAt)}
+													{formatCompactRelativeTime(
+														agent.lastEventAt,
+														Math.max(now, agent.lastEventAt),
+													)}
 												</span>
 											</button>
 										</li>

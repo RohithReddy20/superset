@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { LuSquareTerminal } from "react-icons/lu";
 import { navigateToV2Workspace } from "renderer/routes/_authenticated/_dashboard/utils/workspace-navigation";
 import { useV2NotificationStore } from "renderer/stores/v2-notifications";
+import { TICK_MS, useNow } from "../../../../../../../hooks/useNow";
 import { useAgentTranscripts } from "../../../../../../hooks/useAgentTranscript";
 import { useCityTeam } from "../../../../../../hooks/useCityTeam";
 import {
@@ -82,6 +83,7 @@ export function AgentDetails({
 	).length;
 	const held = waiting.filter((d) => d.toId === terminalId).length;
 	const launch = launchLabel(agent);
+	const now = useNow(TICK_MS);
 	const place = isVisiting(agent)
 		? projects
 				.find((p) => p.id === agent.place.projectId)
@@ -112,8 +114,16 @@ export function AgentDetails({
 							{isVisiting(agent) ? ` · sits in ${place ?? "another room"}` : ""}
 						</span>
 						<span className="block truncate text-[11px]">
-							last change {formatRelativeTime(agent.lastEventAt)} · started{" "}
-							{formatRelativeTime(agent.startedAt)}
+							last change{" "}
+							{formatRelativeTime(
+								agent.lastEventAt,
+								Math.max(now, agent.lastEventAt),
+							)}{" "}
+							· started{" "}
+							{formatRelativeTime(
+								agent.startedAt,
+								Math.max(now, agent.startedAt),
+							)}
 							{agent.subagents > 0
 								? ` · ${agent.subagents} helper${agent.subagents === 1 ? "" : "s"} working for it`
 								: ""}

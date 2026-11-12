@@ -1105,3 +1105,46 @@ Found while using it, not fixed:
 - The start box's first task is a one-line field; a 1,600-character task works but cannot be read.
 - The panel's "last change … · started …" line does not tick while the panel stays open.
 - The office has no way to add a project (building); it needs the app's folder picker.
+
+## Fixes for what the first real run showed (2026-11-12)
+
+The six gaps listed in the section above, closed at the person's request.
+
+- **Room talk.** `utils/roomTalk` picks a room's notes: written to the room, or between parties who
+  all sit there (the person counts with anyone in the room). `RoomDetails` labels each: "Kai asked
+  Juno", "Juno → Kai", "Kai → you". No host change; notes already carry `fromId`/`toIds`.
+- **People counted where they sit.** `utils/seatedCity` lists each room's sitters from any project
+  (a meeting room's sitters go with the building's oldest workspace). The city map's windows and
+  signs and the building menu use it; a building's header in Map view uses `presentIn`. The List
+  view still groups by "Works in" and its header counts that.
+- **First task.** `StartChoice` uses an auto-growing `textarea` (to 180 px, then scrolls); Enter
+  creates, Shift+Enter is a new line.
+- **Ticking times.** `hooks/useNow` (15 s). The React Compiler skips a re-render whose output does
+  not read the value, so `now` is passed into `formatRelativeTime` at each of the five places, and
+  clamped (`Math.max(now, t)`) so a change newer than the last tick reads "now", not "in 5 seconds".
+- **Names.** `CityRooms.checkedName` only counts a name as taken when its agent is running,
+  disconnected or starting again; a kept entry of an agent that is gone is dropped when its name is
+  taken. `freeName` still avoids kept names. (Host edit, one restart.)
+- **Adding buildings.** `buildCity` keeps a project on this machine (`hostIds` has this machine)
+  as a building with no workspaces. City header: "Add building" calls the app's folder import
+  (`useFolderImportIntent`). A building's start row has "+" (new workspace in this building), and
+  an empty building shows "New workspace"; both use `useOpenNewWorkspaceForLocalProject`, which
+  goes to the app's `/new-workspace` screen with the project and this machine chosen. The floor
+  hint of a building with no rooms says so.
+
+Checked in the running app (CDP 9333): the portfolio room listed all 13 messages of the Juno/Kai
+run; its header read "2 agents" and the city sign "2 done" with two lit windows while
+paradev-office read "nobody here"; a 1,765-character task grew the box to 180 px and scrolled;
+Enter in the task box created "Nova" (a name a gone agent held) with `--model opus --effort high`,
+then she was removed; a needs-you chip went from "now" to "1m ago" and another from "4m" to "5m"
+in 50 s with no input; "Add building" called the import request once (the request was swapped for
+a counter, so the system folder picker was not opened); a throwaway project with no workspace
+showed as a building with "New workspace", which opened `/new-workspace?projectId=…` with
+"This device · empty-demo" chosen; the project was then removed (`project.remove`). No console
+errors. Tests: host office 32 pass, renderer office 47 pass; typecheck and lint clean.
+
+Not checked: the real folder picker and what the app does after it, the "+" button in a building
+that has rooms (same handler as the empty one), light theme for the new bits.
+
+A first try of the workspace button used `useNewWorkspaceModalStore.openModal`; it set the store
+and showed nothing, because this app version has no modal and uses the `/new-workspace` route.

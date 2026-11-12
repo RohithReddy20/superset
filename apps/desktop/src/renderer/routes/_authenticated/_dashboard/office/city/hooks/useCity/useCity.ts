@@ -86,6 +86,7 @@ export function useCity(): {
 					color: p.color,
 					iconUrl: resolveProjectIconUrl(p),
 					createdAt: p.createdAt,
+					here: !!machineId && p.hostIds.includes(machineId),
 				})),
 				workspaces,
 				bindings: bindings.data ?? [],
