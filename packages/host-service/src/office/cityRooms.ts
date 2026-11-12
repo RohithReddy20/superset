@@ -28,7 +28,16 @@ export interface CityName {
 	told?: boolean;
 	/** The {@link teamCommands} the agent was told last; it is told again when they change. */
 	briefed?: string | boolean;
+	/** The model and effort the person chose when starting it; unset means the CLI's own default. */
+	model?: string;
+	effort?: string;
 	missingSince?: number;
+}
+
+/** The model and effort an agent is started with; unset means the CLI's own default. */
+export interface CityLaunchOptions {
+	model?: string;
+	effort?: string;
 }
 
 /** An agent whose terminal stopped under it: a restart, a crash or a reboot. */
@@ -46,6 +55,8 @@ export interface LostAgent {
 export interface CityLostAgent extends LostAgent {
 	name: string;
 	handle: string;
+	model?: string;
+	effort?: string;
 	/** Set while it starts again in a new terminal. */
 	reconnecting?: boolean;
 }
@@ -106,7 +117,13 @@ export interface CityRoomRef {
 export interface CitySnapshot {
 	seats: CitySeat[];
 	/** Each running agent's name and the @handle it answers to. */
-	names: Array<{ terminalId: string; name: string; handle: string }>;
+	names: Array<{
+		terminalId: string;
+		name: string;
+		handle: string;
+		model?: string;
+		effort?: string;
+	}>;
 	rooms: CityRoomSnapshot[];
 	/** The name the next agent gets when the person gives none. */
 	nextName: string;
@@ -134,6 +151,7 @@ export interface CityRoomsDeps {
 		workspaceId: string,
 		agent: string,
 		prompt: string,
+		options?: CityLaunchOptions,
 	) => Promise<{ terminalId: string }>;
 	/** The terminal an agent continued in after its terminal was restarted, if any. */
 	successorOf?: (terminalId: string, workspaceId: string) => string | undefined;
@@ -268,6 +286,7 @@ export class CityRooms {
 				terminalId: a.terminalId,
 				name: a.name,
 				handle: handleOf(a),
+				...this.launchOf(a.terminalId),
 			})),
 			rooms,
 			nextName: this.freeName(),
@@ -282,7 +301,14 @@ export class CityRooms {
 		const lost = (this.deps.lostAgents?.() ?? []).flatMap((agent) => {
 			const name = nameOf.get(agent.terminalId);
 			return name
-				? [{ ...agent, name, handle: handleOf({ ...agent, name }) }]
+				? [
+						{
+							...agent,
+							name,
+							handle: handleOf({ ...agent, name }),
+							...this.launchOf(agent.terminalId),
+						},
+					]
 				: [];
 		});
 		for (const [terminalId, { agent, at }] of this.reconnecting) {
@@ -536,6 +562,8 @@ export class CityRooms {
 		const place = this.placeOf(agent);
 		const placeName = this.nameOf(place.projectId, place.roomId) ?? "";
 		const kind = handover.agent ?? agent.agentId;
+		const launch =
+			kind === agent.agentId ? this.launchOf(agent.terminalId) : {};
 		const theirHandle =
 			this.handles(place.projectId, place.roomId, this.liveAgents()).get(
 				agent.terminalId,
@@ -559,13 +587,19 @@ export class CityRooms {
 			.filter(Boolean)
 			.join("\n\n");
 		try {
-			const { terminalId } = await start(handover.toWorkspaceId, kind, prompt);
+			const { terminalId } = await start(
+				handover.toWorkspaceId,
+				kind,
+				prompt,
+				launch,
+			);
 			this.state.names.push({
 				terminalId,
 				workspaceId: handover.toWorkspaceId,
 				name: newName,
 				told: true,
 				briefed: this.brief(),
+				...launch,
 			});
 			handover.newTerminalId = terminalId;
 			handover.status = "done";
@@ -636,6 +670,14 @@ export class CityRooms {
 			memberIds: [
 				...this.handles(place.projectId, place.roomId, agents).keys(),
 			],
+		};
+	}
+
+	private launchOf(terminalId: string): CityLaunchOptions {
+		const entry = this.state.names.find((n) => n.terminalId === terminalId);
+		return {
+			...(entry?.model ? { model: entry.model } : {}),
+			...(entry?.effort ? { effort: entry.effort } : {}),
 		};
 	}
 
@@ -814,6 +856,8 @@ export class CityRooms {
 		prompt: string;
 		/** The name the person chose; a free one is given when unset. */
 		name?: string;
+		model?: string;
+		effort?: string;
 	}): Promise<{ terminalId: string; name: string }> {
 		const target = this.deps.workspace?.(input.workspaceId);
 		if (!target || !this.deps.startAgent)
@@ -829,10 +873,15 @@ export class CityRooms {
 			task ||
 				"Nothing to do yet. Reply with one short line saying who you are, then wait.",
 		].join("\n\n");
+		const launch: CityLaunchOptions = {
+			...(input.model ? { model: input.model } : {}),
+			...(input.effort ? { effort: input.effort } : {}),
+		};
 		const { terminalId } = await this.deps.startAgent(
 			input.workspaceId,
 			input.agent,
 			prompt,
+			launch,
 		);
 		this.state.names = this.state.names.filter(
 			(n) => n.terminalId !== terminalId,
@@ -843,6 +892,7 @@ export class CityRooms {
 			name,
 			told: true,
 			briefed: this.brief(),
+			...launch,
 		});
 		this.save();
 		return { terminalId, name };

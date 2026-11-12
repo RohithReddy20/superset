@@ -25,6 +25,9 @@ export interface CityAgent {
 	name: string;
 	/** What agents write to talk to it, "@ada" without the "@"; empty until the city named it. */
 	handle: string;
+	/** The model and effort it was started with from the office; unset is the CLI's own default. */
+	model?: string;
+	effort?: string;
 	status: AgentStatus;
 	startedAt: number;
 	lastEventAt: number;

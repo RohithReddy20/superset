@@ -55,6 +55,8 @@ export function createCityRooms({
 		workspaceId: string;
 		agent: string;
 		prompt: string;
+		model?: string;
+		effort?: string;
 	}) => Promise<{ sessionId: string }>;
 	/** Continues an agent whose terminal stopped in a new terminal, the same way the app does. */
 	resumeAgent: (input: {
@@ -227,8 +229,13 @@ export function createCityRooms({
 			);
 			return named.length === 1 ? (named[0]?.id ?? null) : null;
 		},
-		startAgent: async (workspaceId, agent, prompt) => {
-			const result = await runAgent({ workspaceId, agent, prompt });
+		startAgent: async (workspaceId, agent, prompt, options) => {
+			const result = await runAgent({
+				workspaceId,
+				agent,
+				prompt,
+				...options,
+			});
 			return { terminalId: result.sessionId };
 		},
 	});

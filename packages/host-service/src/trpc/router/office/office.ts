@@ -241,6 +241,8 @@ export const officeRouter = router({
 				agent: z.string().min(1),
 				prompt: z.string().max(8000).default(""),
 				name: z.string().max(100).optional(),
+				model: z.string().min(1).max(200).optional(),
+				effort: z.string().min(1).max(50).optional(),
 			}),
 		)
 		.mutation(({ ctx, input }) =>

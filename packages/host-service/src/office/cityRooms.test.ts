@@ -286,6 +286,8 @@ describe("hand-over", () => {
 			workspaceId: string;
 			agent: string;
 			prompt: string;
+			model?: string;
+			effort?: string;
 		}> = [];
 		const replies = new Map<string, string>();
 		const rooms = new CityRooms({
@@ -311,8 +313,8 @@ describe("hand-over", () => {
 								path: "/w/api",
 							}
 						: null,
-			startAgent: async (workspaceId, kind, prompt) => {
-				started.push({ workspaceId, agent: kind, prompt });
+			startAgent: async (workspaceId, kind, prompt, options) => {
+				started.push({ workspaceId, agent: kind, prompt, ...options });
 				everyone.push({
 					...agent("t9", "web", kind, "p2"),
 					workspaceName: "Web app",
@@ -397,6 +399,21 @@ describe("hand-over", () => {
 				name: "big bo",
 			}),
 		).rejects.toThrow("already called");
+	});
+
+	test("a CLI is started with the model and effort the person chose, and the city shows them", async () => {
+		const { rooms, started } = handoverSetup();
+		await rooms.start({
+			workspaceId: "web",
+			agent: "claude",
+			prompt: "",
+			model: "opus",
+			effort: "high",
+		});
+		expect(started[0]).toMatchObject({ model: "opus", effort: "high" });
+		expect(rooms.snapshot().names.find((n) => n.name === "Iris")).toMatchObject(
+			{ model: "opus", effort: "high" },
+		);
 	});
 
 	test("starting a CLI names it and tells it who it is with its first task", async () => {

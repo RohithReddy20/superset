@@ -14,6 +14,7 @@ import {
 	isOpenTodo,
 } from "../../../../../../types";
 import { isVisiting } from "../../../../../../utils/buildingSnapshot";
+import { launchLabel } from "../../../../../../utils/launchLabel";
 import { AgentFace } from "../../../AgentFace";
 import { AgentIcon } from "../../../AgentIcon";
 import { StatusBadge } from "../../../StatusBadge";
@@ -80,6 +81,7 @@ export function AgentDetails({
 		(t) => isOpenTodo(t) && t.ownerId === terminalId,
 	).length;
 	const held = waiting.filter((d) => d.toId === terminalId).length;
+	const launch = launchLabel(agent);
 	const place = isVisiting(agent)
 		? projects
 				.find((p) => p.id === agent.place.projectId)
@@ -104,6 +106,7 @@ export function AgentDetails({
 								className="mr-1 inline size-3 align-[-2px]"
 							/>
 							{agent.kind}
+							{launch ? ` · ${launch}` : ""}
 							{agent.handle ? ` · @${agent.handle}` : ""} · works in{" "}
 							<span className="text-foreground">{agent.workspaceName}</span>
 							{isVisiting(agent) ? ` · sits in ${place ?? "another room"}` : ""}

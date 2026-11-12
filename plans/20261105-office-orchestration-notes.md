@@ -1035,3 +1035,34 @@ Renderer only; no host change, so the dev app was never restarted.
   (no agent was in those states), a real host restart, more than 8 agents in a building.
 - **Ideas noted, not built** (they would be new capability): dragging the panel's edge to resize
   it; a filter or search in the list view; a "seen" marker in a room's talk.
+
+## Model and effort when starting an agent (2026-11-12)
+
+Asked for by the person: "i need to be able to select the models too". Before this the office start
+box took a name and a first task only, and every agent ran its CLI's default model.
+
+What changed:
+
+- `office.cityStart` takes optional `model` and `effort`. `CityRooms.start` passes them to
+  `startAgent` (a fourth `CityLaunchOptions` argument), which hands them to the app's own
+  `runAgentInWorkspace`. Validation is the app's (`validateAgentModelSelection`): a model outside
+  the CLI's curated list is refused with the list of valid ids.
+- The choice is kept on the agent's `CityName` entry and returned in `cityState` (`names[]` and
+  `lost[]`), so it follows the agent across a terminal restart. A hand-over to the same kind of CLI
+  starts the new agent with the same model and effort.
+- Renderer: the start box moved out of `AgentBar` into `AgentBar/components/StartChoice`, with
+  `LaunchSelect` for Model and Effort (lists from `@superset/shared/agent-models`; Effort follows
+  the model). The last choice per CLI is remembered in `localStorage` (`office-start-model`,
+  `office-start-effort`) with the app's `useAgentModelPreference` / `useAgentEffortPreference`.
+- The room panel's "Start an agent here" opens the same box; its separate task field is gone.
+- The agent panel header shows the choice: "Claude · Opus, High effort" (`utils/launchLabel`).
+- Fixed on the way: the bar's "X is starting…" note came back after that agent was removed.
+
+Checked in the running app (CDP 9333): the box shows Model (Default, Latest, Pinned releases) and
+Effort; Opus + High started "Ada" and `ps` showed `claude --dangerously-skip-permissions --model
+opus --effort high`; her header read "Claude · Opus, High effort"; reopening the box (bar and room
+panel) kept Opus / High; Ada was removed and her process ended; console had no errors.
+Tests: host `src/office` 31 pass (one new), renderer office 44 pass (one new); typecheck and lint clean.
+
+Not checked: a reconnect (`claude --resume`) keeping the model, since that goes through the app's
+resume path, which takes no model; a hand-over carrying the model; Codex and other CLIs' lists.

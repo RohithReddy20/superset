@@ -47,6 +47,8 @@ export interface NameRow {
 	terminalId: string;
 	name: string;
 	handle: string;
+	model?: string;
+	effort?: string;
 }
 
 /** A named agent whose terminal stopped; its binding may be gone already. */
@@ -132,6 +134,8 @@ export function buildCity({
 			kind: label,
 			name: named?.name ?? (same > 0 ? `${label} ${same + 1}` : label),
 			handle: named?.handle ?? "",
+			...(named?.model ? { model: named.model } : {}),
+			...(named?.effort ? { effort: named.effort } : {}),
 			status: gone ? "lost" : ask ? "permission" : status,
 			...(gone
 				? {

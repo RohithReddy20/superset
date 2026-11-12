@@ -41,6 +41,8 @@ export function useCityActions() {
 			agent: string;
 			prompt: string;
 			name?: string;
+			model?: string;
+			effort?: string;
 		}) => then(client().cityStart.mutate(input)),
 		rename: (terminalId: string, name: string) =>
 			then(client().cityRename.mutate({ terminalId, name })),
