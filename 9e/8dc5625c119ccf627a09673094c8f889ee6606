@@ -1,0 +1,67 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/CityScreen.tsx
+  s_3ee79395c5b19c::t_25e9ec3459c517 1,4,6,10-11,63-68,135,141-157,189,213-214,217
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentBar/components/StartChoice/StartChoice.tsx
+  s_3ee79395c5b19c::t_da8b1cda978150 8,39-40,56-63,137,142-145,148-157
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentList/AgentList.tsx
+  s_3ee79395c5b19c::t_c8411299df7e2e 4,49,167-170
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/AgentDetails.tsx
+  s_3ee79395c5b19c::t_d8e44be29b7dca 8,86,117-126
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/components/HistoryBox/HistoryBox.tsx
+  s_3ee79395c5b19c::t_2221b90e23b735 6,24,46
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/AgentDetails/components/ListBox/ListBox.tsx
+  s_3ee79395c5b19c::t_0771663e017a0b 4,13,80
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/RoomDetails/RoomDetails.tsx
+  s_3ee79395c5b19c::t_d21cbb60ff1ba9 21,84-89,189-190,203-207
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/BuildingFloor/BuildingFloor.tsx
+  s_3ee79395c5b19c::t_ac2131aa3f035e 263-267
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/BuildingView/components/BuildingFloor/components/FloorHint/FloorHint.tsx
+  s_3ee79395c5b19c::t_e86d29679ebef4 6-7,13,22-27
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/StartBar/StartBar.tsx
+  s_3ee79395c5b19c::t_5dea533904fd0a 1,10-11,30,33-50,82-91
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/hooks/useCity/useCity.ts
+  s_3ee79395c5b19c::t_809c26c9fdb1a6 89
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/buildCity/buildCity.test.ts
+  s_3ee79395c5b19c::t_b40ddfd1b47f2c 35-55
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/buildCity/buildCity.ts
+  s_3ee79395c5b19c::t_2284857c9b0c1b 19-20,66,175,177
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/roomTalk/index.ts
+  s_3ee79395c5b19c::t_68fbfcedc5eb0f 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/roomTalk/roomTalk.test.ts
+  s_3ee79395c5b19c::t_362e114d8a65e6 1-33
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/roomTalk/roomTalk.ts
+  s_3ee79395c5b19c::t_57313f4a391d16 1-24
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/seatedCity/index.ts
+  s_3ee79395c5b19c::t_03cc727c5ffb5f 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/seatedCity/seatedCity.test.ts
+  s_3ee79395c5b19c::t_88cdff9e100652 1-49
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/seatedCity/seatedCity.ts
+  s_3ee79395c5b19c::t_3fe2bd33bb8bb1 1-29
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/components/NeedsYouBar/components/NeedsYouChip/NeedsYouChip.tsx
+  s_3ee79395c5b19c::t_2a91227d79e60e 12,66,98
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/hooks/useNow/index.ts
+  s_3ee79395c5b19c::t_3d848a4080c1d4 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/hooks/useNow/useNow.ts
+  s_3ee79395c5b19c::t_5699acc349965b 1-14
+packages/host-service/src/office/cityRooms.test.ts
+  s_3ee79395c5b19c::t_7e5b56617c88dc 206-215
+packages/host-service/src/office/cityRooms.ts
+  s_3ee79395c5b19c::t_c44825ab58fc6f 779-783,785-786,790-798
+plans/20261105-office-orchestration-notes.md
+  s_3ee79395c5b19c::t_08d5b6c5e601c2 1108-1150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9e8dc5625c119ccf627a09673094c8f889ee6606",
+  "prompts": {},
+  "sessions": {
+    "s_3ee79395c5b19c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cec73e00-c805-403b-aa3d-5fd48be8752a",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
