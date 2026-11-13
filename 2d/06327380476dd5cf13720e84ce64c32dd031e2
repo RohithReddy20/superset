@@ -1,0 +1,69 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/CityScreen.tsx
+  s_6757b34c448d20::t_0c7137bad51d6c 10,21,28,37,40-42,62-67,88,93-94,98,100-115,117,119-123,125-132,139,150,199-208
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/AgentPanel/components/RoomDetails/RoomDetails.tsx
+  s_6757b34c448d20::t_77e574c63190a8 3,5,9-10,118-126
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/CityBreadcrumb/CityBreadcrumb.tsx
+  s_6757b34c448d20::t_4791e6de7f9bd4 25-26,44,71
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/RoomComposer/RoomComposer.tsx
+  s_6757b34c448d20::t_4652c84e98fe69 1-109
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/RoomComposer/components/DecideBox/DecideBox.tsx
+  s_6757b34c448d20::t_4820c292d48809 3-4
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/RoomComposer/index.ts
+  s_6757b34c448d20::t_c3ea89f3513c51 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/RoomFeed/RoomFeed.tsx
+  s_6757b34c448d20::t_24a8b23a7a74eb 1-131
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/RoomFeed/index.ts
+  s_6757b34c448d20::t_d8d5f6f5585f20 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/TeamHome/TeamHome.tsx
+  s_6757b34c448d20::t_167b2c0d7cbb8c 1-78
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/TeamHome/components/RoomConversation/RoomConversation.tsx
+  s_6757b34c448d20::t_ff51804e75913e 1-120
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/TeamHome/components/RoomConversation/index.ts
+  s_6757b34c448d20::t_53b2cef48f168b 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/TeamHome/components/TeamList/TeamList.tsx
+  s_6757b34c448d20::t_e0d17abee9913d 1-179
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/TeamHome/components/TeamList/components/TeamRow/TeamRow.tsx
+  s_6757b34c448d20::t_47c09973088504 1-98
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/TeamHome/components/TeamList/components/TeamRow/index.ts
+  s_6757b34c448d20::t_a0ebd4fd5b61d4 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/TeamHome/components/TeamList/constants.ts
+  s_6757b34c448d20::t_326960af12d9d5 1-2
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/TeamHome/components/TeamList/index.ts
+  s_6757b34c448d20::t_b6aa6da0000267 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/TeamHome/index.ts
+  s_6757b34c448d20::t_b4408cff4f1fb2 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/ViewSwitch/ViewSwitch.tsx
+  s_6757b34c448d20::t_83a2346002b0f1 2,4,7
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/page.tsx
+  s_6757b34c448d20::t_4e27226aa68f88 12,14-15,31-32,45
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/agentLine/agentLine.test.ts
+  s_6757b34c448d20::t_7df206667df36b 1-65
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/agentLine/agentLine.ts
+  s_6757b34c448d20::t_4062df8916aba7 1-69
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/agentLine/index.ts
+  s_6757b34c448d20::t_fce4d2f8f7d126 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/teamRooms/index.ts
+  s_6757b34c448d20::t_e85779a3085573 1-6
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/teamRooms/teamRooms.test.ts
+  s_6757b34c448d20::t_93cd6d114e2f26 1-71
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/utils/teamRooms/teamRooms.ts
+  s_6757b34c448d20::t_468825d773ae0d 1-94
+plans/20261105-office-orchestration-notes.md
+  s_6757b34c448d20::t_cb05a7b558585c 1151-1186
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2d06327380476dd5cf13720e84ce64c32dd031e2",
+  "prompts": {},
+  "sessions": {
+    "s_6757b34c448d20": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f3844c0a-c68c-4d1b-b0a1-674efd11f0fe",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
