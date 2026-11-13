@@ -1148,3 +1148,39 @@ that has rooms (same handler as the empty one), light theme for the new bits.
 
 A first try of the workspace button used `useNewWorkspaceModalStore.openModal`; it set the store
 and showed nothing, because this app version has no modal and uses the `/new-workspace` route.
+
+## Team view: the conversation as the home (2026-11-14, branch `office/conversation-home`)
+
+A trial of one idea: the first real run showed the useful view was who said what to whom, not the
+map. So the office opens on a Team view, and the map and the list are the other two choices of the
+same switch. Renderer only; no host change.
+
+- **Left: the team by room** (`TeamHome/components/TeamList`). Each agent is a row: its face, its
+  state as a dot, and one line from `utils/agentLine`, in this order: what it needs from you, who
+  it waits on ("Waiting on Juno: …", until Juno writes back), the item it marked as doing, its
+  state, the next item on its list. Rooms with nobody fold under "Empty rooms".
+- **Middle: the open room's conversation** (`TeamHome/components/RoomConversation`): who sits
+  there, the row of CLIs to start an agent there, the room's talk, one box to write to everyone.
+  With no room picked it opens the open agent's room, else the room people last talked in
+  (`utils/teamRooms` `liveliestRoom`).
+- **Right: the agent's panel**, unchanged, when an agent is clicked.
+- **Seating without a floor.** An agent row dragged onto a room sits there (`office.citySeat`).
+- **Shared with the room panel:** the talk is `RoomFeed` (now with faces, times and names that open
+  the agent) and the box is `RoomComposer`; `RoomDetails` uses both.
+- **Address.** No `view` is the Team view; `view=map` and `view=list` are the old two. `room` and
+  `agent` can both be set: the room is the middle column, the agent the right one.
+- People in a room are in name order, so a row stays put when its agent reconnects.
+
+Checked in the running app (CDP 9333, renderer 3005, 1454×906): the office opened on the Team view
+with the Juno/Kai run of 2026-11-12 in "Paradev office page"; a click on Kai opened its panel
+(list 256 px, conversation 472, panel 446); "Empty rooms" listed 12, and "Fix header" opened as an
+empty room with the CLI row; Esc closed the panel and kept the room; Kai dragged onto "Fix header"
+moved there ("works in Paradev office page") and dragged back went home; Map and List kept the open
+agent and Team came back to the same room; at 1000 px wide with a panel open the list hides
+(conversation 420, panel 300) and comes back when the panel closes; Decision mode showed and
+switched back; a name in the talk opened that agent. No console errors.
+Tests: renderer office 52 pass (5 new); typecheck and lint clean.
+
+Not checked: sending a message or a decision from the Team view (it would start a paid agent turn;
+the box is the room panel's code, moved), the light theme, a room with more than six people, an
+"Asks you" or "Waiting on" line with live data (unit tests only).

@@ -1,9 +1,10 @@
 import { cn } from "@superset/ui/utils";
-import { LuList, LuMap } from "react-icons/lu";
+import { LuList, LuMap, LuMessagesSquare } from "react-icons/lu";
 
-export type CityViewMode = "map" | "list";
+export type CityViewMode = "team" | "map" | "list";
 
 const MODES = [
+	["team", "Team", LuMessagesSquare],
 	["map", "Map", LuMap],
 	["list", "List", LuList],
 ] as const;

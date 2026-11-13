@@ -1,11 +1,7 @@
 import { Button } from "@superset/ui/button";
 import { useState } from "react";
-import { useCityTeam } from "../../../../../../../../hooks/useCityTeam";
-import {
-	type CityAgent,
-	type CityPlace,
-	YOU,
-} from "../../../../../../../../types";
+import { useCityTeam } from "../../../../../../hooks/useCityTeam";
+import { type CityAgent, type CityPlace, YOU } from "../../../../../../types";
 
 interface DecideBoxProps {
 	place: CityPlace;

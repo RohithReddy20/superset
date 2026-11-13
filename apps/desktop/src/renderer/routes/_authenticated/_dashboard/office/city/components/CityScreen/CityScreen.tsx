@@ -7,6 +7,7 @@ import { useFolderImportIntent } from "renderer/stores/folder-import-intent";
 import { NeedsYouBar } from "../../../components/NeedsYouBar";
 import { useCity } from "../../hooks/useCity";
 import { useEscapeKey } from "../../hooks/useEscapeKey";
+import type { CityPlace } from "../../types";
 import { presentIn } from "../../utils/buildingSnapshot";
 import { seatedCity } from "../../utils/seatedCity";
 import { AgentList } from "./components/AgentList";
@@ -17,13 +18,14 @@ import { CityMap } from "./components/CityMap";
 import { EmptyState } from "./components/EmptyState";
 import { HostTrouble } from "./components/HostTrouble";
 import { StartBar } from "./components/StartBar";
+import { TeamHome } from "./components/TeamHome";
 import { type CityViewMode, ViewSwitch } from "./components/ViewSwitch";
 
 interface CityScreenProps {
 	projectId: string | null;
 	/** The agent whose panel is open. */
 	agentId: string | null;
-	/** The room whose panel is open, when no agent is. */
+	/** The room that is open: its conversation in the team view, its panel in a building. */
 	roomId: string | null;
 	view: CityViewMode;
 }
@@ -32,8 +34,11 @@ interface CitySearch {
 	project?: string;
 	agent?: string;
 	room?: string;
-	view?: "list";
+	view?: "map" | "list";
 }
+
+const viewSearch = (view: CityViewMode): Pick<CitySearch, "view"> =>
+	view === "team" ? {} : { view };
 
 export function CityScreen({
 	projectId,
@@ -54,7 +59,12 @@ export function CityScreen({
 		askAgain,
 	} = useCity();
 	const [picked, setPicked] = useState<string[]>([]);
-	const inside = projects.find((p) => p.id === projectId) ?? null;
+	const team = view === "team";
+	const inside = team
+		? null
+		: (projects.find((p) => p.id === projectId) ?? null);
+	const place: CityPlace | null =
+		team && projectId && roomId ? { projectId, roomId } : null;
 	const shown = inside ? [inside] : projects;
 	const everyone = useMemo(
 		() => projects.flatMap((p) => p.workspaces.flatMap((w) => w.agents)),
@@ -75,56 +85,58 @@ export function CityScreen({
 			? { kind: "room", id: roomId }
 			: null;
 	const panelShown =
-		!!selection && !!panelProject && (view === "list" || !!inside);
+		!!selection && !!panelProject && (view !== "map" || !!inside);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: a pick belongs to one building
 	useEffect(() => setPicked([]), [projectId]);
 
-	const here = (): CitySearch => ({
-		...(projectId ? { project: projectId } : {}),
-		...(view === "list" ? { view: "list" } : {}),
-	});
+	const go = (search: CitySearch) =>
+		navigate({ to: "/office/city", replace: true, search });
 	const enter = (id: string | null) =>
 		navigate({
 			to: "/office/city",
-			search: {
-				...(id ? { project: id } : {}),
-				...(view === "list" ? { view: "list" as const } : {}),
-			},
+			search: { ...(id ? { project: id } : {}), ...viewSearch(view) },
 		});
-	const select = (next: BuildingSelection | null) =>
-		navigate({
-			to: "/office/city",
-			replace: true,
-			search: {
-				...here(),
-				...(next?.kind === "agent" ? { agent: next.id } : {}),
-				...(next?.kind === "room" ? { room: next.id } : {}),
-			},
-		});
-	const selectAgent = (id: string) => select({ kind: "agent", id });
-	const setView = (next: CityViewMode) =>
-		navigate({
-			to: "/office/city",
-			replace: true,
-			search: {
+	const select = (next: BuildingSelection | null) => {
+		const chosen = {
+			...(next?.kind === "agent" ? { agent: next.id } : {}),
+			...(next?.kind === "room" ? { room: next.id } : {}),
+		};
+		if (!team)
+			return go({
 				...(projectId ? { project: projectId } : {}),
-				...(next === "list" ? { view: "list" as const } : {}),
-				...(next === "list" || inside
-					? {
-							...(agentId ? { agent: agentId } : {}),
-							...(!agentId && roomId ? { room: roomId } : {}),
-						}
-					: {}),
-			},
+				...viewSearch(view),
+				...chosen,
+			});
+		const room =
+			everyone.find((a) => a.terminalId === chosen.agent)?.place ?? place;
+		return go({
+			...(room ? { project: room.projectId, room: room.roomId } : {}),
+			...chosen,
 		});
+	};
+	const selectAgent = (id: string) => select({ kind: "agent", id });
+	const selectRoom = (room: CityPlace) =>
+		go({
+			project: room.projectId,
+			room: room.roomId,
+			...(agentId ? { agent: agentId } : {}),
+		});
+	const setView = (next: CityViewMode) => {
+		const project = team && next === "list" ? null : projectId;
+		return go({
+			...viewSearch(next),
+			...(project ? { project, ...(roomId ? { room: roomId } : {}) } : {}),
+			...(agentId && (next !== "map" || project) ? { agent: agentId } : {}),
+		});
+	};
 
 	useEscapeKey(() => {
 		if (picked.length > 1) setPicked([]);
 		else if (selection) {
 			setPicked([]);
 			void select(null);
-		} else if (projectId) void enter(null);
+		} else if (projectId && !team) void enter(null);
 	});
 
 	return (
@@ -135,6 +147,7 @@ export function CityScreen({
 						projects={seated}
 						inside={inside}
 						agents={agents}
+						home={team ? "Team" : "City"}
 						onEnter={enter}
 					/>
 				}
@@ -183,7 +196,16 @@ export function CityScreen({
 						/>
 					) : !ready && projects.length === 0 ? (
 						<EmptyState busy title="Building the city" />
-					) : projectId && !inside ? (
+					) : team && projects.length > 0 ? (
+						<TeamHome
+							projects={projects}
+							rooms={rooms}
+							place={place}
+							agentId={selectedAgent ? agentId : null}
+							onSelectRoom={selectRoom}
+							onSelectAgent={selectAgent}
+						/>
+					) : !team && projectId && !inside ? (
 						<EmptyState
 							title="This building is gone"
 							hint="The project is not on this machine any more."

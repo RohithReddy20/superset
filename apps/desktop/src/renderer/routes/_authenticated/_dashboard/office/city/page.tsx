@@ -9,9 +9,10 @@ interface CitySearch {
 	project?: string;
 	/** The agent whose panel is open. */
 	agent?: string;
-	/** The room whose panel is open, when no agent is. */
+	/** The room that is open: its conversation in the team view, its panel in a building. */
 	room?: string;
-	view?: "list";
+	/** Unset is the team view. */
+	view?: "map" | "list";
 }
 
 const text = (value: unknown) =>
@@ -27,8 +28,8 @@ export const Route = createFileRoute("/_authenticated/_dashboard/office/city/")(
 			if (project) search.project = project;
 			const room = text(raw.room);
 			if (agent) search.agent = agent;
-			else if (room) search.room = room;
-			if (raw.view === "list") search.view = "list";
+			if (room) search.room = room;
+			if (raw.view === "list" || raw.view === "map") search.view = raw.view;
 			return search;
 		},
 	},
@@ -41,7 +42,7 @@ function CityPage() {
 			projectId={project ?? null}
 			agentId={agent ?? null}
 			roomId={room ?? null}
-			view={view ?? "map"}
+			view={view ?? "team"}
 		/>
 	);
 	const isEnabled = useFeatureFlagEnabled(FEATURE_FLAGS.OFFICE);
