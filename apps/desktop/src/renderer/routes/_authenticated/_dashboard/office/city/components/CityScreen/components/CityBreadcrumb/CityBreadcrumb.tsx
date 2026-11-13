@@ -22,8 +22,7 @@ interface CityBreadcrumbProps {
 	inside: CityProject | null;
 	/** The agents the screen shows: the building's, or the whole city's. */
 	agents: CityAgent[];
-	/** What the top level is called; the team view is not a city. */
-	home?: string;
+	rootLabel?: string;
 	onEnter: (projectId: string | null) => void;
 }
 
@@ -41,7 +40,7 @@ export function CityBreadcrumb({
 	projects,
 	inside,
 	agents,
-	home = "City",
+	rootLabel = "City",
 	onEnter,
 }: CityBreadcrumbProps) {
 	return (
@@ -68,7 +67,7 @@ export function CityBreadcrumb({
 						: "text-foreground",
 				)}
 			>
-				{home}
+				{rootLabel}
 			</button>
 			{inside ? (
 				<>

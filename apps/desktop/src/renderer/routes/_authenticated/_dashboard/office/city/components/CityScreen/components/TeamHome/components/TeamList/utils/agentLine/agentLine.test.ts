@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { YOU } from "../../types";
+import { YOU } from "../../../../../../../../types";
 import { agentLine } from "./agentLine";
 
 const kai = { terminalId: "kai", status: "working" as const };
@@ -52,6 +52,18 @@ describe("agentLine", () => {
 			text: "rewrite the page",
 			tone: "doing",
 		});
+	});
+
+	it("says who it works for when the item was asked of it", () => {
+		const asked = todo({
+			state: "doing",
+			askedById: "juno",
+			askedByName: "Juno",
+		});
+		expect(agentLine(kai, [asked], []).text).toBe("For Juno: rewrite the page");
+		expect(agentLine(kai, [{ ...asked, askedById: YOU }], []).text).toBe(
+			"For you: rewrite the page",
+		);
 	});
 
 	it("falls back to its state, then the next item on its list", () => {

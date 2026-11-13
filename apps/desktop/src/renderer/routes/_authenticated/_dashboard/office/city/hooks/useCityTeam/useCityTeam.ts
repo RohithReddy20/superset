@@ -49,6 +49,7 @@ export function useCityTeam() {
 	);
 
 	return {
+		ready: query.isSuccess,
 		todos: query.data?.todos ?? NO_TODOS,
 		notes,
 		toYou,

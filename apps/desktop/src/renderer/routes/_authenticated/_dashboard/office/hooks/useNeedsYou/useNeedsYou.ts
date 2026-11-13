@@ -6,9 +6,9 @@ import { type NeedsYouItem, needsYou } from "../../utils/needsYou";
 /** What waits on the person across the city, most urgent first. */
 export function useNeedsYou(): NeedsYouItem[] {
 	const { projects } = useCity();
-	const { todos, unread } = useCityTeam();
+	const { todos, unread, notes } = useCityTeam();
 	return useMemo(
-		() => needsYou({ projects, todos, unread }),
-		[projects, todos, unread],
+		() => needsYou({ projects, todos, unread, notes }),
+		[projects, todos, unread, notes],
 	);
 }

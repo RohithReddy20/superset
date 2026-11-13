@@ -5,13 +5,10 @@ import {
 	STATUS_LABELS,
 } from "../../../../../../../../constants";
 import type { CityAgent } from "../../../../../../../../types";
-import type {
-	AgentLine,
-	AgentLineTone,
-} from "../../../../../../../../utils/agentLine";
 import { AgentFace } from "../../../../../AgentFace";
 import { AgentIcon } from "../../../../../AgentIcon";
 import { AGENT_DRAG_TYPE } from "../../constants";
+import type { AgentLine, AgentLineTone } from "../../utils/agentLine";
 
 const TONES: Record<AgentLineTone, string> = {
 	needsYou: "text-orange-500",

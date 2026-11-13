@@ -4,9 +4,9 @@ import type {
 	CityPlace,
 	CityProject,
 	CityWorkspace,
-} from "../../types";
-import { MEETING_ROOM } from "../buildingSnapshot";
-import { roomTalk } from "../roomTalk";
+} from "../../../../types";
+import { MEETING_ROOM } from "../../../../utils/buildingSnapshot";
+import { roomTalk } from "../../../../utils/roomTalk";
 
 /** A room and who sits in it, wherever they work. */
 export interface TeamRoom {
@@ -21,27 +21,31 @@ export interface TeamRoom {
 export const samePlace = (a: CityPlace, b: CityPlace): boolean =>
 	a.projectId === b.projectId && a.roomId === b.roomId;
 
+/** Where an agent sits, or its own workspace's room when that seat is gone. */
+export function placeOf(
+	agent: Pick<CityAgent, "place" | "projectId" | "workspaceId">,
+	projects: CityProject[],
+): CityPlace {
+	const project = projects.find((p) => p.id === agent.place.projectId);
+	const known =
+		agent.place.roomId === MEETING_ROOM.id ||
+		project?.workspaces.some((w) => w.id === agent.place.roomId);
+	return project && known
+		? agent.place
+		: { projectId: agent.projectId, roomId: agent.workspaceId };
+}
+
 /**
- * Every workspace room in the city, and a building's meeting room when someone sits in it. An
- * agent whose seat is gone is listed in its own workspace's room. People are in name order, so a
- * row stays put when its agent continues in a new terminal.
+ * Every workspace room in the city, and a building's meeting room when someone sits in it. People
+ * are in name order, so a row stays put when its agent continues in a new terminal.
  */
 export function teamRooms(projects: CityProject[]): TeamRoom[] {
 	const everyone = projects.flatMap((p) =>
 		p.workspaces.flatMap((w) => w.agents),
 	);
-	const placeOf = (agent: CityAgent): CityPlace => {
-		const project = projects.find((p) => p.id === agent.place.projectId);
-		const known =
-			agent.place.roomId === MEETING_ROOM.id ||
-			project?.workspaces.some((w) => w.id === agent.place.roomId);
-		return project && known
-			? agent.place
-			: { projectId: agent.projectId, roomId: agent.workspaceId };
-	};
 	const sitting = (place: CityPlace) =>
 		everyone
-			.filter((a) => samePlace(placeOf(a), place))
+			.filter((a) => samePlace(placeOf(a, projects), place))
 			.sort(
 				(a, b) =>
 					a.name.localeCompare(b.name) ||

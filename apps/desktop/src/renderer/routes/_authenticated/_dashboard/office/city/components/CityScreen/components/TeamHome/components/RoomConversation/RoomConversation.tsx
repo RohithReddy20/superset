@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { LuDoorOpen, LuExternalLink } from "react-icons/lu";
 import { navigateToV2Workspace } from "renderer/routes/_authenticated/_dashboard/utils/workspace-navigation";
 import type { CityRoom } from "../../../../../../types";
-import type { TeamRoom } from "../../../../../../utils/teamRooms";
+import type { TeamRoom } from "../../../../utils/teamRooms";
 import { AgentBar } from "../../../AgentBar";
 import { AgentFace } from "../../../AgentFace";
 import { RoomComposer } from "../../../RoomComposer";

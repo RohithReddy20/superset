@@ -1,26 +1,27 @@
 import { cn } from "@superset/ui/utils";
-import { type DragEvent, useState } from "react";
+import { type DragEvent, useEffect, useState } from "react";
 import { LuChevronDown, LuChevronRight } from "react-icons/lu";
 import { TICK_MS, useNow } from "../../../../../../../hooks/useNow";
 import { useCityActions } from "../../../../../../hooks/useCityActions";
 import { useCityTeam } from "../../../../../../hooks/useCityTeam";
 import type { CityPlace } from "../../../../../../types";
-import { agentLine } from "../../../../../../utils/agentLine";
 import { isVisiting } from "../../../../../../utils/buildingSnapshot";
-import { samePlace, type TeamRoom } from "../../../../../../utils/teamRooms";
+import { samePlace, type TeamRoom } from "../../../../utils/teamRooms";
 import { ProjectIcon } from "../../../ProjectIcon";
 import { TeamRow } from "./components/TeamRow";
 import { AGENT_DRAG_TYPE } from "./constants";
+import { agentLine } from "./utils/agentLine";
 
 interface TeamListProps {
 	rooms: TeamRoom[];
-	/** The room whose conversation is open. */
 	open: CityPlace | null;
 	agentId: string | null;
 	className?: string;
 	onSelectRoom: (place: CityPlace) => void;
 	onSelectAgent: (terminalId: string) => void;
 }
+
+const ERROR_MS = 5000;
 
 const keyOf = (place: CityPlace) => `${place.projectId}/${place.roomId}`;
 
@@ -42,6 +43,12 @@ export function TeamList({
 	const [over, setOver] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [emptyShown, setEmptyShown] = useState<boolean | null>(null);
+
+	useEffect(() => {
+		if (!error) return;
+		const timer = setTimeout(() => setError(null), ERROR_MS);
+		return () => clearTimeout(timer);
+	}, [error]);
 	const occupied = rooms.filter((r) => r.people.length > 0);
 	const empty = rooms.filter((r) => r.people.length === 0);
 	const showEmpty =

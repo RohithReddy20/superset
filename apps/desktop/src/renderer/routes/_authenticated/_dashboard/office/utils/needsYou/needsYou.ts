@@ -6,6 +6,7 @@ import type {
 	CityTodo,
 } from "../../city/types";
 import { isOpenTodo, YOU } from "../../city/types";
+import { waitingOn } from "../waitingOn";
 
 export type NeedsYouReason =
 	| "permission"
@@ -53,6 +54,7 @@ export function needsYou({
 	projects,
 	todos = [],
 	unread = [],
+	notes = [],
 }: {
 	projects: CityProject[];
 	todos?: Pick<
@@ -67,6 +69,8 @@ export function needsYou({
 	>[];
 	/** What teammates wrote to the person and the person has not read. */
 	unread?: Pick<CityNote, "id" | "fromId" | "text" | "at">[];
+	/** Everything written, to tell an agent that is done from one that waits on a teammate. */
+	notes?: Pick<CityNote, "fromId" | "toIds" | "at">[];
 }): NeedsYouItem[] {
 	const projectName = new Map(projects.map((p) => [p.id, p.name]));
 	const agents = projects.flatMap((p) => p.workspaces.flatMap((w) => w.agents));
@@ -75,6 +79,8 @@ export function needsYou({
 	for (const agent of agents) {
 		if (!AGENT_REASONS.has(agent.status)) continue;
 		if (agent.lost?.reconnecting) continue;
+		if (agent.status === "review" && waitingOn(agent.terminalId, todos, notes))
+			continue;
 		items.push({
 			id: `agent:${agent.terminalId}`,
 			reason: agent.status as NeedsYouReason,

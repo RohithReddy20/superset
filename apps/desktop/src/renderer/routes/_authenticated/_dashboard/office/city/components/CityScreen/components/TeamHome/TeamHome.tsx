@@ -1,11 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCityTeam } from "../../../../hooks/useCityTeam";
 import type { CityPlace, CityProject, CityRoom } from "../../../../types";
-import {
-	liveliestRoom,
-	samePlace,
-	teamRooms,
-} from "../../../../utils/teamRooms";
+import { liveliestRoom, samePlace, teamRooms } from "../../utils/teamRooms";
 import { EmptyState } from "../EmptyState";
 import { RoomConversation } from "./components/RoomConversation";
 import { TeamList } from "./components/TeamList";
@@ -15,8 +11,9 @@ interface TeamHomeProps {
 	rooms: CityRoom[];
 	/** The room picked in the address. Unset opens the open agent's room, else where people last talked. */
 	place: CityPlace | null;
-	/** The agent whose panel is open beside this. */
 	agentId: string | null;
+	/** Who sits where has loaded; until then every room looks empty. */
+	agentsReady: boolean;
 	onSelectRoom: (place: CityPlace) => void;
 	onSelectAgent: (terminalId: string) => void;
 }
@@ -27,10 +24,11 @@ export function TeamHome({
 	rooms,
 	place,
 	agentId,
+	agentsReady,
 	onSelectRoom,
 	onSelectAgent,
 }: TeamHomeProps) {
-	const { notes } = useCityTeam();
+	const { notes, ready: notesReady } = useCityTeam();
 	const [drafts, setDrafts] = useState<Record<string, string>>({});
 	const all = useMemo(() => teamRooms(projects), [projects]);
 	const open =
@@ -41,6 +39,16 @@ export function TeamHome({
 		liveliestRoom(all, notes) ??
 		all[0];
 	const draftKey = open ? `${open.place.projectId}/${open.place.roomId}` : "";
+	const unpinned =
+		agentsReady &&
+		notesReady &&
+		!!open &&
+		(!place || !samePlace(open.place, place));
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: pin the room once, so a note elsewhere does not move it
+	useEffect(() => {
+		if (unpinned && open) onSelectRoom(open.place);
+	}, [unpinned, draftKey]);
 
 	return (
 		<div className="flex h-full min-w-0">

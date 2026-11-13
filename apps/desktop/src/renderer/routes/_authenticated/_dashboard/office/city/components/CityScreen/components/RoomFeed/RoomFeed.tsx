@@ -16,10 +16,8 @@ import { AgentFace } from "../AgentFace";
 
 interface RoomFeedProps {
 	place: CityPlace;
-	/** Who sits in the room. */
 	people: CityAgent[];
 	onSelectAgent: (terminalId: string) => void;
-	/** Keeps lines readable in a wide column. */
 	className?: string;
 }
 

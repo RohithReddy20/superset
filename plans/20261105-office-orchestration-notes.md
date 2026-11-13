@@ -1184,3 +1184,45 @@ Tests: renderer office 52 pass (5 new); typecheck and lint clean.
 Not checked: sending a message or a decision from the Team view (it would start a paid agent turn;
 the box is the room panel's code, moved), the light theme, a room with more than six people, an
 "Asks you" or "Waiting on" line with live data (unit tests only).
+
+## First real run from the Team view (2026-11-14)
+
+Task: two fresh Claude Opus (High) agents in "Office source", started from the Team view's CLI row.
+Rhea reviews the Team view commit and edits nothing; Finn owns the fixes. Everything was started
+and followed from the Team view; the map was never opened.
+
+What happened (about 6 minutes, 3 rounds of `office ask`): Rhea sent 5 findings with file, line and
+fix. Finn took all 5; Rhea found his first fix for the room pin wrong (it ran before agents and
+seats had loaded), Finn fixed it, Rhea passed it, Finn wrote to the person.
+
+What Finn changed (reviewed and kept):
+
+- The open room is pinned into the address once agents and notes have loaded, so a note in another
+  room does not move the conversation you are reading (`TeamHome`, `useCityTeam().ready`).
+- An agent whose seat is gone opens its own room (`placeOf`, now exported from `teamRooms`).
+- Map from the Team view opens the city, not a building.
+- A failed drop's error goes away after 5 s.
+- `agentLine` moved to `TeamHome/components/TeamList/utils`, `teamRooms` to `CityScreen/utils`
+  (each next to its users); four prop comments removed; `home` renamed `rootLabel`.
+
+Found while watching, fixed after the run:
+
+- The "Needs you" bar said "Done, take a look" for Finn while he only waited on Rhea; his row
+  already said "Waiting on Rhea". An agent whose turn ended while a teammate has not written back
+  is no longer listed as done (`utils/waitingOn`, used by `needsYou` and `agentLine`).
+- Rhea's row showed Finn's ask as if it were her own words. An item someone asked for now reads
+  "For Finn: …".
+
+Found, not fixed:
+
+- While Finn moved files, the open office view failed to load a module and showed "This view hit
+  an error"; "Reload app" brought it back. It happens only when agents edit the app that shows them.
+- "Empty rooms" stays open after it was opened by hand, also once the room has people.
+- The room showed no sign that an agent was working between messages; only its row did.
+
+Checked in the running app after the fixes: Office from the sidebar opened "Office source" (where
+people last talked) and wrote it into the address; Map opened the city; Team came back to the same
+room; all 7 messages of the run were in the room. No console errors.
+Tests: renderer office 54 pass (2 new); typecheck and lint clean.
+
+Not checked: the two after-run fixes with live agents (unit tests only), the light theme.

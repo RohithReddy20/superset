@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import type { CityAgent, CityNote, CityProject } from "../../types";
+import type { CityAgent, CityNote, CityProject } from "../../../../types";
 import { liveliestRoom, teamRooms } from "./teamRooms";
 
 const agent = (

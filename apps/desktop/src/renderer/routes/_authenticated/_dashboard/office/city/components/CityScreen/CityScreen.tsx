@@ -20,6 +20,7 @@ import { HostTrouble } from "./components/HostTrouble";
 import { StartBar } from "./components/StartBar";
 import { TeamHome } from "./components/TeamHome";
 import { type CityViewMode, ViewSwitch } from "./components/ViewSwitch";
+import { placeOf } from "./utils/teamRooms";
 
 interface CityScreenProps {
 	projectId: string | null;
@@ -108,8 +109,8 @@ export function CityScreen({
 				...viewSearch(view),
 				...chosen,
 			});
-		const room =
-			everyone.find((a) => a.terminalId === chosen.agent)?.place ?? place;
+		const found = everyone.find((a) => a.terminalId === chosen.agent);
+		const room = found ? placeOf(found, projects) : place;
 		return go({
 			...(room ? { project: room.projectId, room: room.roomId } : {}),
 			...chosen,
@@ -123,7 +124,7 @@ export function CityScreen({
 			...(agentId ? { agent: agentId } : {}),
 		});
 	const setView = (next: CityViewMode) => {
-		const project = team && next === "list" ? null : projectId;
+		const project = team ? null : projectId;
 		return go({
 			...viewSearch(next),
 			...(project ? { project, ...(roomId ? { room: roomId } : {}) } : {}),
@@ -147,7 +148,7 @@ export function CityScreen({
 						projects={seated}
 						inside={inside}
 						agents={agents}
-						home={team ? "Team" : "City"}
+						rootLabel={team ? "Team" : "City"}
 						onEnter={enter}
 					/>
 				}
@@ -202,6 +203,7 @@ export function CityScreen({
 							rooms={rooms}
 							place={place}
 							agentId={selectedAgent ? agentId : null}
+							agentsReady={agentsReady}
 							onSelectRoom={selectRoom}
 							onSelectAgent={selectAgent}
 						/>

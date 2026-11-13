@@ -62,6 +62,27 @@ describe("needsYou", () => {
 		]);
 	});
 
+	test("an agent whose turn ended while it waits on a teammate is not done", () => {
+		const ask = {
+			id: "D-1",
+			ownerId: "rhea",
+			ownerName: "Rhea",
+			state: "open" as const,
+			text: "send your findings",
+			askedById: "finn",
+			askedByName: "Finn",
+			createdAt: 10,
+		};
+		const projects = city([agent("finn", "review", 12)]);
+		expect(needsYou({ projects, todos: [ask] })).toEqual([]);
+		const answer = { fromId: "rhea", toIds: ["finn"], at: 20 };
+		expect(
+			needsYou({ projects, todos: [ask], notes: [answer] }).map(
+				(i) => i.reason,
+			),
+		).toEqual(["review"]);
+	});
+
 	test("puts a question before a failure and finished work", () => {
 		const items = needsYou({
 			projects: city([

@@ -1,11 +1,12 @@
-import { askingLine, STATUS_LINES } from "../../constants";
+import { waitingOn } from "../../../../../../../../../utils/waitingOn";
+import { askingLine, STATUS_LINES } from "../../../../../../../../constants";
 import {
 	type CityAgent,
 	type CityNote,
 	type CityTodo,
 	isOpenTodo,
 	YOU,
-} from "../../types";
+} from "../../../../../../../../types";
 
 export type AgentLineTone = "needsYou" | "waiting" | "doing" | "done" | "quiet";
 
@@ -22,13 +23,19 @@ const NEEDS_YOU = new Set<CityAgent["status"]>([
 
 /**
  * One line on what an agent is at: what it needs from you first, then who it waits on, then what
- * it works on. Someone it asked counts as having answered once they wrote back to it.
+ * it works on.
  */
 export function agentLine(
 	agent: Pick<CityAgent, "terminalId" | "status" | "asking">,
 	todos: Pick<
 		CityTodo,
-		"ownerId" | "ownerName" | "text" | "state" | "askedById" | "createdAt"
+		| "ownerId"
+		| "ownerName"
+		| "text"
+		| "state"
+		| "askedById"
+		| "askedByName"
+		| "createdAt"
 	>[],
 	notes: Pick<CityNote, "fromId" | "toIds" | "at">[],
 ): AgentLine {
@@ -36,21 +43,12 @@ export function agentLine(
 	if (NEEDS_YOU.has(agent.status))
 		return { text: STATUS_LINES[agent.status], tone: "needsYou" };
 
-	const asked = todos.filter(
-		(t) => isOpenTodo(t) && t.askedById === agent.terminalId,
-	);
-	const ofYou = asked.find((t) => t.ownerId === YOU);
-	if (ofYou) return { text: `Asks you: ${ofYou.text}`, tone: "needsYou" };
-	const pending = asked.find(
+	const ofYou = todos.find(
 		(t) =>
-			t.ownerId !== agent.terminalId &&
-			!notes.some(
-				(n) =>
-					n.fromId === t.ownerId &&
-					n.toIds.includes(agent.terminalId) &&
-					n.at >= t.createdAt,
-			),
+			isOpenTodo(t) && t.askedById === agent.terminalId && t.ownerId === YOU,
 	);
+	if (ofYou) return { text: `Asks you: ${ofYou.text}`, tone: "needsYou" };
+	const pending = waitingOn(agent.terminalId, todos, notes);
 	if (pending)
 		return {
 			text: `Waiting on ${pending.ownerName}: ${pending.text}`,
@@ -59,7 +57,13 @@ export function agentLine(
 
 	const own = todos.filter((t) => t.ownerId === agent.terminalId);
 	const doing = own.find((t) => t.state === "doing");
-	if (doing) return { text: doing.text, tone: "doing" };
+	if (doing)
+		return {
+			text: doing.askedById
+				? `For ${doing.askedById === YOU ? "you" : doing.askedByName}: ${doing.text}`
+				: doing.text,
+			tone: "doing",
+		};
 	if (agent.status === "working")
 		return { text: STATUS_LINES.working, tone: "doing" };
 	if (agent.status === "review")
