@@ -1,0 +1,50 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/RoomFeed/RoomFeed.tsx
+  s_9f455a47dbfae7::t_d5da15da4f1329 18,37,41-42,50-52,57-62,66,127-129
+  s_9f455a47dbfae7::t_5aff15c8e6da55 16-17
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/RoomFeed/components/RoomActivity/RoomActivity.tsx
+  s_9f455a47dbfae7::t_d5da15da4f1329 19
+  s_9f455a47dbfae7::t_78df63cb8e035a 1-18,20-45
+apps/desktop/src/renderer/routes/_authenticated/components/ContentError/ContentError.tsx
+  s_9f455a47dbfae7::t_d5da15da4f1329 20,22-29,50-64
+  s_9f455a47dbfae7::t_6a465d2237ccf0 8-19,21,65-66
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/RoomFeed/components/RoomActivity/index.ts
+  s_6757b34c448d20::t_45344976932086 1
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/city/components/CityScreen/components/TeamHome/components/TeamList/TeamList.tsx
+  s_6757b34c448d20::t_61a6aa4397f422 45-48,57-58,60-63,168
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/needsYou/needsYou.test.ts
+  s_6757b34c448d20::t_d09acbe3bd37d2 141-171
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/office/utils/needsYou/needsYou.ts
+  s_6757b34c448d20::t_a1ee9305fcf9e3 78,83-88,136-155
+apps/desktop/src/renderer/routes/_authenticated/components/ContentError/utils/staleModuleReload/index.ts
+  s_6757b34c448d20::t_490b99f9efeb81 1
+apps/desktop/src/renderer/routes/_authenticated/components/ContentError/utils/staleModuleReload/staleModuleReload.test.ts
+  s_6757b34c448d20::t_05695d70300580 1-27
+apps/desktop/src/renderer/routes/_authenticated/components/ContentError/utils/staleModuleReload/staleModuleReload.ts
+  s_6757b34c448d20::t_f08b2ee9e3595d 1-18
+plans/20261105-office-orchestration-notes.md
+  s_6757b34c448d20::t_a1c4b5afee9fe8 1229-1279
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cb65cee551af54f87ecd233dae9b19ccf6bf37d0",
+  "prompts": {},
+  "sessions": {
+    "s_6757b34c448d20": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f3844c0a-c68c-4d1b-b0a1-674efd11f0fe",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    },
+    "s_9f455a47dbfae7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "99967a28-136e-4a59-960a-241465f673cc",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
