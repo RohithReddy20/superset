@@ -1227,7 +1227,7 @@ Tests: renderer office 54 pass (2 new); typecheck and lint clean.
 
 Not checked: the two after-run fixes with live agents (unit tests only), the light theme.
 
-## The three gaps of the first run, and a second run (2026-11-15)
+## The three gaps of the first run, and a second run (2026-11-14, evening)
 
 The three "found, not fixed" items above, closed, then reviewed by the same two agents from the
 Team view's message box (one message to the room, "Sent to 2"; about 2.5 minutes, 2 rounds of
