@@ -75,11 +75,17 @@ export function needsYou({
 	const projectName = new Map(projects.map((p) => [p.id, p.name]));
 	const agents = projects.flatMap((p) => p.workspaces.flatMap((w) => w.agents));
 	const byTerminal = new Map(agents.map((a) => [a.terminalId, a]));
+	const latest = new Map(unread.map((n) => [n.fromId, n]));
 	const items: NeedsYouItem[] = [];
 	for (const agent of agents) {
 		if (!AGENT_REASONS.has(agent.status)) continue;
 		if (agent.lost?.reconnecting) continue;
-		if (agent.status === "review" && waitingOn(agent.terminalId, todos, notes))
+		if (
+			agent.status === "review" &&
+			(latest.has(agent.terminalId) ||
+				waitingOn(agent.terminalId, todos, notes) ||
+				answeredTeammate(agent.terminalId, notes))
+		)
 			continue;
 		items.push({
 			id: `agent:${agent.terminalId}`,
@@ -107,7 +113,6 @@ export function needsYou({
 		});
 	}
 
-	const latest = new Map(unread.map((n) => [n.fromId, n]));
 	for (const note of latest.values()) {
 		const agent = byTerminal.get(note.fromId);
 		if (!agent) continue;
@@ -125,6 +130,26 @@ export function needsYou({
 	return items.sort(
 		(a, b) =>
 			ORDER.indexOf(a.reason) - ORDER.indexOf(b.reason) || a.since - b.since,
+	);
+}
+
+/** Its last turn was for a teammate, and it wrote back to them: nothing in it is for the person. */
+function answeredTeammate(
+	terminalId: string,
+	notes: Pick<CityNote, "fromId" | "toIds" | "at">[],
+): boolean {
+	const prompt = notes
+		.filter((n) => n.fromId !== terminalId && n.toIds.includes(terminalId))
+		.reduce<(typeof notes)[number] | undefined>(
+			(last, n) => (!last || n.at >= last.at ? n : last),
+			undefined,
+		);
+	if (!prompt || prompt.fromId === YOU) return false;
+	return notes.some(
+		(n) =>
+			n.fromId === terminalId &&
+			n.toIds.includes(prompt.fromId) &&
+			n.at >= prompt.at,
 	);
 }
 

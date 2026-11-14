@@ -42,7 +42,10 @@ export function TeamList({
 	const now = useNow(TICK_MS);
 	const [over, setOver] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
-	const [emptyShown, setEmptyShown] = useState<boolean | null>(null);
+	const [emptyToggle, setEmptyToggle] = useState<{
+		at: string;
+		shown: boolean;
+	} | null>(null);
 
 	useEffect(() => {
 		if (!error) return;
@@ -51,10 +54,13 @@ export function TeamList({
 	}, [error]);
 	const occupied = rooms.filter((r) => r.people.length > 0);
 	const empty = rooms.filter((r) => r.people.length === 0);
+	const openKey = open ? keyOf(open) : "";
+	if (emptyToggle && emptyToggle.at !== openKey) setEmptyToggle(null);
 	const showEmpty =
-		emptyShown ??
-		(occupied.length === 0 ||
-			empty.some((r) => !!open && samePlace(r.place, open)));
+		emptyToggle?.at === openKey
+			? emptyToggle.shown
+			: occupied.length === 0 ||
+				empty.some((r) => !!open && samePlace(r.place, open));
 	const Chevron = showEmpty ? LuChevronDown : LuChevronRight;
 
 	const dropOn = (room: TeamRoom) => ({
@@ -159,7 +165,7 @@ export function TeamList({
 					<button
 						type="button"
 						aria-expanded={showEmpty}
-						onClick={() => setEmptyShown(!showEmpty)}
+						onClick={() => setEmptyToggle({ at: openKey, shown: !showEmpty })}
 						className="flex items-center gap-1 rounded-md px-2 py-1 text-left text-[11px] font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
 					>
 						<Chevron className="size-3.5" />

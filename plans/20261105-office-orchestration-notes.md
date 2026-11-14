@@ -1226,3 +1226,54 @@ room; all 7 messages of the run were in the room. No console errors.
 Tests: renderer office 54 pass (2 new); typecheck and lint clean.
 
 Not checked: the two after-run fixes with live agents (unit tests only), the light theme.
+
+## The three gaps of the first run, and a second run (2026-11-15)
+
+The three "found, not fixed" items above, closed, then reviewed by the same two agents from the
+Team view's message box (one message to the room, "Sent to 2"; about 2.5 minutes, 2 rounds of
+`office ask`).
+
+- **"Empty rooms".** A toggle by hand lasts while the same room stays open; opening another room
+  goes back to the rule (open when nobody works anywhere, or when the open room is empty).
+- **Who is working.** `RoomFeed/components/RoomActivity`: a line under the last message, "Finn and
+  Rhea are working", with their faces (a click opens the agent). Also shown in the room panel.
+- **A view whose code changed under it.** `ContentError` reloads the app by itself when the error
+  is a module that failed to load (`utils/staleModuleReload`): after 1.5 s, at most 3 times in a
+  minute (kept in `sessionStorage`), and only when the page's origin answers. No new text on the
+  error screen, so no catalog change.
+
+What Rhea found and Finn changed (reviewed and kept):
+
+- The self-reload ran also with the dev server down, which leaves a blank window. It now asks the
+  origin first (`HEAD`), and does nothing when it does not answer.
+- The feed jumped to the newest line whenever an agent started or stopped. It now follows only
+  when it already was at the bottom.
+- The `aria-live` region is now always there, so the line is read out when it appears.
+
+Found while watching, fixed after the run (`utils/needsYou`):
+
+- Rhea, who only answered Finn, was listed as "Done, take a look". An agent whose last message to
+  it came from a teammate, and who wrote back to that teammate, is not listed.
+- Finn was listed twice: "Wrote to you" and "Done, take a look". An agent with an unread message
+  to the person is listed once, by the message.
+
+Found, not fixed:
+
+- For about 4 s after a teammate answers, the asker reads "Done, take a look" (its turn has ended
+  and the answer has not started its next turn yet).
+- Each row and the room line say "Working" with no word on what the agent does until it marks an
+  item as started.
+
+Checked in the running app (CDP 9333): "Empty rooms" opened by hand in "Office source", stayed open
+in the empty "Fix header", and was closed again back in "Office source"; the room read "Finn and
+Rhea are working", then "Rhea is working", then nothing; Finn's row read "Waiting on Rhea: …" and
+Rhea's "For Finn: …", and the bar did not list Finn while he waited; with a line in the route that
+threw the module error on a flag, the app reloaded itself once and the office came back, and with
+the flag left on it stopped after 3 reloads on the error screen (the line was removed); after the
+`needsYou` change the bar listed 1 item (Finn's message), not 3; the Team view in the light theme.
+No console errors apart from the forced one.
+Tests: renderer office and ContentError 59 pass; typecheck and lint clean.
+
+Not checked: the real case of the module error (an agent moving files gave Vite's own reload both
+times it was tried by hand), a room with more than six people, the two `needsYou` rules with live
+agents (unit tests, and the bar after the run).

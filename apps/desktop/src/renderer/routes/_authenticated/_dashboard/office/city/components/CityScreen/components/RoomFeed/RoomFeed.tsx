@@ -13,6 +13,9 @@ import {
 } from "../../../../types";
 import { roomTalk } from "../../../../utils/roomTalk";
 import { AgentFace } from "../AgentFace";
+import { RoomActivity } from "./components/RoomActivity";
+
+const BOTTOM_SLACK_PX = 40;
 
 interface RoomFeedProps {
 	place: CityPlace;
@@ -31,9 +34,12 @@ export function RoomFeed({
 	const { notes, todos } = useCityTeam();
 	const now = useNow(TICK_MS);
 	const scrollRef = useRef<HTMLDivElement>(null);
+	const atBottom = useRef(true);
 	const nameOf = new Map(people.map((p) => [p.terminalId, p.name]));
 	const messages = roomTalk(notes, place, new Set(nameOf.keys()));
 	const said = messages.length;
+	const working = people.filter((p) => p.status === "working");
+	const busy = working.length;
 	const toWhom = (ids: string[]) =>
 		ids
 			.map((id) => (id === YOU ? "you" : (nameOf.get(id) ?? "someone")))
@@ -41,16 +47,23 @@ export function RoomFeed({
 
 	useEffect(() => {
 		const node = scrollRef.current;
-		if (node && said > 0) node.scrollTop = node.scrollHeight;
-	}, [said]);
+		if (node && atBottom.current && said + busy > 0)
+			node.scrollTop = node.scrollHeight;
+	}, [said, busy]);
 
 	return (
 		<div
 			ref={scrollRef}
+			onScroll={(event) => {
+				const node = event.currentTarget;
+				atBottom.current =
+					node.scrollHeight - node.scrollTop - node.clientHeight <
+					BOTTOM_SLACK_PX;
+			}}
 			className="min-h-0 flex-1 overflow-y-auto bg-muted/30 p-3"
 		>
 			<div className={cn("flex flex-col gap-3", className)}>
-				{messages.length === 0 ? (
+				{messages.length === 0 && busy === 0 ? (
 					<p className="text-[12px] text-muted-foreground">
 						Nothing said in this room yet. What you and the agents sitting here
 						write to the room or to each other, and what you decide, shows here.
@@ -111,6 +124,9 @@ export function RoomFeed({
 						);
 					})
 				)}
+				<div aria-live="polite">
+					<RoomActivity working={working} onSelectAgent={onSelectAgent} />
+				</div>
 			</div>
 		</div>
 	);

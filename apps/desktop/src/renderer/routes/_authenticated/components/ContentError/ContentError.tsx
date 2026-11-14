@@ -5,6 +5,28 @@ import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { HiExclamationTriangle } from "react-icons/hi2";
 import { failureDiagnostic } from "renderer/lib/failure-diagnostic/failure-diagnostic";
+import { staleModuleReload } from "./utils/staleModuleReload";
+
+const RELOADS_KEY = "content-error:stale-module-reloads";
+const RELOAD_DELAY_MS = 1500;
+
+function pastReloads(): number[] {
+	try {
+		const stored = JSON.parse(sessionStorage.getItem(RELOADS_KEY) ?? "[]");
+		return Array.isArray(stored) ? stored.filter(Number.isFinite) : [];
+	} catch {
+		return [];
+	}
+}
+
+/** A reload while the dev server is down leaves a blank window that never recovers. */
+async function originAnswers(): Promise<boolean> {
+	if (!location.protocol.startsWith("http")) return true;
+	return fetch(location.href, { method: "HEAD", cache: "no-store" }).then(
+		(response) => response.ok,
+		() => false,
+	);
+}
 
 export function ContentError({ error }: ErrorComponentProps) {
 	const { t } = useLingui();
@@ -23,6 +45,23 @@ export function ContentError({ error }: ErrorComponentProps) {
 					reportError,
 				);
 			});
+	}, [error]);
+
+	useEffect(() => {
+		const reloads = staleModuleReload(error, Date.now(), pastReloads());
+		if (!reloads) return;
+		let cancelled = false;
+		const timer = setTimeout(async () => {
+			if (!(await originAnswers()) || cancelled) return;
+			try {
+				sessionStorage.setItem(RELOADS_KEY, JSON.stringify(reloads));
+			} catch {}
+			window.location.reload();
+		}, RELOAD_DELAY_MS);
+		return () => {
+			cancelled = true;
+			clearTimeout(timer);
+		};
 	}, [error]);
 
 	return (

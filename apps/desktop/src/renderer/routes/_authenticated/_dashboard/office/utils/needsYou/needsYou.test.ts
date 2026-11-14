@@ -138,4 +138,35 @@ describe("needsYou with the team", () => {
 			}),
 		).toEqual([]);
 	});
+	test("an agent that only answered a teammate is not done for you", () => {
+		const projects = city([agent("rhea", "review", 9)]);
+		const ask = { fromId: "finn", toIds: ["rhea"], at: 5 };
+		expect(needsYou({ projects, notes: [ask] })).toMatchObject([
+			{ reason: "review", title: "rhea" },
+		]);
+		expect(
+			needsYou({
+				projects,
+				notes: [ask, { fromId: "rhea", toIds: ["finn"], at: 8 }],
+			}),
+		).toEqual([]);
+		expect(
+			needsYou({
+				projects,
+				notes: [
+					{ fromId: "you", toIds: ["rhea"], at: 6 },
+					ask,
+					{ fromId: "rhea", toIds: ["finn"], at: 8 },
+				],
+			}),
+		).toMatchObject([{ reason: "review", title: "rhea" }]);
+	});
+
+	test("an agent that wrote to you is listed once, by what it wrote", () => {
+		const items = needsYou({
+			projects: city([agent("finn", "review", 9)]),
+			unread: [{ id: "n1", fromId: "finn", text: "All fixed", at: 8 }],
+		});
+		expect(items.map((i) => [i.title, i.reason])).toEqual([["finn", "wrote"]]);
+	});
 });
