@@ -1,0 +1,21 @@
+packages/chat-runtime/src/harness/claude/claudeAdapter/claudeAdapter.test.ts
+  s_17398fe993c464::t_98a93f074e03b2 39,77
+packages/chat-runtime/src/harness/claude/claudeAdapter/claudeAdapter.ts
+  s_17398fe993c464::t_ae100361b3e6e7 369,495
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "21ae875f0ffa1358c0433c5ce8c735d35c883d1d",
+  "prompts": {},
+  "sessions": {
+    "s_17398fe993c464": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7e7c577f-3aca-4f5c-9fef-e5a0ee4daa16",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
