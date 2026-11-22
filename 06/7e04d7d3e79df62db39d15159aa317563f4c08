@@ -1,0 +1,30 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/workspace/$workspaceId/hooks/usePaneRegistry/components/ChatSession/components/Composer/utils/appCommands/appCommands.ts
+  s_17398fe993c464::t_b75ee76eb61d00 20
+packages/chat-runtime/src/harness/claude/claudeAdapter/claudeAdapter.ts
+  s_17398fe993c464::t_82776611bba602 414-415
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/workspace/$workspaceId/hooks/usePaneRegistry/components/ChatSession/components/Composer/utils/appCommands/appCommands.test.ts
+  s_17398fe993c464::t_b75ee76eb61d00 3,99,104
+packages/chat-runtime/src/harness/claude/claudeAdapter/claudeAdapter.test.ts
+  s_17398fe993c464::t_1e02ba9aa50bab 552-555,572-575
+  s_17398fe993c464::t_f8009d80294a5b 545,556,565-571,576,578-579,581-582,584,589-591
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/workspace/$workspaceId/hooks/usePaneRegistry/components/ChatSession/components/Composer/hooks/useAppCommands/useAppCommands.tsx
+  s_17398fe993c464::t_b75ee76eb61d00 26,163,301,303-310,321,326
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/workspace/$workspaceId/hooks/usePaneRegistry/components/ChatSession/components/Composer/Composer.tsx
+  s_17398fe993c464::t_b75ee76eb61d00 632-638
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "067e04d7d3e79df62db39d15159aa317563f4c08",
+  "prompts": {},
+  "sessions": {
+    "s_17398fe993c464": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7e7c577f-3aca-4f5c-9fef-e5a0ee4daa16",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
