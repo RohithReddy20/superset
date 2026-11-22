@@ -1,0 +1,19 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/workspace/$workspaceId/hooks/usePaneRegistry/components/ChatSession/components/SessionView/hooks/useFailureRecovery/useFailureRecovery.ts
+  s_17398fe993c464::t_29bc59cd4e369c 57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1548fe4dfadee40a4b918815f78466bf0f5438c1",
+  "prompts": {},
+  "sessions": {
+    "s_17398fe993c464": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7e7c577f-3aca-4f5c-9fef-e5a0ee4daa16",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
