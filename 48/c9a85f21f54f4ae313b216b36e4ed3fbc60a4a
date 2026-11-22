@@ -1,0 +1,25 @@
+apps/desktop/src/renderer/routes/_authenticated/settings/cloud-usage/components/CloudUsageGate/CloudUsageGate.tsx
+  s_5becc7b8517d1d::t_aa43e44db6db02 1,4,15
+apps/desktop/src/renderer/routes/_authenticated/settings/hooks/useSettingsSectionVisibility/useSettingsSectionVisibility.ts
+  s_5becc7b8517d1d::t_2a44524928632f 17
+apps/desktop/src/renderer/routes/_authenticated/settings/billing/components/BillingOverview/components/CloudUsageCard/CloudUsageCard.tsx
+  s_5becc7b8517d1d::t_87c39c9e60f267 23
+apps/desktop/src/renderer/hooks/useCloudUsageEnabled/useCloudUsageEnabled.ts
+  s_5becc7b8517d1d::t_b96a1578b92eec 3-6,10-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "48c9a85f21f54f4ae313b216b36e4ed3fbc60a4a",
+  "prompts": {},
+  "sessions": {
+    "s_5becc7b8517d1d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1d2f0f55-f38f-4cf4-9890-7bc2b65a27c9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
