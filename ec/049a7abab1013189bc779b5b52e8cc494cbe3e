@@ -1,0 +1,22 @@
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/workspace/$workspaceId/hooks/usePaneRegistry/components/ChatSession/components/Composer/Composer.tsx
+  s_17398fe993c464::t_f6b2ae63f1fa2f 641
+  s_17398fe993c464::t_06d68e25f1d0e8 658
+  s_17398fe993c464::t_f132e9928cec63 557-567,579,584
+  s_17398fe993c464::t_2bc915dbe68d67 625
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ec049a7abab1013189bc779b5b52e8cc494cbe3e",
+  "prompts": {},
+  "sessions": {
+    "s_17398fe993c464": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7e7c577f-3aca-4f5c-9fef-e5a0ee4daa16",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
