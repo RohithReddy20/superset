@@ -1,0 +1,19 @@
+packages/agent-setup/src/agent-wrappers-claude-codex-opencode.ts
+  s_bd0a1c87e51d88::t_41532e6ef090d7 7,27,79,88-92,110,124-130,136,148-164,189-190,194-198,344-468,470-471,474
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2b7ae5569aba9afd87a0b51a4bd30dcf0a426a44",
+  "prompts": {},
+  "sessions": {
+    "s_bd0a1c87e51d88": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a336568458cb28b2b",
+        "model": "unknown"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
