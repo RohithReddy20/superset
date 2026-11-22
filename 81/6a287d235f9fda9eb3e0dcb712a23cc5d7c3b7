@@ -1,0 +1,71 @@
+packages/host-service/src/workers/tasks/git.ts
+  s_bc8feb68cc07b9::t_9a55c869db683c 20
+  s_bc8feb68cc07b9::t_e6675bb183e727 99-101
+  s_bc8feb68cc07b9::t_59cb594f6089d6 93,98,565,570-579
+packages/host-service/src/trpc/router/workspace-creation/procedures/search-branches.ts
+  s_bc8feb68cc07b9::t_f8a9c82def1582 42-43
+  s_bc8feb68cc07b9::t_9152cbf1dec270 44
+packages/host-service/src/trpc/router/workspace-creation/procedures/search-branches.test.ts
+  s_bc8feb68cc07b9::t_9020a7577c3205 1-81
+packages/host-service/src/workers/tasks/git-background-fetch.test.ts
+  s_bc8feb68cc07b9::t_72fd4cd6ead471 7-68
+  s_bc8feb68cc07b9::t_ea5c736b868d89 4-6
+  s_bc8feb68cc07b9::t_16b549abd9d478 69
+  s_bc8feb68cc07b9::t_a28ea82afa556b 1-3
+packages/host-service/src/providers/git/LocalGitCredentialProvider/LocalGitCredentialProvider.ts
+  s_bc8feb68cc07b9::t_c14e6f75489791 5,129-132
+apps/desktop/src/renderer/routes/_authenticated/_dashboard/workspace/$workspaceId/hooks/useOpenStackLayer/useOpenStackLayer.ts
+  s_f83e1ef1a835e8::t_69c0b617e59d7e 71
+packages/host-service/src/providers/git/LocalGitCredentialProvider/LocalGitCredentialProvider.test.ts
+  s_495d6c00b1f5b7::t_2da4fd57e814ff 151-163
+packages/host-service/src/runtime/git/git.ts
+  s_9f06c51fb92d40::t_7745eb1096d187 1,79-81,83,85
+packages/host-service/src/runtime/git/non-interactive-env.ts
+  s_9f06c51fb92d40::t_3ec3e08314141e 1-6
+packages/host-service/src/runtime/git/types.ts
+  s_9f06c51fb92d40::t_19248918b1b86b 22
+packages/host-service/src/trpc/router/git/git.ts
+  s_f83e1ef1a835e8::t_2429c3453700d2 207,211,628,642
+packages/host-service/src/trpc/router/workspaces/workspaces.ts
+  s_f83e1ef1a835e8::t_10ff9d237d29b2 354
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "816a287d235f9fda9eb3e0dcb712a23cc5d7c3b7",
+  "prompts": {},
+  "sessions": {
+    "s_495d6c00b1f5b7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a76b3f20068823ebf",
+        "model": "unknown"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    },
+    "s_9f06c51fb92d40": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a2c4eda3292ae49b3",
+        "model": "unknown"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    },
+    "s_bc8feb68cc07b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "036b5c31-3281-428c-bde6-a32452c0e03b",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    },
+    "s_f83e1ef1a835e8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "43f132be-06af-4de8-bd1c-d7d86a135b6d",
+        "model": "unknown"
+      },
+      "human_author": "Rohith <rohithreddyrohi18@gmail.com>"
+    }
+  }
+}
